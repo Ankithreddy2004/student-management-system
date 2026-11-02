@@ -1,0 +1,235 @@
+/* Main Container */
+.container {
+max-width: 1200px;
+margin: 35px auto;
+padding: 30px;
+font-family: Arial, sans-serif;
+background: #ffffff;
+}
+
+/* Page Header */
+.page-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 30px;
+}
+
+.page-header h2 {
+color: #5b21b6;
+font-size: 28px;
+font-weight: 700;
+margin: 0 0 8px;
+}
+
+.page-header p {
+color: #777;
+font-size: 14px;
+margin: 0;
+}
+
+/* Add Student Button */
+.add-btn {
+background: linear-gradient(135deg, #7c3aed, #5b21b6);
+color: white;
+padding: 12px 22px;
+border-radius: 8px;
+text-decoration: none;
+font-size: 14px;
+font-weight: 600;
+transition: 0.3s;
+}
+
+.add-btn:hover {
+background: #4c1d95;
+transform: translateY(-2px);
+}
+
+/* Search Section */
+.search-section {
+margin-bottom: 25px;
+}
+
+.search-section input {
+width: 100%;
+max-width: 400px;
+padding: 13px 16px;
+border: 1px solid #ddd6fe;
+border-radius: 8px;
+outline: none;
+font-size: 14px;
+box-sizing: border-box;
+transition: 0.3s;
+}
+
+.search-section input:focus {
+border-color: #7c3aed;
+box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+/* Table Wrapper */
+.table-wrapper {
+overflow-x: auto;
+border-radius: 12px;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+}
+
+/* Table */
+table {
+width: 100%;
+border-collapse: collapse;
+background: #ffffff;
+}
+
+thead {
+background: #6d28d9;
+color: #ffffff;
+}
+
+th {
+padding: 17px;
+text-align: left;
+font-size: 14px;
+font-weight: 600;
+}
+
+td {
+padding: 16px 17px;
+border-bottom: 1px solid #eee;
+color: #333;
+font-size: 14px;
+}
+
+tbody tr:hover {
+background: #f5f0ff;
+}
+
+/* Action Buttons */
+.action-buttons {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+/* Edit Button */
+.edit-btn {
+background: #ede9fe;
+color: #6d28d9;
+border: 1px solid #ddd6fe;
+padding: 8px 17px;
+border-radius: 6px;
+font-size: 13px;
+font-weight: 600;
+cursor: pointer;
+transition: 0.3s;
+}
+
+.edit-btn:hover {
+background: #6d28d9;
+color: white;
+}
+
+/* Delete Button */
+.delete-btn {
+background: #fee2e2;
+color: #dc2626;
+border: 1px solid #fecaca;
+padding: 8px 17px;
+border-radius: 6px;
+font-size: 13px;
+font-weight: 600;
+cursor: pointer;
+transition: 0.3s;
+}
+
+.delete-btn:hover {
+background: #dc2626;
+color: white;
+}
+
+/* Success Message */
+.success-message {
+color: #15803d;
+background: #f0fdf4;
+padding: 12px 15px;
+border-radius: 7px;
+font-size: 14px;
+margin-bottom: 20px;
+}
+
+/* Error Message */
+.error-message {
+color: #dc2626;
+background: #fef2f2;
+padding: 12px 15px;
+border-radius: 7px;
+font-size: 14px;
+margin-bottom: 20px;
+}
+
+/* General Messages */
+.container > p {
+margin-top: 18px;
+font-size: 14px;
+}
+
+/* Status Dropdown */
+.status-select {
+  padding: 8px 30px 8px 12px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: 0.3s;
+}
+
+/* Active */
+.active-status {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+/* Inactive */
+.inactive-status {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+/* Dropdown focus */
+.status-select:focus {
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+.container {
+padding: 15px;
+}
+
+.page-header {
+align-items: flex-start;
+gap: 18px;
+flex-direction: column;
+}
+
+.page-header h2 {
+font-size: 23px;
+}
+
+.search-section input {
+max-width: 100%;
+}
+
+table {
+min-width: 750px;
+}
+
+.action-buttons {
+flex-direction: column;
+align-items: flex-start;
+}
+}

@@ -1,0 +1,113 @@
+<div class="container">
+
+  <div class="form-card">
+
+
+<div class="form-header">
+  <h2>Add New Student</h2>
+  <p>Enter the student details below.</p>
+</div>
+
+<form [formGroup]="studentForm" (ngSubmit)="addStudent()">
+
+  <!-- Name -->
+  <div class="form-group">
+    <label>Full Name</label>
+
+    <input
+      type="text"
+      formControlName="name"
+      placeholder="Enter full name"
+    />
+
+    <small *ngIf="studentForm.get('name')?.touched && studentForm.get('name')?.hasError('required')">
+      Name is required.
+    </small>
+  </div>
+
+  <!-- Email -->
+  <div class="form-group">
+    <label>Email Address</label>
+
+    <input
+      type="email"
+      formControlName="email"
+      placeholder="Enter email address"
+    />
+
+    <small *ngIf="studentForm.get('email')?.touched && studentForm.get('email')?.hasError('required')">
+      Email is required.
+    </small>
+
+    <small *ngIf="studentForm.get('email')?.touched && studentForm.get('email')?.hasError('email')">
+      Enter a valid email address.
+    </small>
+  </div>
+
+  <!-- Phone -->
+  <div class="form-group">
+    <label>Phone Number</label>
+
+    <input
+      type="text"
+      formControlName="phone"
+      placeholder="Enter 10-digit phone number"
+      maxlength="10"
+    />
+
+    <small *ngIf="studentForm.get('phone')?.touched && studentForm.get('phone')?.hasError('required')">
+      Phone number is required.
+    </small>
+
+    <small *ngIf="studentForm.get('phone')?.touched && studentForm.get('phone')?.hasError('pattern')">
+      Enter a valid 10-digit phone number.
+    </small>
+  </div>
+
+  <!-- Course -->
+  <div class="form-group">
+    <label>Course</label>
+
+    <input
+      type="text"
+      formControlName="course"
+      placeholder="Enter course name"
+    />
+
+    <small *ngIf="studentForm.get('course')?.touched && studentForm.get('course')?.hasError('required')">
+      Course is required.
+    </small>
+  </div>
+
+  <!-- Messages -->
+  <p class="success-message" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
+
+  <p class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+
+  <!-- Buttons -->
+  <div class="button-group">
+
+    <button
+      type="submit"
+      class="submit-btn"
+      [disabled]="isSubmitting"
+    >
+      {{ isSubmitting ? 'Adding...' : 'Add Student' }}
+    </button>
+
+    <a routerLink="/students" class="cancel-btn">
+      Cancel
+    </a>
+
+  </div>
+
+</form>
+
+
+  </div>
+
+</div>

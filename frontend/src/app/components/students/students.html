@@ -1,0 +1,127 @@
+<div class="container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+
+    <div>
+      <h2>Student Management</h2>
+      <p>Manage and view all registered students.</p>
+    </div>
+
+    <a routerLink="/add-student" class="add-btn">
+      + Add Student
+    </a>
+
+  </div>
+
+  <!-- Success Message -->
+  <p *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </p>
+
+  <!-- Error Message -->
+  <p *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </p>
+
+  <!-- Search -->
+  <div class="search-section">
+
+    <input
+      type="text"
+      placeholder="Search by name, email, phone or course..."
+      [(ngModel)]="searchTerm"
+    />
+
+  </div>
+
+  <!-- Loading -->
+  <p *ngIf="isLoading">
+    Loading students...
+  </p>
+
+  <!-- Students Table -->
+  <div
+    class="table-wrapper"
+    *ngIf="!isLoading && filteredStudents.length > 0"
+  >
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Course</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let student of filteredStudents; let i = index">
+
+          <td>{{ i + 1 }}</td>
+
+          <td>{{ student.name }}</td>
+
+          <td>{{ student.email }}</td>
+
+          <td>{{ student.phone }}</td>
+
+          <td>{{ student.course }}</td>
+
+          <!-- Active / Inactive Dropdown -->
+          <td>
+
+            <select
+              class="status-select"
+              [ngClass]="student.status === 'Active' ? 'active-status' : 'inactive-status'"
+              [value]="student.status"
+              (change)="updateStudentStatus(student, $event)"
+            >
+
+              <option value="Active">Active</option>
+
+              <option value="Inactive">Inactive</option>
+
+            </select>
+
+          </td>
+
+          <!-- Actions -->
+          <td class="action-buttons">
+
+            <button
+              class="edit-btn"
+              (click)="editStudent(student.id)"
+            >
+              Edit
+            </button>
+
+            <!-- <button
+              class="delete-btn"
+              (click)="deleteStudent(student.id)"
+            >
+              Delete
+            </button> -->
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <!-- No Students -->
+  <p *ngIf="!isLoading && filteredStudents.length === 0">
+    No students found.
+  </p>
+
+</div>
