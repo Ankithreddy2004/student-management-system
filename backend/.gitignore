@@ -1,0 +1,14 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Angular build files
+dist/
+
+# Angular cache
+.angular/
+
+# Logs
+*.log
