@@ -1,32 +1,94 @@
 const express = require('express');
-
 const router = express.Router();
 
+// Import student controllers
 const {
-    getAllStudents,
-    addStudent,
-    getStudentById,
-    updateStudent,
-    deleteStudent,
-    updateStudentStatus
+getAllStudents,
+addStudent,
+getStudentById,
+updateStudent,
+deleteStudent,
+updateStudentStatus
 } = require('../controllers/studentController');
 
-// UPDATE student status
-router.patch('/:id/status', updateStudentStatus);
+// Import authentication middleware
+const {
+verifyToken,
+authorizeRoles,
+authorizeStudentAccess
+} = require('../middleware/authMiddleware');
 
-// GET all students
-router.get('/', getAllStudents);
+// ==========================================
+// GET ALL STUDENTS
+// Admin and Teacher only
+// ==========================================
 
-// POST new student
-router.post('/', addStudent);
+router.get(
+'/',
+verifyToken,
+authorizeRoles('Admin', 'Teacher'),
+getAllStudents
+);
 
-// GET student by ID
-router.get('/:id', getStudentById);
+// ==========================================
+// ADD STUDENT
+// Admin and Teacher only
+// ==========================================
 
-// PUT update student
-router.put('/:id', updateStudent);
+router.post(
+'/',
+verifyToken,
+authorizeRoles('Admin', 'Teacher'),
+addStudent
+);
 
-// DELETE student
-router.delete('/:id', deleteStudent);
+// ==========================================
+// GET STUDENT BY ID
+// Admin and Teacher can access all
+// Student can access own profile only
+// ==========================================
+
+router.get(
+'/:id',
+verifyToken,
+authorizeStudentAccess,
+getStudentById
+);
+
+// ==========================================
+// UPDATE STUDENT
+// Admin and Teacher only
+// ==========================================
+
+router.put(
+'/:id',
+verifyToken,
+authorizeRoles('Admin', 'Teacher'),
+updateStudent
+);
+
+// ==========================================
+// DELETE STUDENT
+// Admin only
+// ==========================================
+
+router.delete(
+'/:id',
+verifyToken,
+authorizeRoles('Admin'),
+deleteStudent
+);
+
+// ==========================================
+// UPDATE STUDENT STATUS
+// Admin and Teacher only
+// ==========================================
+
+router.patch(
+'/:id/status',
+verifyToken,
+authorizeRoles('Admin', 'Teacher'),
+updateStudentStatus
+);
 
 module.exports = router;

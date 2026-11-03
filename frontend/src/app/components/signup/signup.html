@@ -1,0 +1,190 @@
+<div class="signup-container">
+
+  <div class="signup-card">
+
+    <!-- Header -->
+    <div class="signup-header">
+
+      <div class="logo">SMS</div>
+
+      <h2>Create Account</h2>
+
+      <p>Register for the Student Management System</p>
+
+    </div>
+
+    <!-- Signup Form -->
+    <form (ngSubmit)="onSignup()" #signupForm="ngForm">
+
+      <!-- Name -->
+      <div class="form-group">
+
+        <label>Full Name</label>
+
+        <input
+          type="text"
+          name="name"
+          [(ngModel)]="name"
+          placeholder="Enter your full name"
+          required
+          #nameField="ngModel"
+        >
+
+        <small class="validation-error"
+          *ngIf="nameField.invalid && nameField.touched">
+          Name is required.
+        </small>
+
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+
+        <label>Email Address</label>
+
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="email"
+          placeholder="Enter your email"
+          required
+          email
+          #emailField="ngModel"
+        >
+
+        <small class="validation-error"
+          *ngIf="emailField.invalid && emailField.touched">
+          Please enter a valid email.
+        </small>
+
+      </div>
+
+      <!-- Phone -->
+      <div class="form-group">
+
+        <label>Phone Number</label>
+
+        <input
+          type="tel"
+          name="phone"
+          [(ngModel)]="phone"
+          placeholder="Enter 10-digit phone number"
+          required
+          pattern="[0-9]{10}"
+          maxlength="10"
+          #phoneField="ngModel"
+        >
+
+        <small class="validation-error"
+          *ngIf="phoneField.invalid && phoneField.touched">
+          Please enter a valid 10-digit phone number.
+        </small>
+
+      </div>
+
+      <!-- Course -->
+      <div class="form-group">
+
+        <label>Course</label>
+
+        <input
+          type="text"
+          name="course"
+          [(ngModel)]="course"
+          placeholder="Enter your course (e.g. EEE)"
+          required
+          #courseField="ngModel"
+        >
+
+        <small class="validation-error"
+          *ngIf="courseField.invalid && courseField.touched">
+          Course is required.
+        </small>
+
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+
+        <label>Password</label>
+
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          name="password"
+          [(ngModel)]="password"
+          placeholder="Create a password"
+          required
+          minlength="8"
+          #passwordField="ngModel"
+        >
+
+        <small class="validation-error"
+          *ngIf="passwordField.invalid && passwordField.touched">
+          Password must contain at least 8 characters.
+        </small>
+
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group">
+
+        <label>Confirm Password</label>
+
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          name="confirmPassword"
+          [(ngModel)]="confirmPassword"
+          placeholder="Confirm your password"
+          required
+        >
+
+      </div>
+
+      <!-- Show Password -->
+      <div class="show-password">
+
+        <input
+          type="checkbox"
+          id="showPassword"
+          (change)="togglePassword()"
+        >
+
+        <label for="showPassword">Show password</label>
+
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Success Message -->
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <!-- Signup Button -->
+      <button
+        type="submit"
+        class="signup-btn"
+        [disabled]="signupForm.invalid || isLoading">
+
+        {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+
+      </button>
+
+    </form>
+
+    <!-- Footer -->
+    <div class="signup-footer">
+
+      <p>
+        Already have an account?
+        <a routerLink="/login">Login</a>
+      </p>
+
+    </div>
+
+  </div>
+
+</div>

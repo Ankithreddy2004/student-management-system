@@ -1,0 +1,149 @@
+<div class="dashboard-container">
+
+  <!-- Header -->
+  <header class="dashboard-header">
+
+    <div class="brand">
+      <div class="logo">SMS</div>
+
+      <div>
+        <h2>Student Management System</h2>
+        <p>Teacher Portal</p>
+      </div>
+    </div>
+
+    <button class="logout-btn" (click)="logout()">
+      Logout
+    </button>
+
+  </header>
+
+
+  <!-- Main Content -->
+  <main class="dashboard-content">
+
+    <!-- Welcome -->
+    <section class="welcome-section">
+
+      <div>
+        <h1>Welcome, {{ teacherName }}!</h1>
+
+        <p>
+          Manage students, monitor their information
+          and maintain their academic records.
+        </p>
+      </div>
+
+      <div class="teacher-icon">T</div>
+
+    </section>
+
+
+    <!-- Error -->
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+
+    <!-- Statistics -->
+    <section class="stats-grid">
+
+      <div class="stat-card">
+        <div class="stat-icon purple">S</div>
+
+        <div>
+          <p>Total Students</p>
+
+          <h2>
+            {{ isLoading ? '...' : totalStudents }}
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="stat-card">
+        <div class="stat-icon green">A</div>
+
+        <div>
+          <p>Active Students</p>
+
+          <h2>
+            {{ isLoading ? '...' : activeStudents }}
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="stat-card">
+        <div class="stat-icon red">I</div>
+
+        <div>
+          <p>Inactive Students</p>
+
+          <h2>
+            {{ isLoading ? '...' : inactiveStudents }}
+          </h2>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- Student Management -->
+    <section class="management-section">
+
+      <div class="section-heading">
+        <h2>Student Management</h2>
+
+        <p>
+          Manage registered student information.
+        </p>
+      </div>
+
+
+      <div class="action-grid">
+
+        <!-- View Students -->
+        <div class="action-card">
+
+          <div class="action-icon">👨‍🎓</div>
+
+          <h3>View Students</h3>
+
+          <p>
+            View all registered students and
+            their information.
+          </p>
+
+          <a routerLink="/students" class="action-btn">
+            View Students
+          </a>
+
+        </div>
+
+
+        <!-- Add Student -->
+        <div class="action-card">
+
+          <div class="action-icon">➕</div>
+
+          <h3>Add Student</h3>
+
+          <p>
+            Register a new student and
+            add their information.
+          </p>
+
+          <a routerLink="/add-student" class="action-btn">
+            Add Student
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>

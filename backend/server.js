@@ -7,6 +7,8 @@ const db = require('./config/db');
 
 // Import student routes
 const studentRoutes = require('./routes/studentRoutes');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
@@ -21,6 +23,8 @@ res.send('Student Management API is Running!');
 
 // Student APIs
 app.use('/api/students', studentRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

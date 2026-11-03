@@ -1,0 +1,122 @@
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h2>Teacher Management</h2>
+      <p>Create and manage teacher accounts.</p>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <p *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </p>
+
+  <!-- Error Message -->
+  <p *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </p>
+
+  <!-- Create Teacher Form -->
+  <div class="form-card">
+
+    <h3>Create Teacher Account</h3>
+
+    <form (ngSubmit)="createTeacher()">
+
+      <div class="form-group">
+        <label>Teacher Name</label>
+
+        <input
+          type="text"
+          name="name"
+          [(ngModel)]="teacher.name"
+          placeholder="Enter teacher name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="teacher.email"
+          placeholder="Enter teacher email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+
+        <input
+          type="password"
+          name="password"
+          [(ngModel)]="teacher.password"
+          placeholder="Minimum 12 characters"
+          minlength="12"
+          required
+        />
+      </div>
+
+      <button type="submit" [disabled]="isCreating">
+        {{ isCreating ? 'Creating...' : 'Create Teacher' }}
+      </button>
+
+    </form>
+
+  </div>
+
+  <!-- Teachers List -->
+  <div class="teachers-section">
+
+    <h3>Registered Teachers</h3>
+
+    <p *ngIf="isLoading">
+      Loading teachers...
+    </p>
+
+    <div class="table-wrapper"
+         *ngIf="!isLoading && teachers.length > 0">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Teacher Name</th>
+            <th>Email</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr *ngFor="let teacher of teachers; let i = index">
+
+            <td>{{ i + 1 }}</td>
+            <td>{{ teacher.name }}</td>
+            <td>{{ teacher.email }}</td>
+            <td>
+              <span class="role-badge">
+                {{ teacher.role }}
+              </span>
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <p *ngIf="!isLoading && teachers.length === 0">
+      No teachers registered yet.
+    </p>
+
+  </div>
+
+</div>
