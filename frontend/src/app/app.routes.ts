@@ -9,6 +9,7 @@ import { EditStudent } from './components/edit-student/edit-student';
 import { StudentDashboard } from './components/student-dashboard/student-dashboard';
 import { TeacherDashboard } from './components/teacher-dashboard/teacher-dashboard';
 import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
+import { TeacherPendingStudents } from './components/teacher-pending-students/teacher-pending-students';
 
 // Authentication components
 import { Login } from './components/login/login';
@@ -92,6 +93,12 @@ redirectTo: 'login'
   component: AdminTeachers,
   canActivate: [authGuard, roleGuard],
   data: { roles: ['Admin'] }
+},
+{
+  path: 'teacher/pending-students',
+  component: TeacherPendingStudents,
+  canActivate: [authGuard, roleGuard],
+  data: { roles: ['Teacher', 'Admin'] }
 },
 // Unknown routes
 {

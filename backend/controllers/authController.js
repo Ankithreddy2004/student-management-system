@@ -19,7 +19,7 @@ exports.signup = async (req, res) => {
         }
 
         // 2. Validate password
-        if (password.length < 8) {
+        if (typeof password !== 'string' || password.length < 8) {
             return res.status(400).json({
                 success: false,
                 message: 'Password must contain at least 8 characters.'
@@ -43,7 +43,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        // 5. Validate phone number
+        // 5. Validate phone
         if (!/^\d{10}$/.test(cleanPhone)) {
             return res.status(400).json({
                 success: false,
@@ -58,7 +58,7 @@ exports.signup = async (req, res) => {
             });
         }
 
-        // 6. Check whether email already exists in students
+        // 6. Check duplicate email in students
         db.query(
             'SELECT id FROM students WHERE email = ?',
             [cleanEmail],
@@ -80,7 +80,7 @@ exports.signup = async (req, res) => {
                     });
                 }
 
-                // 7. Check whether email already exists in users
+                // 7. Check duplicate email in users
                 db.query(
                     'SELECT id FROM users WHERE email = ?',
                     [cleanEmail],
@@ -103,11 +103,10 @@ exports.signup = async (req, res) => {
                         }
 
                         try {
-
                             // 8. Hash password
                             const hashedPassword = await bcrypt.hash(password, 12);
 
-                            // 9. Start MySQL transaction
+                            // 9. Start transaction
                             db.beginTransaction((transactionError) => {
 
                                 if (transactionError) {
@@ -119,19 +118,17 @@ exports.signup = async (req, res) => {
                                     });
                                 }
 
-                                // 10. Insert student details
+                                // 10. Insert student with Pending status
                                 db.query(
                                     `INSERT INTO students
-                                    (name, email, phone, course)
-                                    VALUES (?, ?, ?, ?)`,
-
+                                    (name, email, phone, course, status)
+                                    VALUES (?, ?, ?, ?, 'Pending')`,
                                     [
                                         cleanName,
                                         cleanEmail,
                                         cleanPhone,
                                         cleanCourse
                                     ],
-
                                     (insertStudentError, studentResult) => {
 
                                         if (insertStudentError) {
@@ -145,23 +142,19 @@ exports.signup = async (req, res) => {
                                             });
                                         }
 
-                                        // Get newly created student ID
                                         const studentId = studentResult.insertId;
 
-                                        // 11. Insert login account
+                                        // 11. Create Student login account
                                         db.query(
                                             `INSERT INTO users
                                             (name, email, password, role, student_id)
-                                            VALUES (?, ?, ?, ?, ?)`,
-
+                                            VALUES (?, ?, ?, 'Student', ?)`,
                                             [
                                                 cleanName,
                                                 cleanEmail,
                                                 hashedPassword,
-                                                'Student',
                                                 studentId
                                             ],
-
                                             (insertUserError, userResult) => {
 
                                                 if (insertUserError) {
@@ -192,13 +185,14 @@ exports.signup = async (req, res) => {
                                                     // 13. Registration successful
                                                     return res.status(201).json({
                                                         success: true,
-                                                        message: 'Student registered successfully.',
+                                                        message: 'Registration successful. Your account is waiting for approval.',
                                                         data: {
                                                             student_id: studentId,
                                                             user_id: userResult.insertId,
                                                             name: cleanName,
                                                             email: cleanEmail,
-                                                            role: 'Student'
+                                                            role: 'Student',
+                                                            status: 'Pending'
                                                         }
                                                     });
 
@@ -240,7 +234,6 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
 
     try {
-
         const { email, password } = req.body;
 
         // 1. Validate input
@@ -253,9 +246,19 @@ exports.login = async (req, res) => {
 
         const cleanEmail = email.trim().toLowerCase();
 
-        // 2. Find user in database
+        // 2. Fetch user and associated student status
         db.query(
-            'SELECT * FROM users WHERE email = ?',
+            `SELECT
+                u.id,
+                u.name,
+                u.email,
+                u.password,
+                u.role,
+                u.student_id,
+                s.status AS student_status
+             FROM users u
+             LEFT JOIN students s ON u.student_id = s.id
+             WHERE u.email = ?`,
             [cleanEmail],
 
             async (error, results) => {
@@ -269,7 +272,7 @@ exports.login = async (req, res) => {
                     });
                 }
 
-                // 3. Check whether user exists
+                // 3. Check user
                 if (results.length === 0) {
                     return res.status(401).json({
                         success: false,
@@ -280,8 +283,7 @@ exports.login = async (req, res) => {
                 const user = results[0];
 
                 try {
-
-                    // 4. Compare password
+                    // 4. Verify password
                     const isPasswordValid = await bcrypt.compare(
                         password,
                         user.password
@@ -294,7 +296,15 @@ exports.login = async (req, res) => {
                         });
                     }
 
-                    // 5. Generate JWT token
+                    // 5. Validate student account relationship
+                    if (user.role === 'Student' && !user.student_id) {
+                        return res.status(403).json({
+                            success: false,
+                            message: 'Student profile is not linked to this account.'
+                        });
+                    }
+
+                    // 6. Generate JWT
                     const token = jwt.sign(
                         {
                             id: user.id,
@@ -303,15 +313,13 @@ exports.login = async (req, res) => {
                             role: user.role,
                             student_id: user.student_id
                         },
-
                         process.env.JWT_SECRET,
-
                         {
                             expiresIn: '1d'
                         }
                     );
 
-                    // 6. Successful login response
+                    // 7. Successful login
                     return res.status(200).json({
                         success: true,
                         message: 'Login successful.',
@@ -322,7 +330,10 @@ exports.login = async (req, res) => {
                             name: user.name,
                             email: user.email,
                             role: user.role,
-                            student_id: user.student_id
+                            student_id: user.student_id,
+                            status: user.role === 'Student'
+                                ? user.student_status
+                                : null
                         }
                     });
 
@@ -346,3 +357,4 @@ exports.login = async (req, res) => {
         });
     }
 };
+

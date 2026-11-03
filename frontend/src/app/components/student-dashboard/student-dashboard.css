@@ -1,18 +1,25 @@
+/* ==============================
+   DASHBOARD CONTAINER
+================================ */
+
 .dashboard-container {
   min-height: 100vh;
-  background: #f4f3ff;
+  background: #f7f6fc;
   font-family: Arial, sans-serif;
+  color: #27233a;
 }
 
-/* Header */
+/* ==============================
+   HEADER
+================================ */
 
 .dashboard-header {
-  background: #ffffff;
-  padding: 18px 6%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  padding: 18px 5%;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .brand {
@@ -24,178 +31,342 @@
 .logo {
   width: 48px;
   height: 48px;
-  background: #6d28d9;
-  color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #7856d8, #512da8);
+  color: white;
+  border-radius: 13px;
   font-weight: bold;
+  font-size: 17px;
 }
 
 .brand h2 {
-  font-size: 18px;
-  color: #1f2937;
   margin: 0;
+  font-size: 19px;
 }
 
 .brand p {
-  color: #777;
-  font-size: 12px;
-  margin: 5px 0 0;
+  margin: 4px 0 0;
+  color: #85819a;
+  font-size: 13px;
 }
 
-/* Logout */
+/* LOGOUT BUTTON */
 
 .logout-btn {
-  background: #6d28d9;
-  color: white;
+  background: #f3efff;
+  color: #6842c2;
   border: none;
   padding: 11px 22px;
-  border-radius: 8px;
-  cursor: pointer;
+  border-radius: 9px;
   font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 .logout-btn:hover {
-  background: #5b21b6;
+  background: #6842c2;
+  color: white;
 }
 
-/* Main Content */
+/* ==============================
+   MAIN CONTENT
+================================ */
 
 .dashboard-content {
-  max-width: 1150px;
-  margin: 40px auto;
-  padding: 0 25px;
+  max-width: 1250px;
+  margin: auto;
+  padding: 35px 25px;
 }
 
-/* Welcome Section */
+/* ==============================
+   WELCOME SECTION
+================================ */
 
 .welcome-section {
-  background: linear-gradient(120deg, #6d28d9, #8b5cf6);
-  color: white;
-  padding: 35px;
-  border-radius: 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  padding: 32px;
+  background: linear-gradient(120deg, #6842c2, #9273e8);
+  color: white;
+  border-radius: 18px;
+  margin-bottom: 25px;
+  box-shadow: 0 8px 25px rgba(104, 66, 194, 0.18);
 }
 
 .welcome-section h1 {
-  font-size: 27px;
-  margin-bottom: 12px;
+  margin: 0 0 10px;
+  font-size: 28px;
 }
 
 .welcome-section p {
-  font-size: 14px;
+  margin: 0;
+  color: #eee8ff;
   line-height: 1.6;
-  opacity: 0.9;
 }
 
 .student-icon {
-  width: 75px;
-  height: 75px;
-  background: white;
-  color: #6d28d9;
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
+  background: white;
+  color: #6842c2;
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: 30px;
+  justify-content: center;
+  font-size: 27px;
   font-weight: bold;
 }
 
-/* Profile Section */
+/* ==============================
+   STATUS MESSAGES
+================================ */
+
+.status-message {
+  padding: 18px 22px;
+  border-radius: 12px;
+  margin-bottom: 22px;
+  border-left: 5px solid;
+}
+
+.status-message h3 {
+  margin: 0 0 7px;
+}
+
+.status-message p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.pending-message {
+  background: #fff8e7;
+  border-color: #e6a700;
+  color: #886000;
+}
+
+.inactive-message {
+  background: #fff0f0;
+  border-color: #dc4545;
+  color: #a52b2b;
+}
+
+.active-message {
+  background: #eaf9ef;
+  border-color: #27a45b;
+  color: #197a40;
+}
+
+/* ==============================
+   PROFILE SECTIONS
+================================ */
 
 .profile-section {
   background: white;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 3px 15px rgba(40, 30, 80, 0.05);
 }
 
 .section-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
 }
 
 .section-heading h2 {
-  color: #1f2937;
-  margin-bottom: 7px;
+  margin: 0 0 6px;
+  font-size: 21px;
+  color: #33265c;
 }
 
 .section-heading p {
-  color: #777;
-  font-size: 13px;
+  margin: 0;
+  color: #89859b;
+  font-size: 14px;
 }
 
-/* Status */
-
-.status-badge {
-  background: #dcfce7;
-  color: #15803d;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
+.sub-heading {
+  margin: 28px 0 15px;
+  color: #453475;
+  font-size: 17px;
 }
 
-.status-badge.inactive {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-/* Profile Grid */
+/* ==============================
+   PROFILE GRID / SUMMARY CARDS
+================================ */
 
 .profile-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 17px;
 }
 
 .detail-card {
-  background: #f9f8ff;
-  padding: 22px;
-  border: 1px solid #eee9ff;
+  padding: 20px;
+  background: #faf9ff;
+  border: 1px solid #eee9fc;
   border-radius: 12px;
+  transition: 0.3s;
+}
+
+.detail-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(104, 66, 194, 0.08);
 }
 
 .detail-card span {
-  color: #777;
+  display: block;
+  color: #89849e;
   font-size: 13px;
+  margin-bottom: 10px;
 }
 
 .detail-card h3 {
-  color: #29213b;
-  font-size: 16px;
-  margin-top: 10px;
-  overflow-wrap: anywhere;
+  margin: 0;
+  font-size: 19px;
+  color: #513a91;
+  word-break: break-word;
 }
 
-.inactive-text {
-  color: #b91c1c !important;
+/* ==============================
+   STATUS BADGES
+================================ */
+
+.status-badge {
+  display: inline-block;
+  padding: 7px 13px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
 }
 
-/* Loading and Error */
+.status-badge.active,
+.status-badge.present {
+  background: #e4f8eb;
+  color: #21834a;
+}
+
+.status-badge.pending,
+.status-badge.late {
+  background: #fff3d6;
+  color: #a57408;
+}
+
+.status-badge.inactive,
+.status-badge.absent {
+  background: #ffe7e7;
+  color: #c03939;
+}
+
+/* ==============================
+   TABLES
+================================ */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #eeeaf7;
+  border-radius: 11px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+thead {
+  background: #f4f0ff;
+}
+
+th {
+  padding: 15px;
+  text-align: left;
+  color: #533a91;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+td {
+  padding: 15px;
+  border-top: 1px solid #f0edf7;
+  color: #575269;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+tbody tr:hover {
+  background: #faf8ff;
+}
+
+/* ==============================
+   LOADING
+================================ */
 
 .loading {
   text-align: center;
-  padding: 30px;
-  color: #6d28d9;
+  padding: 25px;
+  color: #6842c2;
+  font-size: 14px;
+  font-weight: 500;
 }
+
+/* ==============================
+   ERROR MESSAGE
+================================ */
 
 .error-message {
-  background: #fee2e2;
-  color: #b91c1c;
   padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  background: #fff0f0;
+  color: #c03939;
+  border-radius: 9px;
+  margin: 15px 0;
+  font-size: 14px;
 }
 
-/* Responsive */
+.error-message button {
+  display: block;
+  margin-top: 12px;
+  padding: 9px 17px;
+  background: #6842c2;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+/* ==============================
+   EMPTY MESSAGE
+================================ */
+
+.empty-message {
+  text-align: center;
+  padding: 25px;
+  background: #faf9ff;
+  border: 1px dashed #dcd3f4;
+  border-radius: 10px;
+  color: #89849e;
+  font-size: 14px;
+}
+
+/* ==============================
+   RESPONSIVE DESIGN
+================================ */
+
+@media (max-width: 900px) {
+
+  .profile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
 
 @media (max-width: 600px) {
 
@@ -204,11 +375,15 @@
   }
 
   .brand h2 {
-    font-size: 14px;
+    font-size: 15px;
+  }
+
+  .dashboard-content {
+    padding: 20px 13px;
   }
 
   .welcome-section {
-    padding: 25px;
+    padding: 23px;
   }
 
   .welcome-section h1 {
@@ -216,17 +391,26 @@
   }
 
   .student-icon {
-    width: 55px;
-    height: 55px;
-    font-size: 23px;
+    width: 48px;
+    height: 48px;
+    font-size: 21px;
+  }
+
+  .profile-section {
+    padding: 18px;
   }
 
   .profile-grid {
     grid-template-columns: 1fr;
   }
 
-  .profile-section {
-    padding: 20px;
+  .section-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .logout-btn {
+    padding: 9px 14px;
   }
 
 }

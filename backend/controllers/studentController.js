@@ -1,6 +1,9 @@
 const db = require('../config/db');
 
-// GET all students
+// ==========================================
+// GET ALL STUDENTS
+// ==========================================
+
 const getAllStudents = (req, res) => {
 
     const sql = 'SELECT * FROM students ORDER BY id ASC';
@@ -8,17 +11,15 @@ const getAllStudents = (req, res) => {
     db.query(sql, (err, results) => {
 
         if (err) {
-            console.error(err);
-
             return res.status(500).json({
                 success: false,
-                message: 'Error fetching students'
+                message: 'Error fetching students.'
             });
         }
 
         res.status(200).json({
             success: true,
-            message: 'Students fetched successfully',
+            message: 'Students fetched successfully.',
             data: results
         });
 
@@ -26,115 +27,162 @@ const getAllStudents = (req, res) => {
 
 };
 
-// POST - Add new student
-const addStudent = (req, res) => {
 
+// ==========================================
+// GET PENDING STUDENTS
+// ==========================================
 
-const { name, email, phone, course } = req.body;
+const getPendingStudents = (req, res) => {
 
-// Validate required fields
-if (!name || !email || !phone || !course) {
-    return res.status(400).json({
-        success: false,
-        message: 'All fields are required'
-    });
-}
+    const sql = `
+        SELECT
+            id,
+            name,
+            email,
+            phone,
+            course,
+            status,
+            created_at
+        FROM students
+        WHERE status = 'Pending'
+        ORDER BY created_at ASC
+    `;
 
-// Validate email
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-if (!emailRegex.test(email)) {
-    return res.status(400).json({
-        success: false,
-        message: 'Please enter a valid email address'
-    });
-}
-
-// Validate 10-digit phone number
-if (!/^\d{10}$/.test(phone)) {
-    return res.status(400).json({
-        success: false,
-        message: 'Phone number must contain exactly 10 digits'
-    });
-}
-
-// Parameterized SQL query
-const sql = `
-    INSERT INTO students (name, email, phone, course)
-    VALUES (?, ?, ?, ?)
-`;
-
-const values = [name, email, phone, course];
-
-db.query(sql, values, (err, result) => {
-
-    if (err) {
-
-        if (err.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({
-                success: false,
-                message: 'Email already exists'
-            });
-        }
-
-        console.error(err);
-
-        return res.status(500).json({
-            success: false,
-            message: 'Error adding student'
-        });
-    }
-
-    res.status(201).json({
-        success: true,
-        message: 'Student added successfully',
-        studentId: result.insertId
-    });
-
-});
-
-
-};
-
-// GET student by ID
-const getStudentById = (req, res) => {
-
-    // Get ID from URL
-    const { id } = req.params;
-
-    // Validate ID
-    if (!/^[1-9]\d*$/.test(id)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid student ID'
-        });
-    }
-
-    // SQL query
-    const sql = 'SELECT * FROM students WHERE id = ?';
-
-    db.query(sql, [id], (err, results) => {
+    db.query(sql, (err, results) => {
 
         if (err) {
-            console.error(err);
-
             return res.status(500).json({
                 success: false,
-                message: 'Error fetching student'
-            });
-        }
-
-        // Check if student exists
-        if (results.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Student not found'
+                message: 'Error fetching pending registrations.'
             });
         }
 
         res.status(200).json({
             success: true,
-            message: 'Student fetched successfully',
+            message: 'Pending registrations fetched successfully.',
+            data: results
+        });
+
+    });
+
+};
+
+
+// ==========================================
+// ADD NEW STUDENT
+// ==========================================
+
+const addStudent = (req, res) => {
+
+    let { name, email, phone, course } = req.body;
+
+    if (!name || !email || !phone || !course) {
+        return res.status(400).json({
+            success: false,
+            message: 'All fields are required.'
+        });
+    }
+
+    name = String(name).trim();
+    email = String(email).trim().toLowerCase();
+    phone = String(phone).trim();
+    course = String(course).trim();
+
+    if (!name || !course) {
+        return res.status(400).json({
+            success: false,
+            message: 'Name and course cannot be empty.'
+        });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Please enter a valid email address.'
+        });
+    }
+
+    if (!/^\d{10}$/.test(phone)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Phone number must contain exactly 10 digits.'
+        });
+    }
+
+    const sql = `
+        INSERT INTO students (name, email, phone, course)
+        VALUES (?, ?, ?, ?)
+    `;
+
+    const values = [name, email, phone, course];
+
+    db.query(sql, values, (err, result) => {
+
+        if (err) {
+
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Email already exists.'
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                message: 'Error adding student.'
+            });
+
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'Student added successfully.',
+            studentId: result.insertId
+        });
+
+    });
+
+};
+
+
+// ==========================================
+// GET STUDENT BY ID
+// ==========================================
+
+const getStudentById = (req, res) => {
+
+    const { id } = req.params;
+
+    if (!/^[1-9]\d*$/.test(id)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid student ID.'
+        });
+    }
+
+    const sql = 'SELECT * FROM students WHERE id = ?';
+
+    db.query(sql, [id], (err, results) => {
+
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Error fetching student.'
+            });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student not found.'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Student fetched successfully.',
             data: results[0]
         });
 
@@ -143,44 +191,55 @@ const getStudentById = (req, res) => {
 };
 
 
-// PUT - Update student
+// ==========================================
+// UPDATE STUDENT
+// ==========================================
+
 const updateStudent = (req, res) => {
 
     const { id } = req.params;
 
-    const { name, email, phone, course } = req.body;
+    let { name, email, phone, course } = req.body;
 
-    // Validate student ID
     if (!/^[1-9]\d*$/.test(id)) {
         return res.status(400).json({
             success: false,
-            message: 'Invalid student ID'
+            message: 'Invalid student ID.'
         });
     }
 
-    // Validate required fields
     if (!name || !email || !phone || !course) {
         return res.status(400).json({
             success: false,
-            message: 'All fields are required'
+            message: 'All fields are required.'
         });
     }
 
-    // Validate email
+    name = String(name).trim();
+    email = String(email).trim().toLowerCase();
+    phone = String(phone).trim();
+    course = String(course).trim();
+
+    if (!name || !course) {
+        return res.status(400).json({
+            success: false,
+            message: 'Name and course cannot be empty.'
+        });
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
         return res.status(400).json({
             success: false,
-            message: 'Invalid email address'
+            message: 'Invalid email address.'
         });
     }
 
-    // Validate phone
     if (!/^\d{10}$/.test(phone)) {
         return res.status(400).json({
             success: false,
-            message: 'Phone must contain exactly 10 digits'
+            message: 'Phone must contain exactly 10 digits.'
         });
     }
 
@@ -199,44 +258,71 @@ const updateStudent = (req, res) => {
             if (err.code === 'ER_DUP_ENTRY') {
                 return res.status(409).json({
                     success: false,
-                    message: 'Email already exists'
+                    message: 'Email already exists.'
                 });
             }
 
-            console.error(err);
-
             return res.status(500).json({
                 success: false,
-                message: 'Error updating student'
+                message: 'Error updating student.'
             });
+
         }
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Student not found'
-            });
+
+            return db.query(
+                'SELECT id FROM students WHERE id = ?',
+                [id],
+                (checkErr, rows) => {
+
+                    if (checkErr) {
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Error checking student record.'
+                        });
+                    }
+
+                    if (rows.length === 0) {
+                        return res.status(404).json({
+                            success: false,
+                            message: 'Student not found.'
+                        });
+                    }
+
+                    res.status(200).json({
+                        success: true,
+                        message: 'Student information is already up to date.'
+                    });
+
+                }
+            );
+
         }
 
         res.status(200).json({
             success: true,
-            message: 'Student updated successfully'
+            message: 'Student updated successfully.'
         });
 
     });
 
 };
 
-// DELETE - Delete student
+
+// ==========================================
+// DELETE STUDENT
+// ADMIN ONLY
+// ==========================================
+
 const deleteStudent = (req, res) => {
 
     const { id } = req.params;
 
-    // Validate student ID
     if (!/^[1-9]\d*$/.test(id)) {
         return res.status(400).json({
             success: false,
-            message: 'Invalid student ID'
+            message: 'Invalid student ID.'
         });
     }
 
@@ -245,37 +331,48 @@ const deleteStudent = (req, res) => {
     db.query(sql, [id], (err, result) => {
 
         if (err) {
-            console.error(err);
+
+            if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Cannot delete this student because related records exist.'
+                });
+            }
 
             return res.status(500).json({
                 success: false,
-                message: 'Error deleting student'
+                message: 'Error deleting student.'
             });
+
         }
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Student not found'
+                message: 'Student not found.'
             });
         }
 
         res.status(200).json({
             success: true,
-            message: 'Student deleted successfully'
+            message: 'Student deleted successfully.'
         });
 
     });
 
 };
 
-// UPDATE Student Status
+
+// ==========================================
+// UPDATE STUDENT STATUS
+// ADMIN AND TEACHER
+// ==========================================
+
 const updateStudentStatus = (req, res) => {
 
     const { id } = req.params;
     const { status } = req.body;
 
-    // Validate ID
     if (!/^[1-9]\d*$/.test(id)) {
         return res.status(400).json({
             success: false,
@@ -283,7 +380,6 @@ const updateStudentStatus = (req, res) => {
         });
     }
 
-    // Validate status
     if (!['Active', 'Inactive'].includes(status)) {
         return res.status(400).json({
             success: false,
@@ -291,59 +387,160 @@ const updateStudentStatus = (req, res) => {
         });
     }
 
-    // Check whether student exists
-    db.query(
-        'SELECT id FROM students WHERE id = ?',
-        [id],
-        (err, results) => {
+    const sql = `
+        UPDATE students
+        SET status = ?
+        WHERE id = ?
+    `;
 
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    message: 'Database error.'
-                });
-            }
+    db.query(sql, [status, id], (err, result) => {
 
-            if (results.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Student not found.'
-                });
-            }
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to update student status.'
+            });
+        }
 
-            // Update status
-            db.query(
-                'UPDATE students SET status = ? WHERE id = ?',
-                [status, id],
-                (updateErr) => {
+        if (result.affectedRows === 0) {
 
-                    if (updateErr) {
+            return db.query(
+                'SELECT id FROM students WHERE id = ?',
+                [id],
+                (checkErr, rows) => {
+
+                    if (checkErr) {
                         return res.status(500).json({
                             success: false,
-                            message: 'Unable to update student status.'
+                            message: 'Error checking student record.'
+                        });
+                    }
+
+                    if (rows.length === 0) {
+                        return res.status(404).json({
+                            success: false,
+                            message: 'Student not found.'
                         });
                     }
 
                     res.status(200).json({
                         success: true,
-                        message: 'Student status updated successfully.',
+                        message: 'Student already has this status.',
                         data: {
                             id: Number(id),
-                            status: status
+                            status
                         }
                     });
+
                 }
             );
+
         }
-    );
+
+        res.status(200).json({
+            success: true,
+            message: 'Student status updated successfully.',
+            data: {
+                id: Number(id),
+                status
+            }
+        });
+
+    });
+
 };
 
 
+// ==========================================
+// APPROVE PENDING STUDENT
+// ADMIN AND TEACHER
+// ==========================================
+
+const approveStudent = (req, res) => {
+
+    const { id } = req.params;
+
+    if (!/^[1-9]\d*$/.test(id)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid student ID.'
+        });
+    }
+
+    const sql = `
+        UPDATE students
+        SET status = 'Active'
+        WHERE id = ?
+        AND status = 'Pending'
+    `;
+
+    db.query(sql, [id], (err, result) => {
+
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to approve student.'
+            });
+        }
+
+        if (result.affectedRows === 0) {
+
+            return db.query(
+                'SELECT status FROM students WHERE id = ?',
+                [id],
+                (checkErr, rows) => {
+
+                    if (checkErr) {
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Error checking student record.'
+                        });
+                    }
+
+                    if (rows.length === 0) {
+                        return res.status(404).json({
+                            success: false,
+                            message: 'Student not found.'
+                        });
+                    }
+
+                    return res.status(409).json({
+                        success: false,
+                        message: `Student cannot be approved. Current status: ${rows[0].status}.`
+                    });
+
+                }
+            );
+
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Student approved successfully. The account is now Active.',
+            data: {
+                id: Number(id),
+                status: 'Active'
+            }
+        });
+
+    });
+
+};
+
+
+// ==========================================
+// EXPORT CONTROLLERS
+// ==========================================
+
 module.exports = {
+
     getAllStudents,
+    getPendingStudents,
     addStudent,
     getStudentById,
     updateStudent,
     deleteStudent,
-    updateStudentStatus
+    updateStudentStatus,
+    approveStudent
+
 };

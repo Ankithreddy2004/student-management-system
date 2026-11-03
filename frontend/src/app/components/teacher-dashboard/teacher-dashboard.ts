@@ -1,4 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
@@ -16,18 +21,30 @@ export class TeacherDashboard implements OnInit {
 
   teacherName = '';
 
+  // Student statistics
   totalStudents = 0;
   activeStudents = 0;
   inactiveStudents = 0;
+  pendingStudents = 0;
 
-  isLoading = true;
+  // Loading states
+  isLoading = false;
+  pendingLoading = false;
+
+  // Error messages
   errorMessage = '';
+  pendingErrorMessage = '';
 
   constructor(
     private authService: Auth,
     private studentService: Student,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
+
+  // =====================================
+  // INITIALIZE DASHBOARD
+  // =====================================
 
   ngOnInit(): void {
 
@@ -38,18 +55,29 @@ export class TeacherDashboard implements OnInit {
     }
 
     this.loadDashboardData();
+    this.loadPendingStudents();
 
   }
 
+
+  // =====================================
+  // LOAD STUDENT STATISTICS
+  // =====================================
+
   loadDashboardData(): void {
+
+    this.isLoading = true;
+    this.errorMessage = '';
 
     this.studentService.getStudents().subscribe({
 
       next: (response: any) => {
 
-        this.isLoading = false;
+        console.log('Dashboard API Response:', response);
 
-        const students = response.data || [];
+        const students = Array.isArray(response.data)
+          ? response.data
+          : [];
 
         this.totalStudents = students.length;
 
@@ -61,22 +89,117 @@ export class TeacherDashboard implements OnInit {
           (student: any) => student.status === 'Inactive'
         ).length;
 
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+        console.log('Total Students:', this.totalStudents);
+        console.log('Active Students:', this.activeStudents);
+        console.log('Inactive Students:', this.inactiveStudents);
+
       },
 
       error: (error) => {
 
+        console.error('Dashboard API Error:', error);
+
         this.isLoading = false;
 
         this.errorMessage =
-          error.error?.message || 'Unable to load dashboard data.';
+          error.error?.message ||
+          'Unable to load dashboard statistics.';
 
-        console.error(error);
+        this.cdr.detectChanges();
 
       }
 
     });
 
   }
+
+
+  // =====================================
+  // LOAD PENDING STUDENT COUNT
+  // =====================================
+
+  loadPendingStudents(): void {
+
+    this.pendingLoading = true;
+    this.pendingErrorMessage = '';
+
+    this.cdr.detectChanges();
+
+    this.studentService.getPendingStudents().subscribe({
+
+      next: (response: any) => {
+
+        console.log('Pending API Response:', response);
+
+        this.pendingStudents = Array.isArray(response.data)
+          ? response.data.length
+          : 0;
+
+        this.pendingLoading = false;
+
+        this.cdr.detectChanges();
+
+        console.log(
+          'Updated Pending Count:',
+          this.pendingStudents
+        );
+
+        console.log(
+          'Updated Pending Loading:',
+          this.pendingLoading
+        );
+
+      },
+
+      error: (error) => {
+
+        console.error('Pending API Error:', error);
+
+        this.pendingLoading = false;
+
+        this.pendingErrorMessage =
+          error.error?.message ||
+          'Unable to fetch pending registrations.';
+
+        this.cdr.detectChanges();
+
+      }
+
+    });
+
+  }
+
+
+  // =====================================
+  // REFRESH DASHBOARD
+  // =====================================
+
+  refreshDashboard(): void {
+
+    this.loadDashboardData();
+    this.loadPendingStudents();
+
+  }
+
+
+  // =====================================
+  // OPEN PENDING STUDENT REQUESTS
+  // =====================================
+
+  viewPendingRequests(): void {
+
+    this.router.navigate(['/teacher/pending-students']);
+
+  }
+
+
+  // =====================================
+  // LOGOUT
+  // =====================================
 
   logout(): void {
 

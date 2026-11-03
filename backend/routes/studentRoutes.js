@@ -1,21 +1,23 @@
 const express = require('express');
+
 const router = express.Router();
 
 // Import student controllers
 const {
-getAllStudents,
-addStudent,
-getStudentById,
-updateStudent,
-deleteStudent,
-updateStudentStatus
+    getAllStudents,
+    addStudent,
+    getStudentById,
+    updateStudent,
+    deleteStudent,
+    updateStudentStatus,
+    getPendingStudents
 } = require('../controllers/studentController');
 
 // Import authentication middleware
 const {
-verifyToken,
-authorizeRoles,
-authorizeStudentAccess
+    verifyToken,
+    authorizeRoles,
+    authorizeStudentAccess
 } = require('../middleware/authMiddleware');
 
 // ==========================================
@@ -24,10 +26,22 @@ authorizeStudentAccess
 // ==========================================
 
 router.get(
-'/',
-verifyToken,
-authorizeRoles('Admin', 'Teacher'),
-getAllStudents
+    '/',
+    verifyToken,
+    authorizeRoles('Admin', 'Teacher'),
+    getAllStudents
+);
+
+// ==========================================
+// GET PENDING STUDENT REGISTRATIONS
+// Admin and Teacher only
+// ==========================================
+
+router.get(
+    '/pending',
+    verifyToken,
+    authorizeRoles('Admin', 'Teacher'),
+    getPendingStudents
 );
 
 // ==========================================
@@ -36,10 +50,10 @@ getAllStudents
 // ==========================================
 
 router.post(
-'/',
-verifyToken,
-authorizeRoles('Admin', 'Teacher'),
-addStudent
+    '/',
+    verifyToken,
+    authorizeRoles('Admin', 'Teacher'),
+    addStudent
 );
 
 // ==========================================
@@ -49,10 +63,10 @@ addStudent
 // ==========================================
 
 router.get(
-'/:id',
-verifyToken,
-authorizeStudentAccess,
-getStudentById
+    '/:id',
+    verifyToken,
+    authorizeStudentAccess,
+    getStudentById
 );
 
 // ==========================================
@@ -61,10 +75,10 @@ getStudentById
 // ==========================================
 
 router.put(
-'/:id',
-verifyToken,
-authorizeRoles('Admin', 'Teacher'),
-updateStudent
+    '/:id',
+    verifyToken,
+    authorizeRoles('Admin', 'Teacher'),
+    updateStudent
 );
 
 // ==========================================
@@ -73,22 +87,38 @@ updateStudent
 // ==========================================
 
 router.delete(
-'/:id',
-verifyToken,
-authorizeRoles('Admin'),
-deleteStudent
+    '/:id',
+    verifyToken,
+    authorizeRoles('Admin'),
+    deleteStudent
 );
 
 // ==========================================
 // UPDATE STUDENT STATUS
+// Admin only
+// ==========================================
+
+router.patch(
+    '/:id/status',
+    verifyToken,
+    authorizeRoles('Admin', 'Teacher'),
+    updateStudentStatus
+);
+
+// ==========================================
+// APPROVE STUDENT REGISTRATION
 // Admin and Teacher only
 // ==========================================
 
 router.patch(
-'/:id/status',
-verifyToken,
-authorizeRoles('Admin', 'Teacher'),
-updateStudentStatus
+    '/:id/approve',
+    verifyToken,
+    authorizeRoles('Admin', 'Teacher'),
+    (req, res, next) => {
+        req.body.status = 'Active';
+        next();
+    },
+    updateStudentStatus
 );
 
 module.exports = router;

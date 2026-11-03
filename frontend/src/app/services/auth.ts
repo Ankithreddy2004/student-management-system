@@ -3,6 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 // ==========================================
+// STUDENT STATUS TYPE
+// ==========================================
+
+export type StudentStatus = 'Pending' | 'Active' | 'Inactive';
+
+// ==========================================
 // AUTH USER INTERFACE
 // ==========================================
 
@@ -12,6 +18,7 @@ export interface AuthUser {
   email: string;
   role: 'Admin' | 'Teacher' | 'Student';
   student_id: number | null;
+  status?: StudentStatus | null;
 }
 
 // ==========================================
@@ -23,6 +30,15 @@ export interface AuthResponse {
   message: string;
   token?: string;
   user?: AuthUser;
+
+  data?: {
+    student_id: number;
+    user_id: number;
+    name: string;
+    email: string;
+    role: 'Student';
+    status: StudentStatus;
+  };
 }
 
 // ==========================================
@@ -81,15 +97,26 @@ export class Auth {
           localStorage.setItem('token', response.token);
 
           // Store logged-in user details
-          localStorage.setItem(
-            'user',
-            JSON.stringify(response.user)
-          );
+          this.setUser(response.user);
 
         }
 
       })
 
+    );
+
+  }
+
+
+  // ==========================================
+  // STORE USER DETAILS
+  // ==========================================
+
+  setUser(user: AuthUser): void {
+
+    localStorage.setItem(
+      'user',
+      JSON.stringify(user)
     );
 
   }
@@ -140,6 +167,65 @@ export class Auth {
     const user = this.getUser();
 
     return user ? user.role : null;
+
+  }
+
+
+  // ==========================================
+  // GET STUDENT STATUS
+  // ==========================================
+
+  getStudentStatus(): StudentStatus | null {
+
+    const user = this.getUser();
+
+    if (!user || user.role !== 'Student') {
+      return null;
+    }
+
+    return user.status ?? null;
+
+  }
+
+
+  // ==========================================
+  // CHECK STUDENT STATUS
+  // ==========================================
+
+  isStudentPending(): boolean {
+
+    return this.getStudentStatus() === 'Pending';
+
+  }
+
+
+  isStudentActive(): boolean {
+
+    return this.getStudentStatus() === 'Active';
+
+  }
+
+
+  isStudentInactive(): boolean {
+
+    return this.getStudentStatus() === 'Inactive';
+
+  }
+
+
+  // ==========================================
+  // CHECK READ-ONLY ACCESS
+  // ==========================================
+
+  isStudentReadOnly(): boolean {
+
+    const user = this.getUser();
+
+    if (!user || user.role !== 'Student') {
+      return false;
+    }
+
+    return user.status !== 'Active';
 
   }
 

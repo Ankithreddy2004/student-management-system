@@ -35,11 +35,26 @@ export class Student {
   deleteStudent(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
-  // UPDATE Student Status
-updateStudentStatus(id: number, status: string): Observable<any> {
-  return this.http.patch<any>(
-    `${this.apiUrl}/${id}/status`,
-    { status });
+
+  // UPDATE student status
+  updateStudentStatus(id: number, status: string): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/${id}/status`,
+      { status }
+    );
+  }
+
+  // GET all pending student registrations
+  getPendingStudents(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/pending`);
+  }
+
+  // APPROVE a pending student
+  approveStudent(id: number): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/${id}/approve`,
+      {}
+    );
   }
 
 }

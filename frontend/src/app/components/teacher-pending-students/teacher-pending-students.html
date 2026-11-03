@@ -1,0 +1,182 @@
+```html
+<div class="page-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+
+    <div>
+      <h2>Pending Student Requests</h2>
+      <p>Review registrations and manage student account status.</p>
+    </div>
+
+    <div class="header-actions">
+
+      <button class="back-btn" (click)="goBack()">
+        ← Dashboard
+      </button>
+
+      <button
+        class="refresh-btn"
+        (click)="loadPendingStudents()"
+        [disabled]="isLoading">
+
+        ↻ Refresh
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- Summary -->
+  <div class="summary-card">
+
+    <div class="summary-icon">👨‍🎓</div>
+
+    <div>
+      <h3>{{ pendingStudents.length }}</h3>
+      <p>Pending Registrations</p>
+    </div>
+
+  </div>
+
+
+  <!-- Success Message -->
+  <div class="success-message" *ngIf="successMessage">
+    ✓ {{ successMessage }}
+  </div>
+
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="errorMessage">
+    ⚠ {{ errorMessage }}
+  </div>
+
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="isLoading">
+    Loading pending students...
+  </div>
+
+
+  <!-- Students Table -->
+  <div
+    class="table-container"
+    *ngIf="!isLoading && pendingStudents.length > 0">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Student Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Course</th>
+          <th>Registration Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+
+      <tbody>
+
+        <tr *ngFor="let student of pendingStudents">
+
+          <td>{{ student.id }}</td>
+
+          <td class="student-name">
+            {{ student.name }}
+          </td>
+
+          <td>{{ student.email }}</td>
+
+          <td>{{ student.phone }}</td>
+
+          <td>{{ student.course }}</td>
+
+          <td>
+            {{ student.created_at | date:'dd MMM yyyy' }}
+          </td>
+
+          <td>
+            <span class="status-badge">
+              {{ student.status }}
+            </span>
+          </td>
+
+          <td>
+
+            <div class="action-buttons">
+
+              <!-- Activate -->
+              <button
+                class="activate-btn"
+                (click)="approveStudent(student.id)"
+                [disabled]="approvingStudentId === student.id ||
+                           inactiveStudentId === student.id">
+
+                {{
+                  approvingStudentId === student.id
+                    ? 'Activating...'
+                    : 'Activate'
+                }}
+
+              </button>
+
+
+              <!-- Make Inactive -->
+              <button
+                class="inactive-btn"
+                (click)="makeInactive(student.id)"
+                [disabled]="approvingStudentId === student.id ||
+                           inactiveStudentId === student.id">
+
+                {{
+                  inactiveStudentId === student.id
+                    ? 'Updating...'
+                    : 'Make Inactive'
+                }}
+
+              </button>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+  <!-- Empty State -->
+  <div
+    class="empty-state"
+    *ngIf="!isLoading && pendingStudents.length === 0">
+
+    <div class="empty-icon">✓</div>
+
+    <h3>No Pending Requests</h3>
+
+    <p>
+      There are currently no student registrations waiting for approval.
+    </p>
+
+    <button
+      class="refresh-btn"
+      (click)="loadPendingStudents()">
+
+      Refresh List
+
+    </button>
+
+  </div>
+
+</div>
+```

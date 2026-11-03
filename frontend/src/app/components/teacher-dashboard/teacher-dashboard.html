@@ -6,13 +6,14 @@
     <div class="brand">
       <div class="logo">SMS</div>
 
-      <div>
+      <div class="brand-info">
         <h2>Student Management System</h2>
         <p>Teacher Portal</p>
       </div>
     </div>
 
     <button class="logout-btn" (click)="logout()">
+      <span>↪</span>
       Logout
     </button>
 
@@ -22,25 +23,30 @@
   <!-- Main Content -->
   <main class="dashboard-content">
 
-    <!-- Welcome -->
+    <!-- Welcome Section -->
     <section class="welcome-section">
 
-      <div>
+      <div class="welcome-text">
+        <span class="welcome-label">TEACHER DASHBOARD</span>
+
         <h1>Welcome, {{ teacherName }}!</h1>
 
         <p>
-          Manage students, monitor their information
-          and maintain their academic records.
+          Manage students, monitor attendance,
+          maintain academic records and manage marks.
         </p>
       </div>
 
-      <div class="teacher-icon">T</div>
+      <div class="teacher-icon">
+        T
+      </div>
 
     </section>
 
 
-    <!-- Error -->
+    <!-- Error Message -->
     <div class="error-message" *ngIf="errorMessage">
+      <span>⚠</span>
       {{ errorMessage }}
     </div>
 
@@ -48,42 +54,63 @@
     <!-- Statistics -->
     <section class="stats-grid">
 
+      <!-- Total Students -->
       <div class="stat-card">
-        <div class="stat-icon purple">S</div>
 
-        <div>
+        <div class="stat-icon purple">
+          <span>👨‍🎓</span>
+        </div>
+
+        <div class="stat-info">
           <p>Total Students</p>
-
-          <h2>
-            {{ isLoading ? '...' : totalStudents }}
-          </h2>
+          <h2>{{ isLoading ? '...' : totalStudents }}</h2>
         </div>
+
       </div>
 
 
+      <!-- Active Students -->
       <div class="stat-card">
-        <div class="stat-icon green">A</div>
 
-        <div>
+        <div class="stat-icon green">
+          <span>✓</span>
+        </div>
+
+        <div class="stat-info">
           <p>Active Students</p>
-
-          <h2>
-            {{ isLoading ? '...' : activeStudents }}
-          </h2>
+          <h2>{{ isLoading ? '...' : activeStudents }}</h2>
         </div>
+
       </div>
 
 
+      <!-- Inactive Students -->
       <div class="stat-card">
-        <div class="stat-icon red">I</div>
 
-        <div>
-          <p>Inactive Students</p>
-
-          <h2>
-            {{ isLoading ? '...' : inactiveStudents }}
-          </h2>
+        <div class="stat-icon red">
+          <span>⊘</span>
         </div>
+
+        <div class="stat-info">
+          <p>Inactive Students</p>
+          <h2>{{ isLoading ? '...' : inactiveStudents }}</h2>
+        </div>
+
+      </div>
+
+
+      <!-- Pending Students -->
+      <div class="stat-card">
+
+        <div class="stat-icon orange">
+          <span>◷</span>
+        </div>
+
+        <div class="stat-info">
+          <p>Pending Registrations</p>
+          <h2>{{ pendingStudents }}</h2>
+        </div>
+
       </div>
 
     </section>
@@ -93,30 +120,44 @@
     <section class="management-section">
 
       <div class="section-heading">
-        <h2>Student Management</h2>
 
-        <p>
-          Manage registered student information.
-        </p>
+        <div>
+          <span class="section-label">MANAGEMENT</span>
+          <h2>Student Management</h2>
+
+          <p>
+            Manage student registrations and academic information.
+          </p>
+        </div>
+
       </div>
 
 
+      <!-- Action Cards -->
       <div class="action-grid">
+
 
         <!-- View Students -->
         <div class="action-card">
 
-          <div class="action-icon">👨‍🎓</div>
+          <div class="action-card-top">
+            <div class="action-icon students-icon">
+              👨‍🎓
+            </div>
+
+            <span class="card-number">01</span>
+          </div>
 
           <h3>View Students</h3>
 
           <p>
-            View all registered students and
-            their information.
+            View registered students and manage
+            their information and account status.
           </p>
 
           <a routerLink="/students" class="action-btn">
             View Students
+            <span>→</span>
           </a>
 
         </div>
@@ -125,20 +166,124 @@
         <!-- Add Student -->
         <div class="action-card">
 
-          <div class="action-icon">➕</div>
+          <div class="action-card-top">
+            <div class="action-icon add-icon">
+              +
+            </div>
+
+            <span class="card-number">02</span>
+          </div>
 
           <h3>Add Student</h3>
 
           <p>
-            Register a new student and
-            add their information.
+            Register a new student and add
+            their personal and academic information.
           </p>
 
           <a routerLink="/add-student" class="action-btn">
             Add Student
+            <span>→</span>
           </a>
 
         </div>
+
+
+        <!-- Pending Student Requests -->
+        <div class="action-card pending-card">
+
+          <div class="action-card-top">
+            <div class="action-icon pending-icon">
+              📋
+            </div>
+
+            <span class="card-number">03</span>
+          </div>
+
+          <h3>Pending Student Requests</h3>
+
+          <p>
+            Review new student registrations
+            and approve their accounts.
+          </p>
+
+          <div class="pending-count">
+             <span class="pending-dot"></span>
+
+            {{ pendingLoading ? 'Loading...' : pendingStudents + ' Pending' }}
+          </div>
+
+          <button
+            class="action-btn pending-btn"
+            (click)="viewPendingRequests()">
+
+            View Requests
+            <span>→</span>
+
+          </button>
+
+        </div>
+
+
+        <!-- Attendance Management -->
+        <div class="action-card">
+
+          <div class="action-card-top">
+            <div class="action-icon attendance-icon">
+              📅
+            </div>
+
+            <span class="card-number">04</span>
+          </div>
+
+          <h3>Manage Attendance</h3>
+
+          <p>
+            Record daily attendance, view attendance
+            history and update attendance records.
+          </p>
+
+          <a
+            routerLink="/teacher/attendance"
+            class="action-btn attendance-btn">
+
+            Manage Attendance
+            <span>→</span>
+
+          </a>
+
+        </div>
+
+
+        <!-- Marks Management -->
+        <div class="action-card">
+
+          <div class="action-card-top">
+            <div class="action-icon marks-icon">
+              📝
+            </div>
+
+            <span class="card-number">05</span>
+          </div>
+
+          <h3>Manage Marks</h3>
+
+          <p>
+            Add examination marks, update results
+            and monitor student academic performance.
+          </p>
+
+          <a
+            routerLink="/teacher/marks"
+            class="action-btn marks-btn">
+
+            Manage Marks
+            <span>→</span>
+
+          </a>
+
+        </div>
+
 
       </div>
 

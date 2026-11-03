@@ -1,6 +1,6 @@
 <div class="dashboard-container">
 
-  <!-- Header -->
+  <!-- HEADER -->
   <header class="dashboard-header">
 
     <div class="brand">
@@ -18,15 +18,14 @@
 
   </header>
 
-
-  <!-- Main Content -->
+  <!-- MAIN CONTENT -->
   <main class="dashboard-content">
 
-    <!-- Welcome Section -->
+    <!-- WELCOME SECTION -->
     <section class="welcome-section">
 
       <div>
-        <h1>Welcome, {{ student?.name }}!</h1>
+        <h1>Welcome, {{ authUser?.name || 'Student' }}!</h1>
 
         <p>
           Welcome to your student dashboard.
@@ -35,80 +34,322 @@
       </div>
 
       <div class="student-icon">
-        {{ student?.name?.charAt(0) }}
+        {{ authUser?.name?.charAt(0) || 'S' }}
       </div>
 
     </section>
 
+    <!-- PENDING MESSAGE -->
+    <section
+      class="status-message pending-message"
+      *ngIf="studentStatus === 'Pending'">
 
-    <!-- Loading -->
-    <div class="loading" *ngIf="isLoading">
+      <h3>Registration Pending</h3>
+
+      <p>
+        Your registration is waiting for approval from your teacher
+        or administrator. You can view your profile while waiting.
+      </p>
+
+    </section>
+
+    <!-- INACTIVE MESSAGE -->
+    <section
+      class="status-message inactive-message"
+      *ngIf="studentStatus === 'Inactive'">
+
+      <h3>Account Inactive</h3>
+
+      <p>
+        Your account is currently inactive.
+        You can view your academic information in read-only mode.
+        Contact your teacher or administrator for assistance.
+      </p>
+
+    </section>
+
+    <!-- ACTIVE MESSAGE -->
+    <section
+      class="status-message active-message"
+      *ngIf="studentStatus === 'Active'">
+
+      <h3>Account Active</h3>
+
+      <p>Your student account has been approved.</p>
+
+    </section>
+
+    <!-- PROFILE LOADING -->
+    <div class="loading" *ngIf="isLoading && !student">
       Loading your profile...
     </div>
 
-
-    <!-- Error -->
+    <!-- PROFILE ERROR -->
     <div class="error-message" *ngIf="errorMessage">
       {{ errorMessage }}
+
+      <button (click)="loadStudentDetails()">
+        Try Again
+      </button>
     </div>
 
-
-    <!-- Student Details -->
-    <section class="profile-section" *ngIf="student">
+    <!-- STUDENT PROFILE -->
+    <section class="profile-section" *ngIf="!isLoading && student">
 
       <div class="section-heading">
+
         <div>
           <h2>My Profile</h2>
           <p>Your registered student information</p>
         </div>
 
-        <span class="status-badge"
-          [class.inactive]="student.status === 'Inactive'">
-          {{ student.status }}
-        </span>
-      </div>
+        <span
+          class="status-badge"
+          [ngClass]="student.status.toLowerCase()">
 
+          {{ student.status }}
+
+        </span>
+
+      </div>
 
       <div class="profile-grid">
 
-        <!-- Student ID -->
         <div class="detail-card">
           <span>Student ID</span>
           <h3>{{ student.id }}</h3>
         </div>
 
-        <!-- Full Name -->
         <div class="detail-card">
           <span>Full Name</span>
           <h3>{{ student.name }}</h3>
         </div>
 
-        <!-- Email -->
         <div class="detail-card">
           <span>Email Address</span>
           <h3>{{ student.email }}</h3>
         </div>
 
-        <!-- Phone -->
         <div class="detail-card">
           <span>Phone Number</span>
           <h3>{{ student.phone }}</h3>
         </div>
 
-        <!-- Course -->
         <div class="detail-card">
           <span>Course</span>
           <h3>{{ student.course }}</h3>
         </div>
 
-        <!-- Account Status -->
         <div class="detail-card">
           <span>Account Status</span>
-
-          <h3 [class.inactive-text]="student.status === 'Inactive'">
-            {{ student.status }}
-          </h3>
+          <h3>{{ student.status }}</h3>
         </div>
+
+      </div>
+
+    </section>
+
+    <!-- ATTENDANCE SECTION -->
+    <section class="profile-section">
+
+      <div class="section-heading">
+
+        <div>
+          <h2>My Attendance</h2>
+          <p>View your attendance records and percentage.</p>
+        </div>
+
+      </div>
+
+      <!-- ATTENDANCE LOADING -->
+      <div class="loading" *ngIf="attendanceLoading">
+        Loading attendance...
+      </div>
+
+      <!-- ATTENDANCE ERROR -->
+      <div class="error-message" *ngIf="attendanceError">
+        {{ attendanceError }}
+
+        <button (click)="loadAttendance()">
+          Try Again
+        </button>
+      </div>
+
+      <!-- ATTENDANCE SUMMARY -->
+      <div *ngIf="!attendanceLoading && !attendanceError">
+
+        <div class="profile-grid">
+
+          <div class="detail-card">
+            <span>Total Classes</span>
+            <h3>{{ totalClasses }}</h3>
+          </div>
+
+          <div class="detail-card">
+            <span>Present Classes</span>
+            <h3>{{ presentClasses }}</h3>
+          </div>
+
+          <div class="detail-card">
+            <span>Absent Classes</span>
+            <h3>{{ absentClasses }}</h3>
+          </div>
+
+          <div class="detail-card">
+            <span>Attendance Percentage</span>
+            <h3>{{ attendancePercentage }}%</h3>
+          </div>
+
+        </div>
+
+        <!-- ATTENDANCE HISTORY -->
+        <h3 class="sub-heading">Attendance History</h3>
+
+        <div class="table-container"
+          *ngIf="attendanceRecords.length > 0; else noAttendance">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Subject Code</th>
+                <th>Status</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr *ngFor="let record of attendanceRecords">
+
+                <td>
+                  {{ record.attendance_date | date:'dd MMM yyyy' }}
+                </td>
+
+                <td>{{ record.subject_name }}</td>
+
+                <td>{{ record.subject_code }}</td>
+
+                <td>
+                  <span
+                    class="status-badge"
+                    [ngClass]="record.status.toLowerCase()">
+
+                    {{ record.status }}
+
+                  </span>
+                </td>
+
+                <td>{{ record.remarks || '-' }}</td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <ng-template #noAttendance>
+          <p class="empty-message">
+            No attendance records available yet.
+          </p>
+        </ng-template>
+
+      </div>
+
+    </section>
+
+    <!-- MARKS SECTION -->
+    <section class="profile-section">
+
+      <div class="section-heading">
+
+        <div>
+          <h2>My Marks</h2>
+          <p>View your subject-wise academic performance.</p>
+        </div>
+
+      </div>
+
+      <!-- MARKS LOADING -->
+      <div class="loading" *ngIf="marksLoading">
+        Loading marks...
+      </div>
+
+      <!-- MARKS ERROR -->
+      <div class="error-message" *ngIf="marksError">
+        {{ marksError }}
+
+        <button (click)="loadMarks()">
+          Try Again
+        </button>
+      </div>
+
+      <!-- MARKS TABLE -->
+      <div *ngIf="!marksLoading && !marksError">
+
+        <div class="table-container"
+          *ngIf="marksRecords.length > 0; else noMarks">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Subject Code</th>
+                <th>Exam</th>
+                <th>Exam Type</th>
+                <th>Exam Date</th>
+                <th>Obtained Marks</th>
+                <th>Maximum Marks</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr *ngFor="let mark of marksRecords">
+
+                <td>{{ mark.subject_name }}</td>
+
+                <td>{{ mark.subject_code }}</td>
+
+                <td>{{ mark.exam_name }}</td>
+
+                <td>{{ mark.exam_type }}</td>
+
+                <td>
+                  {{ mark.exam_date ? (mark.exam_date | date:'dd MMM yyyy') : '-' }}
+                </td>
+
+                <td>{{ mark.obtained_marks }}</td>
+
+                <td>{{ mark.max_marks }}</td>
+
+                <td>
+                  {{
+                    mark.max_marks > 0
+                      ? ((mark.obtained_marks / mark.max_marks) * 100 | number:'1.1-2') + '%'
+                      : '-'
+                  }}
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <ng-template #noMarks>
+          <p class="empty-message">
+            No examination results available yet.
+          </p>
+        </ng-template>
 
       </div>
 
