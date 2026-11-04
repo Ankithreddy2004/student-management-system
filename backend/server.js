@@ -18,13 +18,13 @@ const app = express();
 app.set('etag', false);
 
 app.use((req, res, next) => {
-    res.setHeader(
-        'Cache-Control',
-        'no-store, no-cache, must-revalidate, proxy-revalidate'
-    );
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    next();
+res.setHeader(
+'Cache-Control',
+'no-store, no-cache, must-revalidate, proxy-revalidate'
+);
+res.setHeader('Pragma', 'no-cache');
+res.setHeader('Expires', '0');
+next();
 });
 
 // Middleware
@@ -33,7 +33,7 @@ app.use(express.json());
 
 // Test API
 app.get('/', (req, res) => {
-    res.send('Student Management API is Running!');
+res.send('Student Management API is Running!');
 });
 
 // API Routes
@@ -47,5 +47,5 @@ app.use('/api/marks', marksRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+console.log(`Server running on port ${PORT}`);
 });

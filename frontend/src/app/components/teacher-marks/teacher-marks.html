@@ -1,0 +1,499 @@
+<div class="marks-container">
+
+  <!-- HEADER -->
+
+  <header class="page-header">
+
+
+<div>
+  <span class="page-label">TEACHER PORTAL</span>
+  <h1>Marks Management</h1>
+  <p>Manage examinations and student academic results.</p>
+</div>
+
+<a routerLink="/teacher-dashboard" class="back-btn">
+  ← Dashboard
+</a>
+
+
+  </header>
+
+  <!-- MESSAGES -->
+
+  <div class="message success-message" *ngIf="successMessage">
+    ✓ {{ successMessage }}
+  </div>
+
+  <div class="message error-message" *ngIf="errorMessage">
+    ⚠ {{ errorMessage }}
+  </div>
+
+  <!-- SUBJECT SELECTION -->
+
+  <section class="selection-card">
+
+```
+<h2>Select Subject</h2>
+
+<div class="form-group">
+
+  <label>Assigned Subject</label>
+
+  <select
+    [(ngModel)]="selectedSubjectId"
+    (change)="onSubjectChange()">
+
+    <option [ngValue]="null">Select a subject</option>
+
+    <option
+      *ngFor="let subject of subjects"
+      [ngValue]="subject.id">
+
+      {{ subject.subject_name }}
+      ({{ subject.subject_code }})
+
+    </option>
+
+  </select>
+
+  <small *ngIf="isLoadingSubjects">
+    Loading subjects...
+  </small>
+
+  <small *ngIf="!isLoadingSubjects && subjects.length === 0">
+    No assigned subjects found.
+  </small>
+
+</div>
+
+
+  </section>
+
+  <!-- EXAM MANAGEMENT -->
+
+  <section class="exam-section" *ngIf="selectedSubjectId">
+
+
+<div class="section-header">
+
+  <div>
+    <span class="section-label">EXAMINATIONS</span>
+    <h2>Manage Examinations</h2>
+  </div>
+
+  <button
+    class="primary-btn"
+    (click)="openExamForm()">
+
+    + Create Examination
+
+  </button>
+
+</div>
+
+
+<!-- EXAM FORM -->
+
+<div class="exam-form-card" *ngIf="showExamForm">
+
+  <h3>
+    {{ isEditingExam ? 'Update Examination' : 'Create Examination' }}
+  </h3>
+
+  <div class="form-grid">
+
+    <div class="form-group">
+
+      <label>Exam Name</label>
+
+      <input
+        type="text"
+        [(ngModel)]="examForm.exam_name"
+        placeholder="Internal Examination 1">
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Exam Type</label>
+
+      <select [(ngModel)]="examForm.exam_type">
+
+        <option value="Internal">Internal</option>
+        <option value="Midterm">Midterm</option>
+        <option value="Final">Final</option>
+        <option value="Practical">Practical</option>
+        <option value="Assignment">Assignment</option>
+
+      </select>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Exam Date</label>
+
+      <input
+        type="date"
+        [(ngModel)]="examForm.exam_date">
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>Maximum Marks</label>
+
+      <input
+        type="number"
+        min="1"
+        max="9999.99"
+        step="0.01"
+        [(ngModel)]="examForm.max_marks">
+
+    </div>
+
+  </div>
+
+
+  <div class="form-actions">
+
+    <button
+      class="primary-btn"
+      (click)="isEditingExam ? updateExam() : saveExam()"
+      [disabled]="isSaving">
+
+      {{ isSaving ? 'Saving...' : (isEditingExam ? 'Update Exam' : 'Create Exam') }}
+
+    </button>
+
+    <button
+      class="cancel-btn"
+      (click)="showExamForm = false">
+
+      Cancel
+
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- EXAM LIST -->
+
+<div class="exam-list-card">
+
+  <h3>Available Examinations</h3>
+
+  <div *ngIf="isLoadingExams" class="loading">
+    Loading examinations...
+  </div>
+
+  <div *ngIf="!isLoadingExams && exams.length === 0" class="empty-state">
+    No examinations available. Create your first examination.
+  </div>
+
+  <div class="table-wrapper" *ngIf="!isLoadingExams && exams.length > 0">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Exam Name</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Maximum Marks</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let exam of exams">
+
+          <td>{{ exam.exam_name }}</td>
+
+          <td>{{ exam.exam_type }}</td>
+
+          <td>{{ exam.exam_date || '-' }}</td>
+
+          <td>{{ exam.max_marks }}</td>
+
+          <td class="action-buttons">
+
+            <button
+              class="edit-btn"
+              (click)="editExam(exam)">
+
+              Edit
+
+            </button>
+
+            <button
+              class="delete-btn"
+              (click)="deleteExam(exam.id)">
+
+              Delete
+
+            </button>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- MARKS ENTRY -->
+
+  <section class="marks-entry-section" *ngIf="selectedSubjectId && exams.length > 0">
+
+
+<div class="section-header">
+
+  <div>
+    <span class="section-label">ACADEMIC RECORDS</span>
+    <h2>Student Marks</h2>
+  </div>
+
+</div>
+
+
+<div class="selection-card">
+
+  <div class="form-group">
+
+    <label>Select Examination</label>
+
+    <select
+      [(ngModel)]="selectedExamId"
+      (change)="clearMessages()">
+
+      <option [ngValue]="null">Select examination</option>
+
+      <option
+        *ngFor="let exam of exams"
+        [ngValue]="exam.id">
+
+        {{ exam.exam_name }} -
+        {{ exam.exam_type }} ({{ exam.max_marks }} marks)
+
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <div class="form-actions">
+
+    <button
+      class="primary-btn"
+      (click)="loadStudents()"
+      [disabled]="!selectedExamId || isLoadingStudents">
+
+      {{ isLoadingStudents ? 'Loading Students...' : 'Load Students' }}
+
+    </button>
+
+    <button
+      class="secondary-btn"
+      (click)="viewMarks()"
+      [disabled]="!selectedExamId || isLoadingRecords">
+
+      {{ isLoadingRecords ? 'Loading Records...' : 'View Saved Marks' }}
+
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- STUDENT MARKS ENTRY TABLE -->
+
+<div class="table-card" *ngIf="students.length > 0 && !showRecords">
+
+  <div class="table-heading">
+
+    <h3>Enter Student Marks</h3>
+
+    <span>{{ students.length }} Students</span>
+
+  </div>
+
+  <div class="table-wrapper">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Email</th>
+          <th>Obtained Marks</th>
+          <th>Remarks</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let student of students">
+
+          <td>{{ student.id }}</td>
+
+          <td>{{ student.name }}</td>
+
+          <td>{{ student.email }}</td>
+
+          <td>
+
+            <input
+                type="number"
+                min="0"
+                [max]="selectedExam?.max_marks || 9999"
+                step="0.01"
+                [(ngModel)]="student.obtained_marks"
+                placeholder="Enter marks">
+
+          </td>
+
+          <td>
+
+            <input
+              type="text"
+              [(ngModel)]="student.remarks"
+              placeholder="Remarks">
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+  <div class="save-section">
+
+    <button
+      class="primary-btn save-btn"
+      (click)="saveMarks()"
+      [disabled]="isSaving">
+
+      {{ isSaving ? 'Saving Marks...' : 'Save All Marks' }}
+
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- SAVED MARKS RECORDS -->
+
+<div class="table-card" *ngIf="showRecords">
+
+  <div class="table-heading">
+
+    <h3>Saved Examination Results</h3>
+
+    <span>{{ marksRecords.length }} Records</span>
+
+  </div>
+
+  <div *ngIf="isLoadingRecords" class="loading">
+    Loading marks records...
+  </div>
+
+  <div
+    *ngIf="!isLoadingRecords && marksRecords.length === 0"
+    class="empty-state">
+
+    No marks records found for this examination.
+
+  </div>
+
+  <div class="table-wrapper" *ngIf="!isLoadingRecords && marksRecords.length > 0">
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Email</th>
+          <th>Obtained Marks</th>
+          <th>Maximum Marks</th>
+          <th>Remarks</th>
+          <th>Actions</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let record of marksRecords">
+
+          <td>{{ record.student_id }}</td>
+
+          <td>{{ record.student_name }}</td>
+
+          <td>{{ record.email }}</td>
+
+          <td>{{ record.obtained_marks }}</td>
+
+          <td>{{ record.max_marks }}</td>
+
+          <td>{{ record.remarks || '-' }}</td>
+
+          <td class="action-buttons">
+
+            <button
+              class="edit-btn"
+              (click)="editMarks(record)">
+
+              Edit
+
+            </button>
+
+            <button
+              class="delete-btn"
+              (click)="deleteMarks(record.mark_id)">
+
+              Delete
+
+            </button>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+  </section>
+
+</div>

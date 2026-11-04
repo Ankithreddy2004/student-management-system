@@ -11,6 +11,7 @@ import { TeacherDashboard } from './components/teacher-dashboard/teacher-dashboa
 import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
 import { TeacherPendingStudents } from './components/teacher-pending-students/teacher-pending-students';
 import { TeacherAttendance } from './components/teacher-attendance/teacher-attendance';
+import { TeacherMarks } from './components/teacher-marks/teacher-marks';
 
 // Authentication components
 import { Login } from './components/login/login';
@@ -105,6 +106,12 @@ redirectTo: 'login'
 {
   path: 'teacher/attendance',
   component: TeacherAttendance,
+  canActivate: [authGuard, roleGuard],
+  data: { roles: ['Teacher'] }
+},
+{
+  path: 'teacher/marks',
+  component: TeacherMarks,
   canActivate: [authGuard, roleGuard],
   data: { roles: ['Teacher'] }
 },

@@ -1,0 +1,274 @@
+.marks-container {
+min-height: 100vh;
+background: #f6f5fc;
+padding: 35px 6%;
+color: #25233a;
+font-family: Arial, sans-serif;
+}
+
+.page-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 30px;
+}
+
+.page-label,
+.section-label {
+color: #7655d9;
+font-size: 12px;
+font-weight: 700;
+letter-spacing: 1.5px;
+}
+
+.page-header h1 {
+margin: 8px 0;
+font-size: 30px;
+}
+
+.page-header p {
+color: #77748b;
+}
+
+.back-btn {
+text-decoration: none;
+background: white;
+color: #6846ca;
+padding: 12px 18px;
+border-radius: 9px;
+font-weight: 600;
+}
+
+.selection-card,
+.exam-form-card,
+.exam-list-card,
+.table-card {
+background: white;
+padding: 25px;
+border-radius: 14px;
+margin-bottom: 25px;
+box-shadow: 0 5px 20px rgba(45, 35, 90, 0.05);
+}
+
+.selection-card h2,
+.section-header h2 {
+margin-top: 0;
+}
+
+.form-group {
+display: flex;
+flex-direction: column;
+gap: 9px;
+margin-bottom: 18px;
+}
+
+.form-group label {
+font-weight: 600;
+font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+table input {
+width: 100%;
+padding: 12px;
+border: 1px solid #dedbea;
+border-radius: 8px;
+outline: none;
+background: #fff;
+box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+table input:focus {
+border-color: #7655d9;
+box-shadow: 0 0 0 3px rgba(118, 85, 217, 0.1);
+}
+
+.section-header,
+.table-heading {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+}
+
+.exam-section,
+.marks-entry-section {
+margin-top: 30px;
+}
+
+.form-grid {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 15px 20px;
+}
+
+.form-actions {
+display: flex;
+gap: 12px;
+flex-wrap: wrap;
+}
+
+.primary-btn,
+.secondary-btn,
+.cancel-btn,
+.edit-btn,
+.delete-btn {
+border: none;
+border-radius: 8px;
+padding: 11px 17px;
+font-weight: 600;
+cursor: pointer;
+}
+
+.primary-btn {
+background: #7655d9;
+color: white;
+}
+
+.primary-btn:hover {
+background: #6240c4;
+}
+
+.secondary-btn {
+background: #e9e3fa;
+color: #6846ca;
+}
+
+.cancel-btn {
+background: #eeeef3;
+color: #555;
+}
+
+.edit-btn {
+background: #e7f1ff;
+color: #2868b2;
+}
+
+.delete-btn {
+background: #ffe8e8;
+color: #d33d3d;
+}
+
+button:disabled {
+opacity: 0.6;
+cursor: not-allowed;
+}
+
+.table-wrapper {
+width: 100%;
+overflow-x: auto;
+}
+
+table {
+width: 100%;
+border-collapse: collapse;
+min-width: 750px;
+}
+
+th {
+background: #f5f2fc;
+color: #62518d;
+font-size: 13px;
+text-align: left;
+}
+
+th,
+td {
+padding: 15px 12px;
+border-bottom: 1px solid #eeedf3;
+}
+
+td {
+font-size: 14px;
+}
+
+tr:hover td {
+background: #faf9fe;
+}
+
+.action-buttons {
+display: flex;
+gap: 7px;
+}
+
+.table-heading span {
+background: #eee8fc;
+color: #6846ca;
+padding: 7px 12px;
+border-radius: 20px;
+font-size: 13px;
+}
+
+.save-section {
+display: flex;
+justify-content: flex-end;
+margin-top: 20px;
+}
+
+.save-btn {
+padding: 13px 25px;
+}
+
+.message {
+padding: 14px 18px;
+margin-bottom: 18px;
+border-radius: 8px;
+}
+
+.success-message {
+background: #e7f8ee;
+color: #20864b;
+}
+
+.error-message {
+background: #ffeded;
+color: #c83232;
+}
+
+.loading {
+padding: 25px;
+text-align: center;
+color: #7655d9;
+}
+
+.empty-state {
+text-align: center;
+padding: 30px;
+color: #88849b;
+background: #faf9fd;
+border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+
+.marks-container {
+padding: 20px 4%;
+}
+
+.page-header {
+align-items: flex-start;
+gap: 15px;
+flex-direction: column;
+}
+
+.form-grid {
+grid-template-columns: 1fr;
+}
+
+.section-header {
+align-items: flex-start;
+gap: 15px;
+flex-direction: column;
+}
+
+.selection-card,
+.exam-form-card,
+.exam-list-card,
+.table-card {
+padding: 17px;
+}
+
+}
