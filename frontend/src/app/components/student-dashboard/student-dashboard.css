@@ -1,3 +1,4 @@
+
 /* ==============================
    DASHBOARD CONTAINER
 ================================ */
@@ -196,6 +197,32 @@
 }
 
 /* ==============================
+   PROFILE ACTIONS
+================================ */
+
+.profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edit-profile-btn {
+  background: #6842c2;
+  color: white;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.edit-profile-btn:hover {
+  background: #512da8;
+  box-shadow: 0 4px 12px rgba(104, 66, 194, 0.2);
+}
+
+/* ==============================
    PROFILE GRID / SUMMARY CARDS
 ================================ */
 
@@ -265,6 +292,152 @@
 }
 
 /* ==============================
+   EDIT PROFILE FORM
+================================ */
+
+.edit-profile-form {
+  background: #faf9ff;
+  border: 1px solid #eee9fc;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.edit-profile-form h3 {
+  color: #513a91;
+  font-size: 18px;
+  margin: 0 0 7px;
+}
+
+.form-description {
+  color: #89849b;
+  font-size: 13px;
+  margin: 0 0 22px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.form-group label {
+  color: #513a91;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #ddd5f1;
+  border-radius: 8px;
+  outline: none;
+  background: white;
+  color: #33265c;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #6842c2;
+  box-shadow: 0 0 0 3px rgba(104, 66, 194, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #aaa5ba;
+}
+
+/* FORM BUTTONS */
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.save-btn {
+  background: #6842c2;
+  color: white;
+  border: none;
+  padding: 11px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.save-btn:hover {
+  background: #512da8;
+}
+
+.cancel-btn {
+  background: #e9e5f2;
+  color: #513a91;
+  border: none;
+  padding: 11px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cancel-btn:hover {
+  background: #dcd4ef;
+}
+
+.save-btn:disabled,
+.cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==============================
+   SUCCESS MESSAGE
+================================ */
+
+.success-message {
+  padding: 14px 16px;
+  background: #eaf9ef;
+  color: #197a40;
+  border: 1px solid #c9efd6;
+  border-radius: 9px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+/* ==============================
+   ERROR MESSAGE
+================================ */
+
+.error-message {
+  padding: 15px;
+  background: #fff0f0;
+  color: #c03939;
+  border-radius: 9px;
+  margin: 15px 0;
+  font-size: 14px;
+}
+
+.error-message button {
+  display: block;
+  margin-top: 12px;
+  padding: 9px 17px;
+  background: #6842c2;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+/* ==============================
    TABLES
 ================================ */
 
@@ -316,30 +489,6 @@ tbody tr:hover {
   color: #6842c2;
   font-size: 14px;
   font-weight: 500;
-}
-
-/* ==============================
-   ERROR MESSAGE
-================================ */
-
-.error-message {
-  padding: 15px;
-  background: #fff0f0;
-  color: #c03939;
-  border-radius: 9px;
-  margin: 15px 0;
-  font-size: 14px;
-}
-
-.error-message button {
-  display: block;
-  margin-top: 12px;
-  padding: 9px 17px;
-  background: #6842c2;
-  color: white;
-  border: none;
-  border-radius: 7px;
-  cursor: pointer;
 }
 
 /* ==============================
@@ -407,6 +556,18 @@ tbody tr:hover {
   .section-heading {
     align-items: flex-start;
     gap: 12px;
+  }
+
+  .profile-actions {
+    flex-wrap: wrap;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-wrap: wrap;
   }
 
   .logout-btn {

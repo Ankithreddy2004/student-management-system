@@ -1,3 +1,4 @@
+
 <div class="dashboard-container">
 
   <!-- HEADER -->
@@ -25,7 +26,7 @@
     <section class="welcome-section">
 
       <div>
-        <h1>Welcome, {{ authUser?.name || 'Student' }}!</h1>
+        <h1>Welcome, {{ student?.name || authUser?.name || 'Student' }}!</h1>
 
         <p>
           Welcome to your student dashboard.
@@ -34,7 +35,7 @@
       </div>
 
       <div class="student-icon">
-        {{ authUser?.name?.charAt(0) || 'S' }}
+        {{ student?.name?.charAt(0) || 'S' }}
       </div>
 
     </section>
@@ -96,6 +97,7 @@
     <!-- STUDENT PROFILE -->
     <section class="profile-section" *ngIf="!isLoading && student">
 
+      <!-- PROFILE HEADING -->
       <div class="section-heading">
 
         <div>
@@ -103,16 +105,119 @@
           <p>Your registered student information</p>
         </div>
 
-        <span
-          class="status-badge"
-          [ngClass]="student.status.toLowerCase()">
+        <div class="profile-actions">
 
-          {{ student.status }}
+          <span
+            class="status-badge"
+            [ngClass]="student.status.toLowerCase()">
 
-        </span>
+            {{ student.status }}
+
+          </span>
+
+          <!-- EDIT PROFILE BUTTON -->
+          <button
+            class="edit-profile-btn"
+            *ngIf="canEditProfile && !isEditing"
+            (click)="openEditProfile()">
+
+            Edit Profile
+
+          </button>
+
+        </div>
 
       </div>
 
+      <!-- PROFILE SUCCESS MESSAGE -->
+      <div class="success-message" *ngIf="profileSuccess">
+        {{ profileSuccess }}
+      </div>
+
+      <!-- PROFILE ERROR MESSAGE -->
+      <div class="error-message" *ngIf="profileError">
+        {{ profileError }}
+      </div>
+
+      <!-- EDIT PROFILE FORM -->
+      <div class="edit-profile-form" *ngIf="isEditing">
+
+        <h3>Edit Your Information</h3>
+
+        <p class="form-description">
+          Update your personal information below.
+        </p>
+
+        <div class="form-grid">
+
+          <!-- NAME -->
+          <div class="form-group">
+            <label for="studentName">Full Name</label>
+
+            <input
+              type="text"
+              id="studentName"
+              name="name"
+              [(ngModel)]="profileForm.name"
+              placeholder="Enter your full name"
+              required>
+          </div>
+
+          <!-- PHONE -->
+          <div class="form-group">
+            <label for="studentPhone">Phone Number</label>
+
+            <input
+              type="tel"
+              id="studentPhone"
+              name="phone"
+              maxlength="10"
+              [(ngModel)]="profileForm.phone"
+              placeholder="Enter 10-digit phone number"
+              required>
+          </div>
+
+          <!-- COURSE -->
+          <div class="form-group">
+            <label for="studentCourse">Course</label>
+
+            <input
+              type="text"
+              id="studentCourse"
+              name="course"
+              [(ngModel)]="profileForm.course"
+              placeholder="Enter your course"
+              required>
+          </div>
+
+        </div>
+
+        <!-- FORM BUTTONS -->
+        <div class="form-actions">
+
+          <button
+            class="save-btn"
+            (click)="saveProfile()"
+            [disabled]="isSaving">
+
+            {{ isSaving ? 'Saving...' : 'Save Changes' }}
+
+          </button>
+
+          <button
+            class="cancel-btn"
+            (click)="cancelEdit()"
+            [disabled]="isSaving">
+
+            Cancel
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- PROFILE DETAILS -->
       <div class="profile-grid">
 
         <div class="detail-card">
@@ -205,7 +310,8 @@
         <!-- ATTENDANCE HISTORY -->
         <h3 class="sub-heading">Attendance History</h3>
 
-        <div class="table-container"
+        <div
+          class="table-container"
           *ngIf="attendanceRecords.length > 0; else noAttendance">
 
           <table>
@@ -291,7 +397,8 @@
       <!-- MARKS TABLE -->
       <div *ngIf="!marksLoading && !marksError">
 
-        <div class="table-container"
+        <div
+          class="table-container"
           *ngIf="marksRecords.length > 0; else noMarks">
 
           <table>

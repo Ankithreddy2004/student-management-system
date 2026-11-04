@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -26,9 +27,21 @@ export class Student {
     return this.http.post<any>(this.apiUrl, student);
   }
 
-  // PUT - Update student
+  // PUT - Update student (Admin/Teacher)
   updateStudent(id: number, student: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${id}`, student);
+  }
+
+  // PATCH - Update logged-in student's own profile
+  updateMyProfile(profile: {
+    name: string;
+    phone: string;
+    course: string;
+  }): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/my-profile`,
+      profile
+    );
   }
 
   // DELETE student

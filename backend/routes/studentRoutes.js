@@ -10,7 +10,8 @@ const {
     updateStudent,
     deleteStudent,
     updateStudentStatus,
-    getPendingStudents
+    getPendingStudents,
+    updateMyProfile
 } = require('../controllers/studentController');
 
 // Import authentication middleware
@@ -42,6 +43,17 @@ router.get(
     verifyToken,
     authorizeRoles('Admin', 'Teacher'),
     getPendingStudents
+);
+// ==========================================
+// STUDENT UPDATES OWN PROFILE
+// ACTIVE STUDENTS ONLY
+// ==========================================
+
+router.patch(
+    '/my-profile',
+    verifyToken,
+    authorizeRoles('Student'),
+    updateMyProfile
 );
 
 // ==========================================

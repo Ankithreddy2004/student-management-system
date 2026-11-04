@@ -527,13 +527,120 @@ const approveStudent = (req, res) => {
 
 };
 
+// ==========================================
+// UPDATE OWN STUDENT PROFILE
+// ACTIVE STUDENTS ONLY
+// ==========================================
 
+const updateMyProfile = (req, res) => {
+
+    const studentId = req.user.student_id;
+
+    let { name, phone, course } = req.body;
+
+    if (!studentId) {
+        return res.status(400).json({
+            success: false,
+            message: 'Student information not found.'
+        });
+    }
+
+    if (!name || !phone || !course) {
+        return res.status(400).json({
+            success: false,
+            message: 'Name, phone and course are required.'
+        });
+    }
+
+    name = String(name).trim();
+    phone = String(phone).trim();
+    course = String(course).trim();
+
+    if (!name || !course) {
+        return res.status(400).json({
+            success: false,
+            message: 'Name and course cannot be empty.'
+        });
+    }
+
+    if (!/^\d{10}$/.test(phone)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Phone number must contain exactly 10 digits.'
+        });
+    }
+
+    // Check the student's current account status
+    const checkSql = `
+        SELECT id, status
+        FROM students
+        WHERE id = ?
+    `;
+
+    db.query(checkSql, [studentId], (err, results) => {
+
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to verify student account.'
+            });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student not found.'
+            });
+        }
+
+        if (results[0].status !== 'Active') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only Active students can update their profile.'
+            });
+        }
+
+        const updateSql = `
+            UPDATE students
+            SET name = ?, phone = ?, course = ?
+            WHERE id = ?
+            AND status = 'Active'
+        `;
+
+        db.query(
+            updateSql,
+            [name, phone, course, studentId],
+            (updateErr, result) => {
+
+                if (updateErr) {
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Unable to update profile.'
+                    });
+                }
+
+                return res.status(200).json({
+                    success: true,
+                    message: 'Profile updated successfully.',
+                    data: {
+                        id: Number(studentId),
+                        name,
+                        phone,
+                        course
+                    }
+                });
+
+            }
+        );
+
+    });
+
+};
 // ==========================================
 // EXPORT CONTROLLERS
 // ==========================================
 
 module.exports = {
-
     getAllStudents,
     getPendingStudents,
     addStudent,
@@ -541,6 +648,6 @@ module.exports = {
     updateStudent,
     deleteStudent,
     updateStudentStatus,
-    approveStudent
-
+    approveStudent,
+    updateMyProfile
 };
