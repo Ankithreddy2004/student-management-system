@@ -1,0 +1,479 @@
+
+<div class="attendance-container">
+
+  <!-- ================= HEADER ================= -->
+
+  <header class="page-header">
+
+    <div>
+      <span class="section-label">TEACHER PORTAL</span>
+
+      <h1>Attendance Management</h1>
+
+      <p>
+        Manage student attendance, view records and update attendance.
+      </p>
+    </div>
+
+    <a routerLink="/teacher-dashboard" class="back-btn">
+      ← Dashboard
+    </a>
+
+  </header>
+
+
+  <!-- ================= ERROR MESSAGE ================= -->
+
+  <div
+    class="message error"
+    *ngIf="errorMessage">
+
+    <span>⚠</span>
+    {{ errorMessage }}
+
+  </div>
+
+
+  <!-- ================= SUCCESS MESSAGE ================= -->
+
+  <div
+    class="message success"
+    *ngIf="successMessage">
+
+    <span>✓</span>
+    {{ successMessage }}
+
+  </div>
+
+
+  <!-- ================= SUBJECT AND DATE SELECTION ================= -->
+
+  <section class="selection-card">
+
+    <div class="section-title">
+
+      <span class="section-label">ATTENDANCE SETTINGS</span>
+
+      <h2>Select Subject and Date</h2>
+
+      <p>
+        Choose an assigned subject and attendance date.
+      </p>
+
+    </div>
+
+
+    <div class="selection-grid">
+
+      <!-- SUBJECT DROPDOWN -->
+
+      <div class="form-group">
+
+        <label for="subject">
+          Select Subject
+        </label>
+
+        <select
+          id="subject"
+          [value]="selectedSubjectId ?? ''"
+          (change)="onSubjectChange($event)"
+          [disabled]="isLoadingSubjects || isLoading || isSaving">
+
+          <option value="">
+
+            {{
+              isLoadingSubjects
+                ? 'Loading subjects...'
+                : 'Choose Subject'
+            }}
+
+          </option>
+
+          <option
+            *ngFor="let subject of subjects"
+            [value]="subject.id">
+
+            {{ subject.subject_name }}
+            ({{ subject.subject_code }})
+
+          </option>
+
+        </select>
+
+        <small *ngIf="!isLoadingSubjects && subjects.length === 0">
+          No assigned subjects available.
+        </small>
+
+      </div>
+
+
+      <!-- DATE INPUT -->
+
+      <div class="form-group">
+
+        <label for="attendanceDate">
+          Attendance Date
+        </label>
+
+        <input
+          id="attendanceDate"
+          type="date"
+          [(ngModel)]="selectedDate"
+          (change)="onDateChange()"
+          [disabled]="isLoading || isSaving">
+
+      </div>
+
+    </div>
+
+
+    <!-- ================= ACTION BUTTONS ================= -->
+
+    <div class="button-group">
+
+      <!-- LOAD STUDENTS -->
+
+      <button
+        type="button"
+        class="primary-btn"
+        (click)="loadStudents()"
+        [disabled]="
+          isLoading ||
+          isSaving ||
+          isLoadingSubjects ||
+          !selectedSubjectId
+        ">
+
+        <span *ngIf="!isLoading || showAttendanceRecords">
+          Load Students
+        </span>
+
+        <span *ngIf="isLoading && !showAttendanceRecords">
+          Loading Students...
+        </span>
+
+      </button>
+
+
+      <!-- VIEW ATTENDANCE -->
+
+      <button
+        type="button"
+        class="secondary-btn"
+        (click)="viewAttendance()"
+        [disabled]="
+          isLoading ||
+          isSaving ||
+          isLoadingSubjects ||
+          !selectedSubjectId
+        ">
+
+        <span *ngIf="!isLoading || !showAttendanceRecords">
+          View Attendance
+        </span>
+
+        <span *ngIf="isLoading && showAttendanceRecords">
+          Loading Records...
+        </span>
+
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- ================= LOADING INDICATOR ================= -->
+
+  <div
+    class="loading"
+    *ngIf="isLoading">
+
+    <div class="loader"></div>
+
+    <h3>
+      {{
+        showAttendanceRecords
+          ? 'Loading Attendance Records'
+          : 'Loading Students'
+      }}
+    </h3>
+
+    <p>
+      Please wait while we retrieve information from the database.
+    </p>
+
+  </div>
+
+
+  <!-- ================= ATTENDANCE TABLE ================= -->
+
+  <section
+    class="table-card"
+    *ngIf="students.length > 0 && !isLoading">
+
+
+    <!-- TABLE HEADER -->
+
+    <div class="table-heading">
+
+      <div>
+
+        <span class="section-label">
+
+          {{
+            showAttendanceRecords
+              ? 'ATTENDANCE HISTORY'
+              : 'ATTENDANCE MANAGEMENT'
+          }}
+
+        </span>
+
+        <h2>
+
+          {{
+            showAttendanceRecords
+              ? 'Saved Attendance Records'
+              : 'Student Attendance'
+          }}
+
+        </h2>
+
+        <p>
+
+          {{
+            showAttendanceRecords
+              ? 'View and edit previously saved attendance records.'
+              : 'Add new attendance or update existing records.'
+          }}
+
+        </p>
+
+      </div>
+
+
+      <span class="total-badge">
+
+        {{ students.length }} Students
+
+      </span>
+
+    </div>
+
+
+    <!-- TABLE CONTENT -->
+
+    <div class="table-responsive">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Student ID</th>
+
+            <th>Student Name</th>
+
+            <th>Email</th>
+
+            <th>Attendance Status</th>
+
+            <th>Remarks</th>
+
+            <th>Record</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr *ngFor="let student of students">
+
+
+            <!-- STUDENT ID -->
+
+            <td>
+              {{ student.id }}
+            </td>
+
+
+            <!-- STUDENT NAME -->
+
+            <td>
+              <strong>{{ student.name }}</strong>
+            </td>
+
+
+            <!-- EMAIL -->
+
+            <td>
+              {{ student.email }}
+            </td>
+
+
+            <!-- ATTENDANCE STATUS -->
+
+            <td>
+
+              <select
+                class="status-select"
+                [(ngModel)]="student.status"
+                [name]="'status_' + student.id"
+                [disabled]="isSaving">
+
+                <option value="">
+                  Choose Status
+                </option>
+
+                <option value="Present">
+                  Present
+                </option>
+
+                <option value="Absent">
+                  Absent
+                </option>
+
+                <option value="Late">
+                  Late
+                </option>
+
+              </select>
+
+            </td>
+
+
+            <!-- REMARKS -->
+
+            <td>
+
+              <input
+                type="text"
+                class="remarks-input"
+                [(ngModel)]="student.remarks"
+                [name]="'remarks_' + student.id"
+                placeholder="Optional remarks"
+                maxlength="255"
+                [disabled]="isSaving">
+
+            </td>
+
+
+            <!-- RECORD STATUS -->
+
+            <td>
+
+              <span
+                *ngIf="student.attendanceId"
+                class="record-badge recorded">
+
+                ✓ Recorded
+
+              </span>
+
+
+              <span
+                *ngIf="!student.attendanceId"
+                class="record-badge new">
+
+                + New
+
+              </span>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- ================= SAVE BUTTON ================= -->
+
+    <div class="save-section">
+
+      <div class="save-info">
+
+        <span>
+          {{ students.length }} student records displayed
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="primary-btn save-attendance-btn"
+        (click)="saveAttendance()"
+        [disabled]="isSaving || isLoading">
+
+        {{ isSaving ? 'Saving Attendance...' : 'Save Attendance' }}
+
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- ================= NO SAVED RECORDS ================= -->
+
+  <div
+    class="empty-message"
+    *ngIf="
+      !isLoading &&
+      students.length === 0 &&
+      selectedSubjectId &&
+      showAttendanceRecords
+    ">
+
+    <div class="empty-icon">
+      📋
+    </div>
+
+    <h3>No Attendance Records Found</h3>
+
+    <p>
+      No attendance has been recorded for the selected subject and date.
+    </p>
+
+    <button
+      type="button"
+      class="primary-btn"
+      (click)="loadStudents()">
+
+      Load Students to Add Attendance
+
+    </button>
+
+  </div>
+
+
+  <!-- ================= INITIAL STATE ================= -->
+
+  <div
+    class="empty-message"
+    *ngIf="
+      !isLoading &&
+      students.length === 0 &&
+      !showAttendanceRecords
+    ">
+
+    <div class="empty-icon">
+      📅
+    </div>
+
+    <h3>Ready to Manage Attendance?</h3>
+
+    <p>
+      Select a subject and date, then click Load Students.
+    </p>
+
+  </div>
+
+
+</div>
