@@ -1,0 +1,277 @@
+<div class="container">
+
+  <!-- Header -->
+
+  <div class="page-header">
+
+    <div>
+      <h2>Subject Management</h2>
+      <p>Create, update and manage academic subjects.</p>
+    </div>
+
+    <a routerLink="/admin-dashboard" class="back-btn">
+      ← Dashboard
+    </a>
+
+  </div>
+
+
+  <!-- Messages -->
+
+  <div class="success-message" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+
+  <!-- Subject Form -->
+
+  <div class="form-card">
+
+    <h3>
+      {{ isEditing ? 'Update Subject' : 'Add New Subject' }}
+    </h3>
+
+    <form (ngSubmit)="saveSubject()">
+
+      <div class="form-grid">
+
+        <div class="form-group">
+
+          <label>Subject Name</label>
+
+          <input
+            type="text"
+            name="subject_name"
+            [(ngModel)]="subject.subject_name"
+            placeholder="Enter subject name"
+            required
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Subject Code</label>
+
+          <input
+            type="text"
+            name="subject_code"
+            [(ngModel)]="subject.subject_code"
+            placeholder="Example: EEE804"
+            required
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Course</label>
+
+          <input
+            type="text"
+            name="course"
+            [(ngModel)]="subject.course"
+            placeholder="Example: EEE"
+            required
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Semester</label>
+
+          <select
+            name="semester"
+            [(ngModel)]="subject.semester"
+            required
+          >
+
+            <option [ngValue]="1">Semester 1</option>
+            <option [ngValue]="2">Semester 2</option>
+            <option [ngValue]="3">Semester 3</option>
+            <option [ngValue]="4">Semester 4</option>
+            <option [ngValue]="5">Semester 5</option>
+            <option [ngValue]="6">Semester 6</option>
+            <option [ngValue]="7">Semester 7</option>
+            <option [ngValue]="8">Semester 8</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="form-actions">
+
+        <button type="submit" [disabled]="isSaving">
+
+          {{
+            isSaving
+              ? 'Saving...'
+              : isEditing
+                ? 'Update Subject'
+                : 'Add Subject'
+          }}
+
+        </button>
+
+        <button
+          type="button"
+          class="cancel-btn"
+          *ngIf="isEditing"
+          (click)="cancelEdit()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+
+  <!-- Subject List -->
+
+  <div class="subjects-card">
+
+    <div class="section-header">
+
+      <div>
+        <h3>Registered Subjects</h3>
+        <p>Total Subjects: {{ subjects.length }}</p>
+      </div>
+
+      <button class="refresh-btn" (click)="loadSubjects()">
+        Refresh
+      </button>
+
+    </div>
+
+
+    <!-- Filters -->
+
+    <div class="filter-grid">
+
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search subjects..."
+      />
+
+      <select [(ngModel)]="selectedCourse">
+
+        <option value="">All Courses</option>
+
+        <option
+          *ngFor="let course of courses"
+          [value]="course"
+        >
+          {{ course }}
+        </option>
+
+      </select>
+
+
+      <select [(ngModel)]="selectedSemester">
+
+        <option value="">All Semesters</option>
+
+        <option *ngFor="let semester of [1,2,3,4,5,6,7,8]"
+                [value]="semester">
+          Semester {{ semester }}
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="loading" *ngIf="isLoading">
+      Loading subjects...
+    </div>
+
+
+    <div class="table-wrapper"
+         *ngIf="!isLoading && filteredSubjects.length > 0">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>ID</th>
+            <th>Subject Name</th>
+            <th>Subject Code</th>
+            <th>Course</th>
+            <th>Semester</th>
+            <th>Actions</th>
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr *ngFor="let item of filteredSubjects">
+
+            <td>{{ item.id }}</td>
+
+            <td>{{ item.subject_name }}</td>
+
+            <td>
+              <span class="code-badge">
+                {{ item.subject_code }}
+              </span>
+            </td>
+
+            <td>{{ item.course }}</td>
+
+            <td>{{ item.semester }}</td>
+
+            <td>
+
+              <button
+                class="edit-btn"
+                (click)="editSubject(item)"
+              >
+                Edit
+              </button>
+
+              <button
+                class="delete-btn"
+                (click)="deleteSubject(item.id)"
+              >
+                Delete
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <div
+      class="empty-message"
+      *ngIf="!isLoading && filteredSubjects.length === 0"
+    >
+      No subjects found.
+    </div>
+
+  </div>
+
+</div>

@@ -2,15 +2,19 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// Import database connection
+// Database connection
 const db = require('./config/db');
 
-// Import routes
+// Existing routes
 const studentRoutes = require('./routes/studentRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const marksRoutes = require('./routes/marksRoutes');
+
+// New Admin routes
+const subjectRoutes = require('./routes/subjectRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
@@ -18,13 +22,17 @@ const app = express();
 app.set('etag', false);
 
 app.use((req, res, next) => {
-res.setHeader(
-'Cache-Control',
-'no-store, no-cache, must-revalidate, proxy-revalidate'
-);
-res.setHeader('Pragma', 'no-cache');
-res.setHeader('Expires', '0');
-next();
+
+    res.setHeader(
+        'Cache-Control',
+        'no-store, no-cache, must-revalidate, proxy-revalidate'
+    );
+
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    next();
+
 });
 
 // Middleware
@@ -33,19 +41,23 @@ app.use(express.json());
 
 // Test API
 app.get('/', (req, res) => {
-res.send('Student Management API is Running!');
+    res.send('Student Management API is Running!');
 });
 
-// API Routes
+// Existing API routes
 app.use('/api/students', studentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/marks', marksRoutes);
 
+// New Admin API routes
+app.use('/api/subjects', subjectRoutes);
+app.use('/api/admin', adminRoutes);
+
 // Start server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

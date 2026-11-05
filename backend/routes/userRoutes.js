@@ -1,32 +1,31 @@
 const express = require('express');
 const router = express.Router();
 
-// Import user controllers
 const {
-getAllUsers,
-createTeacher
+    getAllUsers,
+    createTeacher,
+    updateTeacher,
+    deleteTeacher
 } = require('../controllers/userController');
 
-// Import authentication middleware
 const {
-verifyToken,
-authorizeRoles
+    verifyToken,
+    authorizeRoles
 } = require('../middleware/authMiddleware');
 
-// Get all users - Admin only
-router.get(
-'/',
-verifyToken,
-authorizeRoles('Admin'),
-getAllUsers
-);
+// All routes below require Admin authentication
+router.use(verifyToken, authorizeRoles('Admin'));
 
-// Create Teacher - Admin only
-router.post(
-'/teacher',
-verifyToken,
-authorizeRoles('Admin'),
-createTeacher
-);
+// GET all users
+router.get('/', getAllUsers);
+
+// CREATE teacher
+router.post('/teacher', createTeacher);
+
+// UPDATE teacher
+router.put('/:id', updateTeacher);
+
+// DELETE teacher
+router.delete('/:id', deleteTeacher);
 
 module.exports = router;

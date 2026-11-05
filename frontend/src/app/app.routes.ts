@@ -13,6 +13,9 @@ import { TeacherPendingStudents } from './components/teacher-pending-students/te
 import { TeacherAttendance } from './components/teacher-attendance/teacher-attendance';
 import { TeacherMarks } from './components/teacher-marks/teacher-marks';
 
+import { AdminSubjects } from './components/admin-subjects/admin-subjects';
+
+import { AdminAssignments } from './components/admin-assignments/admin-assignments';
 // Authentication components
 import { Login } from './components/login/login';
 import { Signup } from './components/signup/signup';
@@ -115,6 +118,21 @@ redirectTo: 'login'
   canActivate: [authGuard, roleGuard],
   data: { roles: ['Teacher'] }
 },
+
+{
+  path: 'admin/subjects',
+  component: AdminSubjects,
+  canActivate: [authGuard, roleGuard],
+  data: { roles: ['Admin'] }
+},
+
+{
+  path: 'admin/assignments',
+  component: AdminAssignments,
+  canActivate: [authGuard, roleGuard],
+  data: { roles: ['Admin'] }
+},
+
 // Unknown routes
 {
 path: '**',

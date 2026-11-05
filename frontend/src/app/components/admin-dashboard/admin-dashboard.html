@@ -1,6 +1,7 @@
 <div class="dashboard-container">
 
-  <!-- Header -->
+  <!-- HEADER -->
+
   <header class="dashboard-header">
 
     <div class="brand">
@@ -23,16 +24,19 @@
 
   <main class="dashboard-content">
 
-    <!-- Welcome -->
+    <!-- WELCOME -->
+
     <section class="welcome-section">
 
       <div>
+
         <h1>Welcome, {{ adminName }}!</h1>
 
         <p>
-          Manage students, teachers and the entire
+          Manage students, teachers, subjects and the entire
           Student Management System from one place.
         </p>
+
       </div>
 
       <div class="admin-icon">A</div>
@@ -40,20 +44,43 @@
     </section>
 
 
-    <!-- Loading -->
+    <!-- DASHBOARD HEADER -->
+
+    <div class="dashboard-heading">
+
+      <div>
+        <h2>Dashboard Overview</h2>
+        <p>Current system statistics</p>
+      </div>
+
+      <button
+        class="refresh-btn"
+        (click)="refreshDashboard()"
+        [disabled]="isLoading"
+      >
+        Refresh
+      </button>
+
+    </div>
+
+
+    <!-- LOADING -->
+
     <div class="loading" *ngIf="isLoading">
       Loading dashboard information...
     </div>
 
 
-    <!-- Error -->
+    <!-- ERROR -->
+
     <div class="error-message" *ngIf="errorMessage">
       {{ errorMessage }}
     </div>
 
 
-    <!-- Statistics -->
-    <section class="stats-grid">
+    <!-- STATISTICS -->
+
+    <section class="stats-grid" *ngIf="!isLoading">
 
       <div class="stat-card">
 
@@ -93,6 +120,18 @@
 
       <div class="stat-card">
 
+        <div class="stat-icon orange">P</div>
+
+        <div>
+          <p>Pending Students</p>
+          <h2>{{ pendingStudents }}</h2>
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
         <div class="stat-icon blue">T</div>
 
         <div>
@@ -102,24 +141,51 @@
 
       </div>
 
+
+      <div class="stat-card">
+
+        <div class="stat-icon purple">B</div>
+
+        <div>
+          <p>Total Subjects</p>
+          <h2>{{ totalSubjects }}</h2>
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon green">A</div>
+
+        <div>
+          <p>Subject Assignments</p>
+          <h2>{{ totalAssignments }}</h2>
+        </div>
+
+      </div>
+
     </section>
 
 
-    <!-- Management -->
+    <!-- MANAGEMENT -->
+
     <section class="management-section">
 
       <div class="section-heading">
 
         <h2>System Management</h2>
 
-        <p>Manage students and teachers.</p>
+        <p>Manage all academic activities.</p>
 
       </div>
 
 
       <div class="action-grid">
 
-        <!-- Students -->
+
+        <!-- STUDENTS -->
+
         <div class="action-card">
 
           <div class="action-icon">🎓</div>
@@ -127,17 +193,18 @@
           <h3>Student Management</h3>
 
           <p>
-            View, add, edit and manage all registered students.
+            View, add, edit and manage registered students.
           </p>
 
           <a routerLink="/students" class="action-btn">
-            Manage Students
+            Manage Students →
           </a>
 
         </div>
 
 
-        <!-- Teachers -->
+        <!-- TEACHERS -->
+
         <div class="action-card">
 
           <div class="action-icon">👨‍🏫</div>
@@ -149,10 +216,87 @@
           </p>
 
           <a routerLink="/admin/teachers" class="action-btn">
-            Manage Teachers
+            Manage Teachers →
           </a>
 
         </div>
+
+
+        <!-- SUBJECTS -->
+
+        <div class="action-card">
+
+          <div class="action-icon">📚</div>
+
+          <h3>Subject Management</h3>
+
+          <p>
+            Add, edit, view and manage academic subjects.
+          </p>
+
+          <a routerLink="/admin/subjects" class="action-btn">
+            Manage Subjects →
+          </a>
+
+        </div>
+
+
+        <!-- ASSIGNMENTS -->
+
+        <div class="action-card">
+
+          <div class="action-icon">📋</div>
+
+          <h3>Teacher Assignments</h3>
+
+          <p>
+            Assign subjects to teachers and manage assignments.
+          </p>
+
+          <a routerLink="/admin/assignments" class="action-btn">
+            Manage Assignments →
+          </a>
+
+        </div>
+
+
+        <!-- USER MANAGEMENT -->
+
+        <div class="action-card">
+
+          <div class="action-icon">👥</div>
+
+          <h3>User Management</h3>
+
+          <p>
+            View registered users and their account roles.
+          </p>
+
+          <a routerLink="/admin/users" class="action-btn">
+            Manage Users →
+          </a>
+
+        </div>
+
+
+        <!-- REPORTS -->
+
+        <div class="action-card">
+
+          <div class="action-icon">📊</div>
+
+          <h3>Reports & Analytics</h3>
+
+          <p>
+            View academic statistics and system reports.
+          </p>
+
+          <a routerLink="/admin/reports" class="action-btn">
+            View Reports →
+          </a>
+
+        </div>
+
 
       </div>
 

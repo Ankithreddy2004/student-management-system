@@ -291,3 +291,44 @@
     padding: 20px;
   }
 }
+.dashboard-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-heading h2 {
+  color: #29213b;
+  margin-bottom: 6px;
+}
+
+.dashboard-heading p {
+  color: #777;
+  font-size: 13px;
+}
+
+.refresh-btn {
+  background: #6d28d9;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.orange {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+@media (max-width: 900px) {
+  .dashboard-heading {
+    gap: 15px;
+  }
+}

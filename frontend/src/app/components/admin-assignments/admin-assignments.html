@@ -1,0 +1,202 @@
+<div class="container">
+
+  <!-- Header -->
+
+  <div class="page-header">
+
+    <div>
+      <h2>Teacher Subject Assignment</h2>
+      <p>Assign academic subjects to registered teachers.</p>
+    </div>
+
+    <a routerLink="/admin-dashboard" class="back-btn">
+      ← Dashboard
+    </a>
+
+  </div>
+
+
+  <!-- Messages -->
+
+  <div class="success-message" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+
+  <!-- Assignment Form -->
+
+  <div class="form-card">
+
+    <h3>Assign Subjects</h3>
+
+    <div class="form-group">
+
+      <label>Select Teacher</label>
+
+      <select [(ngModel)]="selectedTeacherId">
+
+        <option [ngValue]="null">
+          -- Select Teacher --
+        </option>
+
+        <option
+          *ngFor="let teacher of teachers"
+          [ngValue]="teacher.id"
+        >
+          {{ teacher.name }} ({{ teacher.email }})
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <h4>Select Subjects</h4>
+
+    <div class="subject-grid">
+
+      <label
+        class="subject-option"
+        *ngFor="let subject of subjects"
+      >
+
+        <input
+          type="checkbox"
+          [checked]="isSubjectSelected(subject.id)"
+          (change)="toggleSubject(subject.id, $event)"
+        />
+
+        <div>
+
+          <strong>{{ subject.subject_name }}</strong>
+
+          <span>
+            {{ subject.subject_code }} |
+            {{ subject.course }} |
+            Semester {{ subject.semester }}
+          </span>
+
+        </div>
+
+      </label>
+
+    </div>
+
+
+    <div class="selection-info">
+
+      Selected Subjects:
+      <strong>{{ selectedSubjectIds.length }}</strong>
+
+    </div>
+
+
+    <button
+      class="assign-btn"
+      (click)="assignSubjects()"
+      [disabled]="isSaving"
+    >
+
+      {{ isSaving ? 'Assigning...' : 'Assign Selected Subjects' }}
+
+    </button>
+
+  </div>
+
+
+  <!-- Existing Assignments -->
+
+  <div class="assignments-card">
+
+    <div class="section-header">
+
+      <div>
+        <h3>Teacher Subject Assignments</h3>
+        <p>Total Assignments: {{ assignments.length }}</p>
+      </div>
+
+      <button class="refresh-btn" (click)="loadAssignments()">
+        Refresh
+      </button>
+
+    </div>
+
+
+    <div class="loading" *ngIf="isLoading">
+      Loading assignments...
+    </div>
+
+
+    <div class="table-wrapper"
+         *ngIf="!isLoading && assignments.length > 0">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Teacher</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Subject Code</th>
+            <th>Course</th>
+            <th>Semester</th>
+            <th>Assigned Date</th>
+            <th>Action</th>
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr *ngFor="let item of assignments">
+
+            <td>{{ item.teacher_name }}</td>
+
+            <td>{{ item.teacher_email }}</td>
+
+            <td>{{ item.subject_name }}</td>
+
+            <td>{{ item.subject_code }}</td>
+
+            <td>{{ item.course }}</td>
+
+            <td>{{ item.semester }}</td>
+
+            <td>{{ item.assigned_at | date:'dd-MM-yyyy' }}</td>
+
+            <td>
+
+              <button
+                class="remove-btn"
+                (click)="removeAssignment(item.assignment_id)"
+              >
+                Remove
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <div
+      class="empty-message"
+      *ngIf="!isLoading && assignments.length === 0"
+    >
+      No subject assignments found.
+    </div>
+
+  </div>
+
+</div>
