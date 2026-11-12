@@ -5,7 +5,14 @@ import {
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive
+} from '@angular/router';
+
+import { MatIconModule } from '@angular/material/icon';
 
 import { Auth } from '../../services/auth';
 import { Admin } from '../../services/admin';
@@ -13,10 +20,18 @@ import { Admin } from '../../services/admin';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    MatIconModule
+  ],
+
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css'
 })
+
 export class AdminDashboard implements OnInit {
 
   adminName = '';
@@ -52,9 +67,7 @@ export class AdminDashboard implements OnInit {
 
   }
 
-  // =====================================
   // LOAD DASHBOARD STATISTICS
-  // =====================================
 
   loadDashboardData(): void {
 
@@ -101,9 +114,7 @@ export class AdminDashboard implements OnInit {
 
   }
 
-  // =====================================
   // REFRESH DASHBOARD
-  // =====================================
 
   refreshDashboard(): void {
 
@@ -111,9 +122,7 @@ export class AdminDashboard implements OnInit {
 
   }
 
-  // =====================================
   // LOGOUT
-  // =====================================
 
   logout(): void {
 

@@ -6,7 +6,9 @@
 
     <div class="brand">
 
-      <div class="logo">SMS</div>
+      <div class="logo">
+        SMS
+      </div>
 
       <div>
         <h2>Student Management System</h2>
@@ -16,10 +18,67 @@
     </div>
 
     <button class="logout-btn" (click)="logout()">
-      Logout
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
     </button>
 
   </header>
+
+
+  <!-- ADMIN NAVBAR -->
+
+  <nav class="admin-navbar">
+
+    <div class="navbar-links">
+
+      <a routerLink="/admin-dashboard"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }">
+
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+
+      </a>
+
+
+      <a routerLink="/students"
+         routerLinkActive="active">
+
+        <mat-icon>school</mat-icon>
+        <span>Students</span>
+
+      </a>
+
+
+      <a routerLink="/admin/teachers"
+         routerLinkActive="active">
+
+        <mat-icon>person</mat-icon>
+        <span>Teachers</span>
+
+      </a>
+
+
+      <a routerLink="/admin/subjects"
+         routerLinkActive="active">
+
+        <mat-icon>menu_book</mat-icon>
+        <span>Subjects</span>
+
+      </a>
+
+
+      <a routerLink="/admin/assignments"
+         routerLinkActive="active">
+
+        <mat-icon>assignment</mat-icon>
+        <span>Assignments</span>
+
+      </a>
+
+    </div>
+
+  </nav>
 
 
   <main class="dashboard-content">
@@ -39,7 +98,9 @@
 
       </div>
 
-      <div class="admin-icon">A</div>
+      <div class="admin-icon">
+        <mat-icon>admin_panel_settings</mat-icon>
+      </div>
 
     </section>
 
@@ -53,13 +114,15 @@
         <p>Current system statistics</p>
       </div>
 
-      <button
+      <!-- <button
         class="refresh-btn"
         (click)="refreshDashboard()"
-        [disabled]="isLoading"
-      >
+        [disabled]="isLoading">
+
+        <mat-icon>refresh</mat-icon>
         Refresh
-      </button>
+
+      </button> -->
 
     </div>
 
@@ -84,7 +147,9 @@
 
       <div class="stat-card">
 
-        <div class="stat-icon purple">S</div>
+        <div class="stat-icon purple">
+          <mat-icon>groups</mat-icon>
+        </div>
 
         <div>
           <p>Total Students</p>
@@ -96,7 +161,9 @@
 
       <div class="stat-card">
 
-        <div class="stat-icon green">A</div>
+        <div class="stat-icon green">
+          <mat-icon>how_to_reg</mat-icon>
+        </div>
 
         <div>
           <p>Active Students</p>
@@ -108,7 +175,9 @@
 
       <div class="stat-card">
 
-        <div class="stat-icon red">I</div>
+        <div class="stat-icon red">
+          <mat-icon>person_off</mat-icon>
+        </div>
 
         <div>
           <p>Inactive Students</p>
@@ -120,7 +189,9 @@
 
       <div class="stat-card">
 
-        <div class="stat-icon orange">P</div>
+        <div class="stat-icon orange">
+          <mat-icon>pending_actions</mat-icon>
+        </div>
 
         <div>
           <p>Pending Students</p>
@@ -132,7 +203,9 @@
 
       <div class="stat-card">
 
-        <div class="stat-icon blue">T</div>
+        <div class="stat-icon blue">
+          <mat-icon>person</mat-icon>
+        </div>
 
         <div>
           <p>Total Teachers</p>
@@ -144,7 +217,9 @@
 
       <div class="stat-card">
 
-        <div class="stat-icon purple">B</div>
+        <div class="stat-icon purple">
+          <mat-icon>menu_book</mat-icon>
+        </div>
 
         <div>
           <p>Total Subjects</p>
@@ -156,147 +231,14 @@
 
       <div class="stat-card">
 
-        <div class="stat-icon green">A</div>
+        <div class="stat-icon green">
+          <mat-icon>assignment</mat-icon>
+        </div>
 
         <div>
           <p>Subject Assignments</p>
           <h2>{{ totalAssignments }}</h2>
         </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- MANAGEMENT -->
-
-    <section class="management-section">
-
-      <div class="section-heading">
-
-        <h2>System Management</h2>
-
-        <p>Manage all academic activities.</p>
-
-      </div>
-
-
-      <div class="action-grid">
-
-
-        <!-- STUDENTS -->
-
-        <div class="action-card">
-
-          <div class="action-icon">🎓</div>
-
-          <h3>Student Management</h3>
-
-          <p>
-            View, add, edit and manage registered students.
-          </p>
-
-          <a routerLink="/students" class="action-btn">
-            Manage Students →
-          </a>
-
-        </div>
-
-
-        <!-- TEACHERS -->
-
-        <div class="action-card">
-
-          <div class="action-icon">👨‍🏫</div>
-
-          <h3>Teacher Management</h3>
-
-          <p>
-            View teachers and create new teacher accounts.
-          </p>
-
-          <a routerLink="/admin/teachers" class="action-btn">
-            Manage Teachers →
-          </a>
-
-        </div>
-
-
-        <!-- SUBJECTS -->
-
-        <div class="action-card">
-
-          <div class="action-icon">📚</div>
-
-          <h3>Subject Management</h3>
-
-          <p>
-            Add, edit, view and manage academic subjects.
-          </p>
-
-          <a routerLink="/admin/subjects" class="action-btn">
-            Manage Subjects →
-          </a>
-
-        </div>
-
-
-        <!-- ASSIGNMENTS -->
-
-        <div class="action-card">
-
-          <div class="action-icon">📋</div>
-
-          <h3>Teacher Assignments</h3>
-
-          <p>
-            Assign subjects to teachers and manage assignments.
-          </p>
-
-          <a routerLink="/admin/assignments" class="action-btn">
-            Manage Assignments →
-          </a>
-
-        </div>
-
-
-        <!-- USER MANAGEMENT -->
-
-        <div class="action-card">
-
-          <div class="action-icon">👥</div>
-
-          <h3>User Management</h3>
-
-          <p>
-            View registered users and their account roles.
-          </p>
-
-          <a routerLink="/admin/users" class="action-btn">
-            Manage Users →
-          </a>
-
-        </div>
-
-
-        <!-- REPORTS -->
-
-        <div class="action-card">
-
-          <div class="action-icon">📊</div>
-
-          <h3>Reports & Analytics</h3>
-
-          <p>
-            View academic statistics and system reports.
-          </p>
-
-          <a routerLink="/admin/reports" class="action-btn">
-            View Reports →
-          </a>
-
-        </div>
-
 
       </div>
 
