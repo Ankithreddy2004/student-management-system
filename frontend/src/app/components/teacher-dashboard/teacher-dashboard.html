@@ -1,293 +1,367 @@
-<div class="dashboard-container">
+<div class="dashboard-layout">
 
-  <!-- Header -->
-  <header class="dashboard-header">
+  <!-- ================================= -->
+  <!-- TEACHER SIDEBAR -->
+  <!-- ================================= -->
 
-    <div class="brand">
-      <div class="logo">SMS</div>
+  <aside class="teacher-sidebar">
+
+    <!-- BRAND -->
+
+    <div class="sidebar-brand">
+
+      <div class="logo">
+        SMS
+      </div>
 
       <div class="brand-info">
-        <h2>Student Management System</h2>
+        <h3>Student Management</h3>
         <p>Teacher Portal</p>
       </div>
+
     </div>
 
-    <button class="logout-btn" (click)="logout()">
-      <span>↪</span>
-      Logout
+
+    <!-- TEACHER PROFILE -->
+
+    <div class="sidebar-profile">
+
+      <div class="sidebar-profile-image">
+
+        <img
+          *ngIf="teacherImageUrl"
+          [src]="teacherImageUrl"
+          alt="Teacher Profile"
+        >
+
+        <mat-icon *ngIf="!teacherImageUrl">
+          account_circle
+        </mat-icon>
+
+      </div>
+
+      <div class="sidebar-profile-info">
+
+        <strong>{{ teacherName }}</strong>
+
+        <span>Teacher</span>
+
+      </div>
+
+    </div>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="sidebar-nav">
+
+      <a
+        routerLink="/teacher-dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
+
+
+      <a routerLink="/students">
+
+        <mat-icon>school</mat-icon>
+
+        <span>Students</span>
+
+      </a>
+
+
+      <a routerLink="/add-student">
+
+        <mat-icon>person_add</mat-icon>
+
+        <span>Add Student</span>
+
+      </a>
+
+
+      <a routerLink="/teacher/pending-students">
+
+        <mat-icon>pending_actions</mat-icon>
+
+        <span>Pending Requests</span>
+
+      </a>
+
+
+      <a routerLink="/teacher/attendance">
+
+        <mat-icon>event_available</mat-icon>
+
+        <span>Attendance</span>
+
+      </a>
+
+
+      <a routerLink="/teacher/marks">
+
+        <mat-icon>grade</mat-icon>
+
+        <span>Marks</span>
+
+      </a>
+
+
+      <a routerLink="/teacher/profile">
+
+        <mat-icon>account_circle</mat-icon>
+
+        <span>My Profile</span>
+
+      </a>
+
+    </nav>
+
+
+    <!-- LOGOUT -->
+
+    <button class="sidebar-logout" (click)="logout()">
+
+      <mat-icon>logout</mat-icon>
+
+      <span>Logout</span>
+
     </button>
 
-  </header>
+  </aside>
 
 
-  <!-- Main Content -->
-  <main class="dashboard-content">
+  <!-- ================================= -->
+  <!-- MAIN DASHBOARD CONTENT -->
+  <!-- ================================= -->
 
-    <!-- Welcome Section -->
+  <main class="dashboard-main">
+
+
+    <!-- HEADER -->
+
+    <header class="dashboard-header">
+
+      <div class="header-title">
+
+        <h2>Teacher Dashboard</h2>
+
+        <p>Welcome to your Student Management Portal</p>
+
+      </div>
+
+      <!-- <button class="refresh-btn" (click)="refreshDashboard()">
+
+        <mat-icon>refresh</mat-icon>
+
+        Refresh
+
+      </button> -->
+
+    </header>
+
+
+    <!-- WELCOME SECTION -->
+
     <section class="welcome-section">
 
       <div class="welcome-text">
-        <span class="welcome-label">TEACHER DASHBOARD</span>
 
         <h1>Welcome, {{ teacherName }}!</h1>
 
         <p>
-          Manage students, monitor attendance,
-          maintain academic records and manage marks.
+          Manage your students, attendance, marks and academic activities
+          from your dashboard.
         </p>
+
       </div>
 
       <div class="teacher-icon">
-        T
+
+        <img
+          *ngIf="teacherImageUrl"
+          [src]="teacherImageUrl"
+          alt="Teacher Profile"
+        >
+
+        <mat-icon *ngIf="!teacherImageUrl">
+          person
+        </mat-icon>
+
       </div>
 
     </section>
 
 
-    <!-- Error Message -->
+    <!-- ERROR MESSAGE -->
+
     <div class="error-message" *ngIf="errorMessage">
-      <span>⚠</span>
+
+      <mat-icon>error_outline</mat-icon>
+
       {{ errorMessage }}
+
     </div>
 
 
-    <!-- Statistics -->
-    <section class="stats-grid">
+    <!-- ================================= -->
+    <!-- STATISTICS -->
+    <!-- ================================= -->
 
-      <!-- Total Students -->
-      <div class="stat-card">
-
-        <div class="stat-icon purple">
-          <span>👨‍🎓</span>
-        </div>
-
-        <div class="stat-info">
-          <p>Total Students</p>
-          <h2>{{ isLoading ? '...' : totalStudents }}</h2>
-        </div>
-
-      </div>
-
-
-      <!-- Active Students -->
-      <div class="stat-card">
-
-        <div class="stat-icon green">
-          <span>✓</span>
-        </div>
-
-        <div class="stat-info">
-          <p>Active Students</p>
-          <h2>{{ isLoading ? '...' : activeStudents }}</h2>
-        </div>
-
-      </div>
-
-
-      <!-- Inactive Students -->
-      <div class="stat-card">
-
-        <div class="stat-icon red">
-          <span>⊘</span>
-        </div>
-
-        <div class="stat-info">
-          <p>Inactive Students</p>
-          <h2>{{ isLoading ? '...' : inactiveStudents }}</h2>
-        </div>
-
-      </div>
-
-
-      <!-- Pending Students -->
-      <div class="stat-card">
-
-        <div class="stat-icon orange">
-          <span>◷</span>
-        </div>
-
-        <div class="stat-info">
-          <p>Pending Registrations</p>
-          <h2>{{ pendingStudents }}</h2>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- Student Management -->
-    <section class="management-section">
+    <section class="stats-section">
 
       <div class="section-heading">
 
-        <div>
-          <span class="section-label">MANAGEMENT</span>
-          <h2>Student Management</h2>
+        <h2>Dashboard Overview</h2>
 
-          <p>
-            Manage student registrations and academic information.
-          </p>
-        </div>
+        <p>Summary of student information</p>
 
       </div>
 
 
-      <!-- Action Cards -->
-      <div class="action-grid">
+      <div class="stats-grid">
 
 
-        <!-- View Students -->
-        <div class="action-card">
+        <!-- TOTAL STUDENTS -->
 
-          <div class="action-card-top">
-            <div class="action-icon students-icon">
-              👨‍🎓
-            </div>
+        <div class="stat-card total-card">
 
-            <span class="card-number">01</span>
+          <div class="stat-icon">
+
+            <mat-icon>groups</mat-icon>
+
           </div>
 
-          <h3>View Students</h3>
+          <div class="stat-info">
 
-          <p>
-            View registered students and manage
-            their information and account status.
-          </p>
+            <h3>Total Students</h3>
 
-          <a routerLink="/students" class="action-btn">
-            View Students
-            <span>→</span>
-          </a>
+            <h1 *ngIf="!isLoading">
+              {{ totalStudents }}
+            </h1>
+
+            <h1 *ngIf="isLoading">
+              ...
+            </h1>
+
+            <p>Registered students</p>
+
+          </div>
 
         </div>
 
 
-        <!-- Add Student -->
-        <div class="action-card">
+        <!-- ACTIVE STUDENTS -->
 
-          <div class="action-card-top">
-            <div class="action-icon add-icon">
-              +
-            </div>
+        <div class="stat-card active-card">
 
-            <span class="card-number">02</span>
+          <div class="stat-icon">
+
+            <mat-icon>check_circle</mat-icon>
+
           </div>
 
-          <h3>Add Student</h3>
+          <div class="stat-info">
 
-          <p>
-            Register a new student and add
-            their personal and academic information.
-          </p>
+            <h3>Active Students</h3>
 
-          <a routerLink="/add-student" class="action-btn">
-            Add Student
-            <span>→</span>
-          </a>
+            <h1 *ngIf="!isLoading">
+              {{ activeStudents }}
+            </h1>
+
+            <h1 *ngIf="isLoading">
+              ...
+            </h1>
+
+            <p>Currently active</p>
+
+          </div>
 
         </div>
 
 
-        <!-- Pending Student Requests -->
-        <div class="action-card pending-card">
+        <!-- INACTIVE STUDENTS -->
 
-          <div class="action-card-top">
-            <div class="action-icon pending-icon">
-              📋
-            </div>
+        <div class="stat-card inactive-card">
 
-            <span class="card-number">03</span>
+          <div class="stat-icon">
+
+            <mat-icon>cancel</mat-icon>
+
           </div>
 
-          <h3>Pending Student Requests</h3>
+          <div class="stat-info">
 
-          <p>
-            Review new student registrations
-            and approve their accounts.
-          </p>
+            <h3>Inactive Students</h3>
 
-          <div class="pending-count">
-             <span class="pending-dot"></span>
+            <h1 *ngIf="!isLoading">
+              {{ inactiveStudents }}
+            </h1>
 
-            {{ pendingLoading ? 'Loading...' : pendingStudents + ' Pending' }}
+            <h1 *ngIf="isLoading">
+              ...
+            </h1>
+
+            <p>Currently inactive</p>
+
           </div>
-
-          <button
-            class="action-btn pending-btn"
-            (click)="viewPendingRequests()">
-
-            View Requests
-            <span>→</span>
-
-          </button>
 
         </div>
 
 
-        <!-- Attendance Management -->
-        <div class="action-card">
+        <!-- PENDING STUDENTS -->
 
-          <div class="action-card-top">
-            <div class="action-icon attendance-icon">
-              📅
-            </div>
+        <div class="stat-card pending-card">
 
-            <span class="card-number">04</span>
+          <div class="stat-icon">
+
+            <mat-icon>pending_actions</mat-icon>
+
           </div>
 
-          <h3>Manage Attendance</h3>
+          <div class="stat-info">
 
-          <p>
-            Record daily attendance, view attendance
-            history and update attendance records.
-          </p>
+            <h3>Pending Registrations</h3>
 
-          <a
-            routerLink="/teacher/attendance"
-            class="action-btn attendance-btn">
+            <h1 *ngIf="!pendingLoading">
+              {{ pendingStudents }}
+            </h1>
 
-            Manage Attendance
-            <span>→</span>
+            <h1 *ngIf="pendingLoading">
+              ...
+            </h1>
 
-          </a>
+            <p>Awaiting approval</p>
 
-        </div>
-
-
-        <!-- Marks Management -->
-        <div class="action-card">
-
-          <div class="action-card-top">
-            <div class="action-icon marks-icon">
-              📝
-            </div>
-
-            <span class="card-number">05</span>
           </div>
 
-          <h3>Manage Marks</h3>
-
-          <p>
-            Add examination marks, update results
-            and monitor student academic performance.
-          </p>
-
-          <a
-            routerLink="/teacher/marks"
-            class="action-btn marks-btn">
-
-            Manage Marks
-            <span>→</span>
-
-          </a>
-
         </div>
-
 
       </div>
 
     </section>
+
+
+    <!-- ================================= -->
+    <!-- MANAGEMENT SECTION -->
+    <!-- ================================= -->
+
+
+    <!-- FOOTER -->
+
+    <footer class="dashboard-footer">
+
+      <p>
+        Student Management System
+        <span> | </span>
+        Teacher Portal
+      </p>
+
+    </footer>
+
 
   </main>
 

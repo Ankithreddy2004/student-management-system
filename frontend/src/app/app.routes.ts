@@ -12,6 +12,7 @@ import { AdminDashboard } from './components/admin-dashboard/admin-dashboard';
 import { TeacherPendingStudents } from './components/teacher-pending-students/teacher-pending-students';
 import { TeacherAttendance } from './components/teacher-attendance/teacher-attendance';
 import { TeacherMarks } from './components/teacher-marks/teacher-marks';
+import { TeacherProfile } from './components/teacher-profile/teacher-profile';
 
 import { AdminSubjects } from './components/admin-subjects/admin-subjects';
 
@@ -24,6 +25,7 @@ import { AdminTeachers } from './components/admin-teachers/admin-teachers';
 
 // Authentication guards
 import { authGuard, roleGuard } from './guards/auth.guard';
+
 
 export const routes: Routes = [
 
@@ -131,6 +133,13 @@ redirectTo: 'login'
   component: AdminAssignments,
   canActivate: [authGuard, roleGuard],
   data: { roles: ['Admin'] }
+},
+
+{
+  path: 'teacher/profile',
+  component: TeacherProfile,
+  canActivate: [authGuard, roleGuard],
+  data: { roles: ['Teacher'] }
 },
 
 // Unknown routes

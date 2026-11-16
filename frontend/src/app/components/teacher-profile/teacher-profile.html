@@ -1,0 +1,100 @@
+<div class="profile-container">
+
+  <div class="profile-header">
+    <div>
+      <h2>My Profile</h2>
+      <p>View your account details and manage your profile photo.</p>
+    </div>
+
+    <a routerLink="/teacher-dashboard" class="back-btn">
+      <mat-icon>arrow_back</mat-icon>
+      Dashboard
+    </a>
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    Loading profile...
+  </div>
+
+  <div class="profile-card" *ngIf="teacher && !isLoading">
+
+    <div class="profile-image-section">
+
+      <div class="profile-image">
+        <img
+          *ngIf="previewUrl || teacherImageUrl"
+          [src]="previewUrl || teacherImageUrl"
+          alt="Teacher profile photo"
+        >
+
+        <mat-icon *ngIf="!previewUrl && !teacherImageUrl">
+          account_circle
+        </mat-icon>
+      </div>
+
+      <h3>{{ teacher.name }}</h3>
+      <span class="role-badge">Teacher</span>
+
+      <label class="choose-image-btn">
+        <mat-icon>photo_camera</mat-icon>
+        Choose Photo
+
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          (change)="onFileSelected($event)"
+          hidden
+        >
+      </label>
+
+      <button
+        class="upload-btn"
+        *ngIf="selectedFile"
+        [disabled]="isUploading"
+        (click)="uploadImage()"
+      >
+        <mat-icon>cloud_upload</mat-icon>
+        {{ isUploading ? 'Uploading...' : 'Update Photo' }}
+      </button>
+
+      <p class="image-hint">JPG, PNG or WebP. Maximum size: 2MB.</p>
+
+    </div>
+
+    <div class="profile-details">
+
+      <h3>Personal Information</h3>
+
+      <div class="detail-row">
+        <span>Full Name</span>
+        <strong>{{ teacher.name }}</strong>
+      </div>
+
+      <div class="detail-row">
+        <span>Email Address</span>
+        <strong>{{ teacher.email }}</strong>
+      </div>
+
+      <div class="detail-row">
+        <span>Account Role</span>
+        <strong>Teacher</strong>
+      </div>
+
+      <div class="detail-row" *ngIf="teacher.id">
+        <span>Teacher ID</span>
+        <strong>{{ teacher.id }}</strong>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

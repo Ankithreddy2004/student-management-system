@@ -5,7 +5,11 @@ const {
     getAllUsers,
     createTeacher,
     updateTeacher,
-    deleteTeacher
+    deleteTeacher,
+    getMyProfile,
+    getTeacherImage,
+    updateMyProfileImage,
+    updateTeacherImage
 } = require('../controllers/userController');
 
 const {
@@ -13,19 +17,82 @@ const {
     authorizeRoles
 } = require('../middleware/authMiddleware');
 
-// All routes below require Admin authentication
-router.use(verifyToken, authorizeRoles('Admin'));
+const {
+    uploadTeacherImage
+} = require('../middleware/uploadMiddleware');
 
-// GET all users
-router.get('/', getAllUsers);
 
-// CREATE teacher
-router.post('/teacher', createTeacher);
+// All routes require authentication.
+router.use(verifyToken);
 
-// UPDATE teacher
-router.put('/:id', updateTeacher);
 
-// DELETE teacher
-router.delete('/:id', deleteTeacher);
+// ==========================================
+// TEACHER SELF-PROFILE ROUTES
+// ==========================================
+
+// These routes derive teacher identity from the JWT.
+router.get(
+    '/me',
+    authorizeRoles('Teacher'),
+    getMyProfile
+);
+
+router.put(
+    '/me/profile-image',
+    authorizeRoles('Teacher'),
+    uploadTeacherImage,
+    updateMyProfileImage
+);
+
+
+// ==========================================
+// ADMIN ROUTES
+// ==========================================
+
+router.get(
+    '/',
+    authorizeRoles('Admin'),
+    getAllUsers
+);
+
+router.post(
+    '/teacher',
+    authorizeRoles('Admin'),
+    uploadTeacherImage,
+    createTeacher
+);
+
+router.put(
+    '/:id/profile-image',
+    authorizeRoles('Admin'),
+    uploadTeacherImage,
+    updateTeacherImage
+);
+
+router.put(
+    '/:id',
+    authorizeRoles('Admin'),
+    updateTeacher
+);
+
+router.delete(
+    '/:id',
+    authorizeRoles('Admin'),
+    deleteTeacher
+);
+
+
+// ==========================================
+// PROTECTED IMAGE ROUTE
+// ==========================================
+
+// Admin can retrieve any teacher image.
+// Teacher can retrieve only their own image.
+router.get(
+    '/:id/profile-image',
+    authorizeRoles('Admin', 'Teacher'),
+    getTeacherImage
+);
+
 
 module.exports = router;

@@ -196,3 +196,120 @@ th {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* =====================================
+   TEACHER IMAGE PREVIEW
+===================================== */
+
+.image-hint {
+  display: block;
+  margin-top: 7px;
+  color: #888;
+  font-size: 12px;
+}
+
+.image-preview {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.image-preview img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #5424a8;
+}
+
+.remove-image-btn {
+  background: #e74c3c !important;
+  padding: 9px 13px !important;
+}
+
+
+/* =====================================
+   TEACHER AVATAR
+===================================== */
+
+.teacher-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #eee7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.teacher-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  color: #5424a8;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+
+/* =====================================
+   TEACHER ACTIONS
+===================================== */
+
+.teacher-actions {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.teacher-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.choose-photo-btn,
+.update-photo-btn,
+.cancel-photo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.choose-photo-btn {
+  background: #eee7fa;
+  color: #5424a8;
+}
+
+.update-photo-btn {
+  background: #16834a;
+  color: white;
+}
+
+.cancel-photo-btn {
+  background: #777;
+  color: white;
+}
+
+.update-photo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .teacher-photo-actions,
+  .teacher-actions {
+    flex-wrap: wrap;
+  }
+}
