@@ -724,3 +724,60 @@
   }
 
 }
+/* WELCOME SECTION PROFILE AND LOGOUT */
+
+.welcome-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+/* PROFILE PHOTO LEFT */
+
+.teacher-icon {
+  order: 1;
+  flex-shrink: 0;
+}
+
+.teacher-icon img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid white;
+}
+
+/* WELCOME TEXT MIDDLE */
+
+.welcome-text {
+  order: 2;
+  flex: 1;
+}
+
+/* LOGOUT RIGHT */
+
+.welcome-logout {
+  order: 3;
+  width: auto;
+  margin-top: 0;
+  flex-shrink: 0;
+  background: #e74c3c;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+  .welcome-section {
+    gap: 12px;
+  }
+
+  .teacher-icon img {
+    width: 55px;
+    height: 55px;
+  }
+
+  .welcome-logout {
+    padding: 9px 12px;
+  }
+}

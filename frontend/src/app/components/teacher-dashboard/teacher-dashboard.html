@@ -22,35 +22,6 @@
     </div>
 
 
-    <!-- TEACHER PROFILE -->
-
-    <div class="sidebar-profile">
-
-      <div class="sidebar-profile-image">
-
-        <img
-          *ngIf="teacherImageUrl"
-          [src]="teacherImageUrl"
-          alt="Teacher Profile"
-        >
-
-        <mat-icon *ngIf="!teacherImageUrl">
-          account_circle
-        </mat-icon>
-
-      </div>
-
-      <div class="sidebar-profile-info">
-
-        <strong>{{ teacherName }}</strong>
-
-        <span>Teacher</span>
-
-      </div>
-
-    </div>
-
-
     <!-- NAVIGATION -->
 
     <nav class="sidebar-nav">
@@ -66,70 +37,41 @@
 
 
       <a routerLink="/students">
-
         <mat-icon>school</mat-icon>
-
         <span>Students</span>
-
       </a>
 
 
       <a routerLink="/add-student">
-
         <mat-icon>person_add</mat-icon>
-
         <span>Add Student</span>
-
       </a>
 
 
       <a routerLink="/teacher/pending-students">
-
         <mat-icon>pending_actions</mat-icon>
-
         <span>Pending Requests</span>
-
       </a>
 
 
       <a routerLink="/teacher/attendance">
-
         <mat-icon>event_available</mat-icon>
-
         <span>Attendance</span>
-
       </a>
 
 
       <a routerLink="/teacher/marks">
-
         <mat-icon>grade</mat-icon>
-
         <span>Marks</span>
-
       </a>
 
 
       <a routerLink="/teacher/profile">
-
         <mat-icon>account_circle</mat-icon>
-
         <span>My Profile</span>
-
       </a>
 
     </nav>
-
-
-    <!-- LOGOUT -->
-
-    <button class="sidebar-logout" (click)="logout()">
-
-      <mat-icon>logout</mat-icon>
-
-      <span>Logout</span>
-
-    </button>
 
   </aside>
 
@@ -141,7 +83,9 @@
   <main class="dashboard-main">
 
 
+    <!-- ================================= -->
     <!-- HEADER -->
+    <!-- ================================= -->
 
     <header class="dashboard-header">
 
@@ -153,31 +97,17 @@
 
       </div>
 
-      <!-- <button class="refresh-btn" (click)="refreshDashboard()">
-
-        <mat-icon>refresh</mat-icon>
-
-        Refresh
-
-      </button> -->
-
     </header>
 
 
+    <!-- ================================= -->
     <!-- WELCOME SECTION -->
+    <!-- ================================= -->
 
     <section class="welcome-section">
 
-      <div class="welcome-text">
 
-        <h1>Welcome, {{ teacherName }}!</h1>
-
-        <p>
-          Manage your students, attendance, marks and academic activities
-          from your dashboard.
-        </p>
-
-      </div>
+      <!-- PROFILE PHOTO - LEFT SIDE -->
 
       <div class="teacher-icon">
 
@@ -193,10 +123,40 @@
 
       </div>
 
+
+      <!-- WELCOME TEXT - MIDDLE -->
+
+      <div class="welcome-text">
+
+        <h1>Welcome, {{ teacherName }}!</h1>
+
+        <p>
+          Manage your students, attendance, marks and academic activities
+          from your dashboard.
+        </p>
+
+      </div>
+
+
+      <!-- LOGOUT BUTTON - RIGHT SIDE -->
+
+      <button
+        class="sidebar-logout welcome-logout"
+        (click)="logout()"
+      >
+
+        <mat-icon>logout</mat-icon>
+
+        <span>Logout</span>
+
+      </button>
+
     </section>
 
 
+    <!-- ================================= -->
     <!-- ERROR MESSAGE -->
+    <!-- ================================= -->
 
     <div class="error-message" *ngIf="errorMessage">
 
@@ -350,7 +310,9 @@
     <!-- ================================= -->
 
 
+    <!-- ================================= -->
     <!-- FOOTER -->
+    <!-- ================================= -->
 
     <footer class="dashboard-footer">
 

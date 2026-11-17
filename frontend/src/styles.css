@@ -1,1 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
+/* GLOBAL FONT - ENTIRE APPLICATION */
+
+html,
+body {
+  font-family: Arial, sans-serif;
+}
+
+body *:not(mat-icon) {
+  font-family: Arial, sans-serif;
+}

@@ -682,3 +682,17 @@
   margin: 6px 0 0;
   letter-spacing: 0.4px;
 }
+/* LOGOUT BUTTON - TOP RIGHT */
+
+.header-logout-btn {
+  width: auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* KEEP HEADER CONTENT AT BOTH SIDES */
+
+.main-header {
+  justify-content: space-between;
+}
