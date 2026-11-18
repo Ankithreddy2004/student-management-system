@@ -1,195 +1,171 @@
-<div class="dashboard-layout">
+<div class="admin-dashboard-content">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <!-- WELCOME SECTION -->
+  <section class="welcome-section">
 
-    <div class="sidebar-brand">
-      <div class="logo">SMS</div>
-      <div>
-        <h2>Student Management</h2>
-        <p>Administrator Portal</p>
-      </div>
+    <div class="welcome-text">
+
+      <span class="welcome-label">ADMINISTRATOR DASHBOARD</span>
+
+      <h1>
+        Welcome back, {{ adminName }}!
+      </h1>
+
+      <p>
+        Here's an overview of your Student Management System.
+        Manage students, teachers, subjects and assignments from here.
+      </p>
+
     </div>
 
-    <div class="admin-profile">
-      <div class="profile-avatar">
-        <mat-icon>admin_panel_settings</mat-icon>
-      </div>
-      <div class="profile-info">
-        <h3>{{ adminName }}</h3>
-        <p>Administrator</p>
-      </div>
+    <div class="welcome-icon">
+      <mat-icon>admin_panel_settings</mat-icon>
     </div>
 
-    <nav class="sidebar-nav">
+  </section>
 
-      <a routerLink="/admin-dashboard"
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon>dashboard</mat-icon>
-        <span>Dashboard</span>
-      </a>
 
-      <a routerLink="/students" routerLinkActive="active">
+  <!-- DASHBOARD HEADING -->
+  <div class="dashboard-heading">
+
+    <div>
+      <h2>Dashboard Overview</h2>
+      <p>Check the latest information about your institution.</p>
+    </div>
+
+    <!-- <button
+      class="refresh-btn"
+      (click)="refreshDashboard()">
+
+      <mat-icon>refresh</mat-icon>
+      Refresh
+
+    </button> -->
+
+  </div>
+
+
+  <!-- LOADING -->
+  <div class="loading-message" *ngIf="isLoading">
+    <mat-icon>hourglass_top</mat-icon>
+    <span>Loading dashboard information...</span>
+  </div>
+
+
+  <!-- ERROR -->
+  <div class="error-message" *ngIf="errorMessage">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+
+  <!-- STATISTICS -->
+  <div class="stats-grid" *ngIf="!isLoading">
+
+    <!-- TOTAL STUDENTS -->
+    <div class="stat-card students-card">
+
+      <div class="stat-icon">
         <mat-icon>school</mat-icon>
-        <span>Students</span>
-      </a>
-
-      <a routerLink="/admin/teachers" routerLinkActive="active">
-        <mat-icon>people</mat-icon>
-        <span>Teachers</span>
-      </a>
-
-      <a routerLink="/admin/subjects" routerLinkActive="active">
-        <mat-icon>menu_book</mat-icon>
-        <span>Subjects</span>
-      </a>
-
-      <a routerLink="/admin/assignments" routerLinkActive="active">
-        <mat-icon>assignment</mat-icon>
-        <span>Assignments</span>
-      </a>
-
-    </nav>
-
-    <!-- <div class="sidebar-bottom">
-      <button class="logout-btn" (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <span>Logout</span>
-      </button>
-    </div> -->
-
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="dashboard-main">
-
-    <!-- TOP HEADER -->
-    <header class="main-header">
-      <div>
-        <h2>Admin Dashboard</h2>
-        <p>Student Management System</p>
       </div>
 
-        <!-- LOGOUT BUTTON ON RIGHT -->
-        <button class="logout-btn header-logout-btn" (click)="logout()">
-          <mat-icon>logout</mat-icon>
-            <span>Logout</span>
-        </button>
-    </header>
-
-    <div class="dashboard-content">
-
-      <!-- WELCOME SECTION -->
-      <section class="welcome-section">
-        <div>
-          <h1>Welcome back, {{ adminName }}!</h1>
-          <p>Here's an overview of your Student Management System.</p>
-        </div>
-      </section>
-
-      <!-- DASHBOARD TITLE -->
-      <section class="dashboard-heading">
-        <div>
-          <h2>Dashboard Overview</h2>
-          <p>Monitor your institution's information and activities.</p>
-        </div>
-
-        <!-- <button class="refresh-btn" (click)="refreshDashboard()">
-          <mat-icon>refresh</mat-icon>
-          Refresh
-        </button> -->
-      </section>
-
-      <!-- LOADING -->
-      <div class="loading-message" *ngIf="isLoading">
-        <mat-icon>hourglass_top</mat-icon>
-        <p>Loading dashboard statistics...</p>
+      <div class="stat-details">
+        <p>Total Students</p>
+        <h2>{{ totalStudents }}</h2>
       </div>
-
-      <!-- ERROR -->
-      <div class="error-message" *ngIf="errorMessage">
-        <mat-icon>error_outline</mat-icon>
-        <span>{{ errorMessage }}</span>
-      </div>
-
-      <!-- STATISTICS -->
-      <section class="stats-grid" *ngIf="!isLoading">
-
-        <div class="stat-card">
-          <div class="stat-icon purple">
-            <mat-icon>school</mat-icon>
-          </div>
-          <div class="stat-info">
-            <p>Total Students</p>
-            <h2>{{ totalStudents }}</h2>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon green">
-            <mat-icon>person</mat-icon>
-          </div>
-          <div class="stat-info">
-            <p>Active Students</p>
-            <h2>{{ activeStudents }}</h2>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon red">
-            <mat-icon>person_off</mat-icon>
-          </div>
-          <div class="stat-info">
-            <p>Inactive Students</p>
-            <h2>{{ inactiveStudents }}</h2>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon orange">
-            <mat-icon>pending_actions</mat-icon>
-          </div>
-          <div class="stat-info">
-            <p>Pending Students</p>
-            <h2>{{ pendingStudents }}</h2>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon blue">
-            <mat-icon>groups</mat-icon>
-          </div>
-          <div class="stat-info">
-            <p>Total Teachers</p>
-            <h2>{{ totalTeachers }}</h2>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon teal">
-            <mat-icon>menu_book</mat-icon>
-          </div>
-          <div class="stat-info">
-            <p>Total Subjects</p>
-            <h2>{{ totalSubjects }}</h2>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon pink">
-            <mat-icon>assignment</mat-icon>
-          </div>
-          <div class="stat-info">
-            <p>Total Assignments</p>
-            <h2>{{ totalAssignments }}</h2>
-          </div>
-        </div>
-
-      </section>
 
     </div>
 
-  </main>
+
+    <!-- ACTIVE STUDENTS -->
+    <div class="stat-card active-card">
+
+      <div class="stat-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div class="stat-details">
+        <p>Active Students</p>
+        <h2>{{ activeStudents }}</h2>
+      </div>
+
+    </div>
+
+
+    <!-- INACTIVE STUDENTS -->
+    <div class="stat-card inactive-card">
+
+      <div class="stat-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div class="stat-details">
+        <p>Inactive Students</p>
+        <h2>{{ inactiveStudents }}</h2>
+      </div>
+
+    </div>
+
+
+    <!-- PENDING STUDENTS -->
+    <div class="stat-card pending-card">
+
+      <div class="stat-icon">
+        <mat-icon>pending_actions</mat-icon>
+      </div>
+
+      <div class="stat-details">
+        <p>Pending Students</p>
+        <h2>{{ pendingStudents }}</h2>
+      </div>
+
+    </div>
+
+
+    <!-- TOTAL TEACHERS -->
+    <div class="stat-card teachers-card">
+
+      <div class="stat-icon">
+        <mat-icon>groups</mat-icon>
+      </div>
+
+      <div class="stat-details">
+        <p>Total Teachers</p>
+        <h2>{{ totalTeachers }}</h2>
+      </div>
+
+    </div>
+
+
+    <!-- TOTAL SUBJECTS -->
+    <div class="stat-card subjects-card">
+
+      <div class="stat-icon">
+        <mat-icon>menu_book</mat-icon>
+      </div>
+
+      <div class="stat-details">
+        <p>Total Subjects</p>
+        <h2>{{ totalSubjects }}</h2>
+      </div>
+
+    </div>
+
+
+    <!-- TOTAL ASSIGNMENTS -->
+    <div class="stat-card assignments-card">
+
+      <div class="stat-icon">
+        <mat-icon>assignment</mat-icon>
+      </div>
+
+      <div class="stat-details">
+        <p>Total Assignments</p>
+        <h2>{{ totalAssignments }}</h2>
+      </div>
+
+    </div>
+
+  </div>
 
 </div>

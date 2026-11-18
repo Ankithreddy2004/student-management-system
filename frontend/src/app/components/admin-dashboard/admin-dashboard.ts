@@ -5,13 +5,6 @@ import {
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
-
-import {
-  Router,
-  RouterLink,
-  RouterLinkActive
-} from '@angular/router';
-
 import { MatIconModule } from '@angular/material/icon';
 
 import { Auth } from '../../services/auth';
@@ -20,18 +13,13 @@ import { Admin } from '../../services/admin';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-
   imports: [
     CommonModule,
-    RouterLink,
-    RouterLinkActive,
     MatIconModule
   ],
-
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css'
 })
-
 export class AdminDashboard implements OnInit {
 
   adminName = '';
@@ -51,8 +39,7 @@ export class AdminDashboard implements OnInit {
   constructor(
     private authService: Auth,
     private adminService: Admin,
-    private cdr: ChangeDetectorRef,
-    private router: Router
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -64,10 +51,7 @@ export class AdminDashboard implements OnInit {
     }
 
     this.loadDashboardData();
-
   }
-
-  // LOAD DASHBOARD STATISTICS
 
   loadDashboardData(): void {
 
@@ -102,7 +86,8 @@ export class AdminDashboard implements OnInit {
         console.error('Dashboard API Error:', error);
 
         this.errorMessage =
-          error.error?.message || 'Unable to load dashboard information.';
+          error.error?.message ||
+          'Unable to load dashboard information.';
 
         this.isLoading = false;
 
@@ -114,22 +99,8 @@ export class AdminDashboard implements OnInit {
 
   }
 
-  // REFRESH DASHBOARD
-
   refreshDashboard(): void {
-
     this.loadDashboardData();
-
-  }
-
-  // LOGOUT
-
-  logout(): void {
-
-    this.authService.logout();
-
-    this.router.navigate(['/login']);
-
   }
 
 }

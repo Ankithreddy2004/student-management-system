@@ -1,0 +1,376 @@
+* {
+  box-sizing: border-box;
+}
+
+/* =====================================
+   MAIN LAYOUT
+===================================== */
+
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  min-height: 0;
+  width: 100%;
+  background: #f4f3ff;
+  overflow: hidden;
+}
+
+/* =====================================
+   SIDEBAR
+===================================== */
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100%;
+  min-height: 0;
+  background: #27134b;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 25px 18px;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 45px;
+  height: 45px;
+  background: white;
+  color: #5424a8;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 17px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.brand-info h2 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.brand-info p {
+  font-size: 11px;
+  margin: 5px 0 0;
+  color: #c5b5e5;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 18px 20px;
+  flex-shrink: 0;
+}
+
+/* =====================================
+   SIDEBAR NAVIGATION
+===================================== */
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 15px;
+  color: #d5c9eb;
+  text-decoration: none;
+  border-radius: 9px;
+  font-size: 14px;
+  transition: 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-nav a mat-icon {
+  font-size: 21px;
+  width: 22px;
+  height: 22px;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.sidebar-nav a.active {
+  background: #8051c8;
+  color: white;
+  font-weight: 600;
+}
+
+/* =====================================
+   SIDEBAR FOOTER
+===================================== */
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px;
+  color: #c5b5e5;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.sidebar-footer p {
+  margin: 0 0 5px;
+}
+
+.sidebar-footer span {
+  opacity: 0.7;
+}
+
+/* =====================================
+   MAIN CONTENT
+===================================== */
+
+.dashboard-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* =====================================
+   HEADER
+===================================== */
+
+.main-header {
+  min-height: 95px;
+  padding: 18px 30px;
+
+  background: linear-gradient(
+    110deg,
+    #5424a8,
+    #8051c8,
+    #a477df
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  color: white;
+
+  box-shadow: 0 3px 12px rgba(39, 19, 75, 0.12);
+
+  flex-shrink: 0;
+}
+
+/* HEADER PROFILE */
+
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 190px;
+}
+
+.header-avatar {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background: white;
+  color: #5424a8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-avatar mat-icon {
+  font-size: 25px;
+}
+
+.header-profile-info h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.header-profile-info p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* HEADER TITLE */
+
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+.header-title h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.header-title p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* LOGOUT BUTTON */
+
+.header-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  background: white;
+  color: #5424a8;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  min-width: 100px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-logout-btn:hover {
+  background: #f0e9ff;
+}
+
+/* =====================================
+   SCROLLABLE DASHBOARD BODY
+===================================== */
+
+.dashboard-content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+
+  padding: 28px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
+/* SCROLLBAR */
+
+.dashboard-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dashboard-content::-webkit-scrollbar-track {
+  background: #f4f3ff;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb {
+  background: #c5b5e5;
+  border-radius: 10px;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb:hover {
+  background: #8051c8;
+}
+
+/* =====================================
+   RESPONSIVE - TABLET
+===================================== */
+
+@media (max-width: 900px) {
+
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .main-header {
+    padding: 15px 20px;
+  }
+
+  .header-profile {
+    min-width: auto;
+  }
+
+  .dashboard-content {
+    padding: 20px;
+  }
+
+}
+
+/* =====================================
+   RESPONSIVE - MOBILE
+===================================== */
+
+@media (max-width: 650px) {
+
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .sidebar-brand {
+    padding: 15px;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px;
+  }
+
+  .sidebar-nav a {
+    white-space: nowrap;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .main-header {
+    min-height: 80px;
+    padding: 15px;
+    flex-wrap: wrap;
+  }
+
+  .header-title {
+    flex: 1;
+    text-align: left;
+  }
+
+  .dashboard-main {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  .dashboard-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 15px;
+  }
+
+}

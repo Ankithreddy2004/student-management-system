@@ -1,11 +1,22 @@
-/* You can add global styles to this file, and also import other style files */
 /* GLOBAL FONT - ENTIRE APPLICATION */
 
 html,
 body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
+  overflow: hidden;
 }
 
 body *:not(mat-icon) {
   font-family: Arial, sans-serif;
+}
+
+app-root {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }

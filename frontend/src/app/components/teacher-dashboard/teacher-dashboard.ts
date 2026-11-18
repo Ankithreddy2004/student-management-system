@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -18,8 +18,6 @@ import { Student } from '../../services/student';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
-    RouterLinkActive,
     MatIconModule
   ],
   templateUrl: './teacher-dashboard.html',
@@ -57,18 +55,13 @@ export class TeacherDashboard implements OnInit, OnDestroy {
 
     if (user) {
       this.teacherName = user.name;
-
-      // Load logged-in teacher's own profile photo
       this.loadTeacherImage(user.id);
     }
 
     this.loadDashboardData();
     this.loadPendingStudents();
-  }
 
-  // =====================================
-  // LOAD LOGGED-IN TEACHER PROFILE IMAGE
-  // =====================================
+  }
 
   loadTeacherImage(teacherId: number): void {
 
@@ -99,6 +92,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         this.teacherImageUrl = URL.createObjectURL(blob);
 
         this.cdr.detectChanges();
+
       },
 
       error: (error) => {
@@ -108,14 +102,12 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         this.teacherImageUrl = '';
 
         this.cdr.detectChanges();
+
       }
 
     });
-  }
 
-  // =====================================
-  // LOAD DASHBOARD STATISTICS
-  // =====================================
+  }
 
   loadDashboardData(): void {
 
@@ -167,11 +159,8 @@ export class TeacherDashboard implements OnInit, OnDestroy {
       }
 
     });
-  }
 
-  // =====================================
-  // LOAD PENDING STUDENTS
-  // =====================================
+  }
 
   loadPendingStudents(): void {
 
@@ -213,44 +202,17 @@ export class TeacherDashboard implements OnInit, OnDestroy {
       }
 
     });
-  }
 
-  // =====================================
-  // REFRESH DASHBOARD
-  // =====================================
+  }
 
   refreshDashboard(): void {
-
     this.loadDashboardData();
     this.loadPendingStudents();
-
   }
-
-  // =====================================
-  // NAVIGATION
-  // =====================================
 
   viewPendingRequests(): void {
-
     this.router.navigate(['/teacher/pending-students']);
-
   }
-
-  // =====================================
-  // LOGOUT
-  // =====================================
-
-  logout(): void {
-
-    this.authService.logout();
-
-    this.router.navigate(['/login']);
-
-  }
-
-  // =====================================
-  // CLEANUP IMAGE URL
-  // =====================================
 
   ngOnDestroy(): void {
 
@@ -261,3 +223,4 @@ export class TeacherDashboard implements OnInit, OnDestroy {
   }
 
 }
+
