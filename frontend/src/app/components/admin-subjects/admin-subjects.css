@@ -160,16 +160,89 @@ th {
   font-weight: 600;
 }
 
-.edit-btn {
-  background: #dbeafe;
-  color: #1d4ed8;
-  margin-right: 7px;
+
+/* =====================================
+   SUBJECT ACTION ICONS
+===================================== */
+
+.action-buttons {
+  vertical-align: middle;
 }
 
-.delete-btn {
-  background: #fee2e2;
-  color: #b91c1c;
+.subject-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+
+
+/* COMMON ICON BUTTON */
+
+.subject-actions .edit-btn,
+.subject-actions .delete-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 8px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+
+/* EDIT ICON */
+
+.subject-actions .edit-btn {
+  background: #eee5ff;
+  color: #713bd1;
+}
+
+.subject-actions .edit-btn:hover {
+  background: #713bd1;
+  color: white;
+}
+
+
+/* DELETE ICON */
+
+.subject-actions .delete-btn {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.subject-actions .delete-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+
+
+/* ICON SIZE */
+
+.subject-actions mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
+}
+
+
+/* DISABLED BUTTON */
+
+.subject-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* =====================================
+   SUCCESS AND ERROR MESSAGES
+===================================== */
 
 .success-message {
   background: #e8f8ee;
@@ -187,6 +260,11 @@ th {
   margin-bottom: 15px;
 }
 
+
+/* =====================================
+   LOADING AND EMPTY MESSAGE
+===================================== */
+
 .loading,
 .empty-message {
   text-align: center;
@@ -194,7 +272,13 @@ th {
   color: #777;
 }
 
+
+/* =====================================
+   RESPONSIVE DESIGN
+===================================== */
+
 @media (max-width: 700px) {
+
   .container {
     padding: 15px;
   }
@@ -213,4 +297,5 @@ th {
   .subjects-card {
     padding: 17px;
   }
+
 }

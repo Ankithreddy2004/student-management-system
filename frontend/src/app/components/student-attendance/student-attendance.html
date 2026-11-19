@@ -1,0 +1,255 @@
+<div class="attendance-container">
+
+  <!-- HEADER -->
+
+  <header class="page-header">
+
+    <div>
+
+      <span class="section-label">
+        STUDENT PORTAL
+      </span>
+
+      <h1>My Attendance</h1>
+
+      <p>
+        View your attendance records and overall attendance percentage.
+      </p>
+
+    </div>
+
+  </header>
+
+
+  <!-- LOADING -->
+
+  <div class="loading-message" *ngIf="isLoading">
+
+    Loading attendance records...
+
+  </div>
+
+
+  <!-- ERROR -->
+
+  <div class="error-message" *ngIf="errorMessage">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <ng-container *ngIf="!isLoading && !errorMessage">
+
+    <!-- SUMMARY CARDS -->
+
+    <section class="summary-grid">
+
+      <div class="summary-card">
+
+        <span>Total Classes</span>
+
+        <h2>{{ totalClasses }}</h2>
+
+      </div>
+
+
+      <div class="summary-card present-card">
+
+        <span>Present</span>
+
+        <h2>{{ presentClasses }}</h2>
+
+      </div>
+
+
+      <div class="summary-card absent-card">
+
+        <span>Absent</span>
+
+        <h2>{{ absentClasses }}</h2>
+
+      </div>
+
+
+      <div class="summary-card late-card">
+
+        <span>Late</span>
+
+        <h2>{{ lateClasses }}</h2>
+
+      </div>
+
+    </section>
+
+
+    <!-- ATTENDANCE OVERVIEW -->
+
+    <section class="attendance-overview">
+
+      <div class="overview-heading">
+
+        <h2>Attendance Percentage</h2>
+
+        <p>Your overall attendance performance</p>
+
+      </div>
+
+
+      <div class="overview-content">
+
+        <div
+          class="attendance-pie"
+          [style.background]="attendanceChartBackground">
+
+          <div class="pie-center">
+
+            <h2>{{ attendancePercentage }}%</h2>
+
+            <p>Attendance</p>
+
+          </div>
+
+        </div>
+
+
+        <div class="attendance-legend">
+
+          <div>
+
+            <span class="dot present"></span>
+
+            <span>Present</span>
+
+            <strong>{{ presentClasses }}</strong>
+
+          </div>
+
+          <div>
+
+            <span class="dot absent"></span>
+
+            <span>Absent</span>
+
+            <strong>{{ absentClasses }}</strong>
+
+          </div>
+
+          <div>
+
+            <span class="dot late"></span>
+
+            <span>Late</span>
+
+            <strong>{{ lateClasses }}</strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ATTENDANCE HISTORY -->
+
+    <section class="attendance-history">
+
+      <div class="table-heading">
+
+        <div>
+
+          <h2>Attendance History</h2>
+
+          <p>Your subject-wise attendance records</p>
+
+        </div>
+
+        <span class="record-count">
+          {{ totalClasses }} Records
+        </span>
+
+      </div>
+
+
+      <div class="table-responsive">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>#</th>
+
+              <th>Date</th>
+
+              <th>Subject</th>
+
+              <th>Subject Code</th>
+
+              <th>Status</th>
+
+              <th>Remarks</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="let record of attendanceRecords; let i = index">
+
+              <td>{{ i + 1 }}</td>
+
+              <td>
+                {{ record.attendance_date | date:'dd MMM yyyy' }}
+              </td>
+
+              <td>{{ record.subject_name }}</td>
+
+              <td>{{ record.subject_code }}</td>
+
+              <td>
+
+                <span
+                  class="status-badge"
+                  [ngClass]="record.status.toLowerCase()">
+
+                  {{ record.status }}
+
+                </span>
+
+              </td>
+
+              <td>
+                {{ record.remarks || '-' }}
+              </td>
+
+            </tr>
+
+
+            <tr *ngIf="attendanceRecords.length === 0">
+
+              <td colspan="6" class="empty-message">
+
+                No attendance records available.
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>

@@ -238,21 +238,31 @@
 
             <td>{{ item.semester }}</td>
 
-            <td>
+            <td class="action-buttons">
 
-              <button
-                class="edit-btn"
-                (click)="editSubject(item)"
-              >
-                Edit
-              </button>
+              <div class="subject-actions ">
 
-              <button
-                class="delete-btn"
-                (click)="deleteSubject(item.id)"
-              >
-                Delete
-              </button>
+                <button
+                  type="button"
+                  class="edit-btn"
+                  (click)="editSubject(item)"
+                  title="Edit Subject"
+                  aria-label="Edit Subject"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <button
+                  type="button"
+                  class="delete-btn"
+                  (click)="deleteSubject(item.id)"
+                  title="Delete Subject"
+                  aria-label="Delete Subject"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+
+              </div>
 
             </td>
 

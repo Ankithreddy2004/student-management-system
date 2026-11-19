@@ -4,20 +4,19 @@
 
   <div class="page-header">
 
-<div>
-  <h2>Student Management</h2>
-  <p>Manage and view all registered students.</p>
-</div>
+    <div>
+      <h2>Student Management</h2>
+      <p>Manage and view all registered students.</p>
+    </div>
 
-<!-- Add Student - Admin and Teacher -->
-<a
-  *ngIf="isAdmin || isTeacher"
-  routerLink="/add-student"
-  class="add-btn"
->
-  + Add Student
-</a>
-
+    <!-- Add Student - Admin and Teacher -->
+    <a
+      *ngIf="isAdmin || isTeacher"
+      [routerLink]="isAdmin ? '/admin/add-student' : '/teacher/add-student'"
+      class="add-btn"
+    >
+      + Add Student
+    </a>
 
   </div>
 
@@ -37,13 +36,11 @@
 
   <div class="search-section">
 
-
-<input
-  type="text"
-  placeholder="Search by name, email, phone or course..."
-  [(ngModel)]="searchTerm"
-/>
-
+    <input
+      type="text"
+      placeholder="Search by name, email, phone or course..."
+      [(ngModel)]="searchTerm"
+    />
 
   </div>
 
@@ -60,81 +57,83 @@
     *ngIf="!isLoading && filteredStudents.length > 0"
   >
 
+    <table>
 
-<table>
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Course</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
 
-  <thead>
-    <tr>
-      <th>S.No</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Phone</th>
-      <th>Course</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
+      <tbody>
 
-  <tbody>
+        <tr *ngFor="let student of filteredStudents; let i = index">
 
-    <tr *ngFor="let student of filteredStudents; let i = index">
+          <td>{{ i + 1 }}</td>
 
-      <td>{{ i + 1 }}</td>
+          <td>{{ student.name }}</td>
 
-      <td>{{ student.name }}</td>
+          <td>{{ student.email }}</td>
 
-      <td>{{ student.email }}</td>
+          <td>{{ student.phone }}</td>
 
-      <td>{{ student.phone }}</td>
+          <td>{{ student.course }}</td>
 
-      <td>{{ student.course }}</td>
+          <!-- Student Status -->
 
-      <!-- Student Status -->
-      <td>
+          <td>
 
-        <select
-          class="status-select"
-          [ngClass]="student.status === 'Active' ? 'active-status' : 'inactive-status'"
-          [value]="student.status"
-          (change)="updateStudentStatus(student, $event)"
-        >
+            <select
+              class="status-select"
+              [ngClass]="student.status === 'Active' ? 'active-status' : 'inactive-status'"
+              [value]="student.status"
+              (change)="updateStudentStatus(student, $event)"
+            >
 
-          <option value="Active">Active</option>
+              <option value="Active">Active</option>
 
-          <option value="Inactive">Inactive</option>
+              <option value="Inactive">Inactive</option>
 
-        </select>
+            </select>
 
-      </td>
+          </td>
 
-      <!-- Actions -->
-      <td class="action-buttons">
+          <!-- Actions -->
 
-        <!-- Edit - Admin and Teacher -->
-        <button
-          class="edit-btn"
-          (click)="editStudent(student.id)"
-        >
-          Edit
-        </button>
+          <td class="action-buttons">
 
-        <!-- Delete - Admin only -->
-        <button
-          *ngIf="isAdmin"
-          class="delete-btn"
-          (click)="deleteStudent(student.id)"
-        >
-          Delete
-        </button>
+            <!-- Edit - Admin and Teacher -->
 
-      </td>
+            <button
+              class="edit-btn"
+              (click)="editStudent(student.id)"
+            >
+              Edit
+            </button>
 
-    </tr>
+            <!-- Delete - Admin only -->
 
-  </tbody>
+            <button
+              *ngIf="isAdmin"
+              class="delete-btn"
+              (click)="deleteStudent(student.id)"
+            >
+              Delete
+            </button>
 
-</table>
+          </td>
 
+        </tr>
+
+      </tbody>
+
+    </table>
 
   </div>
 

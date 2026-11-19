@@ -1,24 +1,15 @@
-
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { timeout } from 'rxjs';
 
-import { Auth, AuthUser, StudentStatus } from '../../services/auth';
-import { Student as StudentService } from '../../services/student';
+import {
+  forkJoin,
+  of,
+  timeout,
+  catchError
+} from 'rxjs';
+
 import { Attendance } from '../../services/attendance';
 import { Marks } from '../../services/marks';
-
-interface StudentProfile {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  course: string;
-  status: StudentStatus;
-  created_at?: string;
-}
 
 interface AttendanceRecord {
   id: number;
@@ -47,385 +38,200 @@ interface MarkRecord {
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.css'
 })
 export class StudentDashboard implements OnInit {
 
-  authUser: AuthUser | null = null;
-  student: StudentProfile | null = null;
-
-  // Profile
+  // Dashboard loading
   isLoading = true;
-  errorMessage = '';
-
-  // Edit Profile
-  isEditing = false;
-  isSaving = false;
-  profileSuccess = '';
-  profileError = '';
-
-  profileForm = {
-    name: '',
-    phone: '',
-    course: ''
-  };
 
   // Attendance
   attendanceRecords: AttendanceRecord[] = [];
-  attendanceLoading = true;
   attendanceError = '';
 
   // Marks
   marksRecords: MarkRecord[] = [];
-  marksLoading = true;
   marksError = '';
 
   constructor(
-    private authService: Auth,
-    private studentService: StudentService,
     private attendanceService: Attendance,
     private marksService: Marks,
-    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.authUser = this.authService.getUser();
-
-    this.loadStudentDetails();
-    this.loadAttendance();
-    this.loadMarks();
+    this.loadDashboardData();
   }
 
   // ==========================================
-  // LOAD STUDENT PROFILE
+  // LOAD DASHBOARD DATA
   // ==========================================
 
-  loadStudentDetails(): void {
+  loadDashboardData(): void {
 
     this.isLoading = true;
-    this.errorMessage = '';
-    this.cdr.detectChanges();
 
-    if (
-      !this.authUser ||
-      this.authUser.role !== 'Student' ||
-      !this.authUser.student_id
-    ) {
-      this.errorMessage = 'Student information not found.';
-      this.isLoading = false;
-      this.cdr.detectChanges();
-      return;
-    }
+    this.attendanceError = '';
+    this.marksError = '';
 
-    const studentId = this.authUser.student_id;
+    this.cdr.markForCheck();
 
-    this.studentService.getStudentById(studentId)
-      .pipe(timeout(15000))
-      .subscribe({
+    forkJoin({
 
-        next: (response: any) => {
+      attendance: this.attendanceService
+        .getMyAttendance()
+        .pipe(
+          timeout(15000),
+          catchError(error => {
 
-          this.isLoading = false;
+            console.error('Attendance Error:', error);
 
-          if (!response || response.success === false) {
-            this.errorMessage =
-              response?.message || 'Unable to fetch student details.';
+            this.attendanceError =
+              error?.error?.message ||
+              'Unable to load attendance information.';
 
-            this.cdr.detectChanges();
-            return;
-          }
+            return of(null);
+          })
+        ),
 
-          const profile =
-            response?.data?.student ||
-            response?.data ||
-            response?.student ||
-            response;
+      marks: this.marksService
+        .getMyMarks()
+        .pipe(
+          timeout(15000),
+          catchError(error => {
 
-          if (!profile || !profile.id) {
-            this.errorMessage = 'Student profile data is unavailable.';
-            this.cdr.detectChanges();
-            return;
-          }
+            console.error('Marks Error:', error);
 
-          this.student = profile as StudentProfile;
+            this.marksError =
+              error?.error?.message ||
+              'Unable to load marks information.';
 
-          this.cdr.detectChanges();
+            return of(null);
+          })
+        )
 
-          console.log('Student Profile Loaded:', this.student);
-        },
-
-        error: (error) => {
-
-          this.isLoading = false;
-
-          if (error.name === 'TimeoutError') {
-            this.errorMessage =
-              'The server is taking too long to respond. Please try again.';
-          } else {
-            this.errorMessage =
-              error.error?.message ||
-              'Unable to load student details. Please try again.';
-          }
-
-          this.cdr.detectChanges();
-          console.error('Student Profile Error:', error);
-        }
-      });
-  }
-
-  // ==========================================
-  // EDIT PROFILE
-  // ==========================================
-
-  get canEditProfile(): boolean {
-    return this.student?.status === 'Active';
-  }
-
-  openEditProfile(): void {
-
-    if (!this.student || !this.canEditProfile) {
-      return;
-    }
-
-    this.profileForm = {
-      name: this.student.name,
-      phone: this.student.phone,
-      course: this.student.course
-    };
-
-    this.profileSuccess = '';
-    this.profileError = '';
-    this.isEditing = true;
-
-    this.cdr.detectChanges();
-  }
-
-  cancelEdit(): void {
-
-    this.isEditing = false;
-    this.profileError = '';
-    this.profileSuccess = '';
-
-    this.cdr.detectChanges();
-  }
-
-  saveProfile(): void {
-
-    if (!this.student || !this.canEditProfile) {
-      return;
-    }
-
-    const name = this.profileForm.name.trim();
-    const phone = this.profileForm.phone.trim();
-    const course = this.profileForm.course.trim();
-
-    if (!name || !phone || !course) {
-      this.profileError = 'All fields are required.';
-      return;
-    }
-
-    if (!/^\d{10}$/.test(phone)) {
-      this.profileError =
-        'Phone number must contain exactly 10 digits.';
-      return;
-    }
-
-    this.isSaving = true;
-    this.profileError = '';
-    this.profileSuccess = '';
-
-    this.studentService.updateMyProfile({
-      name,
-      phone,
-      course
     }).subscribe({
 
-      next: (response: any) => {
+      next: (response) => {
 
-        this.isSaving = false;
+        // Attendance response
+        if (response.attendance?.success === false) {
 
-        if (!response || response.success === false) {
-          this.profileError =
-            response?.message || 'Unable to update profile.';
+          this.attendanceError =
+            response.attendance.message ||
+            'Unable to load attendance information.';
 
-          this.cdr.detectChanges();
-          return;
+        } else {
+
+          this.attendanceRecords =
+            Array.isArray(response.attendance?.data)
+              ? response.attendance.data
+              : [];
+
         }
 
-        this.student = {
-          ...this.student!,
-          name,
-          phone,
-          course
-        };
+        // Marks response
+        if (response.marks?.success === false) {
 
-        if (this.authUser) {
-          this.authUser.name = name;
+          this.marksError =
+            response.marks.message ||
+            'Unable to load marks information.';
+
+        } else {
+
+          this.marksRecords =
+            Array.isArray(response.marks?.data)
+              ? response.marks.data
+              : [];
+
         }
 
-        this.profileSuccess = 'Profile updated successfully!';
-        this.isEditing = false;
+        this.isLoading = false;
 
-        this.cdr.detectChanges();
+        // Update Angular view after API response
+        this.cdr.markForCheck();
+
       },
 
       error: (error) => {
 
-        this.isSaving = false;
+        console.error('Dashboard Error:', error);
 
-        this.profileError =
-          error.error?.message || 'Unable to update profile.';
+        this.isLoading = false;
 
-        this.cdr.detectChanges();
-        console.error('Profile Update Error:', error);
+        // Update Angular view after error
+        this.cdr.markForCheck();
+
       }
 
     });
+
   }
 
   // ==========================================
-  // LOAD ATTENDANCE
+  // TOTAL SUBJECTS
   // ==========================================
 
-  loadAttendance(): void {
+  get totalSubjects(): number {
 
-    this.attendanceLoading = true;
-    this.attendanceError = '';
-    this.cdr.detectChanges();
+    const subjectIds = new Set(
+      this.marksRecords.map(record => record.subject_id)
+    );
 
-    this.attendanceService.getMyAttendance()
-      .subscribe({
+    return subjectIds.size;
 
-        next: (response: any) => {
-
-          this.attendanceLoading = false;
-
-          if (!response || response.success === false) {
-            this.attendanceError =
-              response?.message || 'Unable to fetch attendance.';
-
-            this.cdr.detectChanges();
-            return;
-          }
-
-          this.attendanceRecords = Array.isArray(response.data)
-            ? response.data
-            : [];
-
-          this.cdr.detectChanges();
-
-          console.log('Attendance Loaded:', this.attendanceRecords);
-        },
-
-        error: (error) => {
-
-          this.attendanceLoading = false;
-
-          this.attendanceError =
-            error.error?.message || 'Unable to load attendance records.';
-
-          this.cdr.detectChanges();
-          console.error('Attendance Error:', error);
-        }
-      });
   }
 
   // ==========================================
-  // LOAD MARKS
-  // ==========================================
-
-  loadMarks(): void {
-
-    this.marksLoading = true;
-    this.marksError = '';
-    this.cdr.detectChanges();
-
-    this.marksService.getMyMarks()
-      .subscribe({
-
-        next: (response: any) => {
-
-          this.marksLoading = false;
-
-          if (!response || response.success === false) {
-            this.marksError =
-              response?.message || 'Unable to fetch marks.';
-
-            this.cdr.detectChanges();
-            return;
-          }
-
-          this.marksRecords = Array.isArray(response.data)
-            ? response.data
-            : [];
-
-          this.cdr.detectChanges();
-
-          console.log('Marks Loaded:', this.marksRecords);
-        },
-
-        error: (error) => {
-
-          this.marksLoading = false;
-
-          this.marksError =
-            error.error?.message || 'Unable to load marks records.';
-
-          this.cdr.detectChanges();
-          console.error('Marks Error:', error);
-        }
-      });
-  }
-
-  // ==========================================
-  // ATTENDANCE SUMMARY
+  // TOTAL CLASSES
   // ==========================================
 
   get totalClasses(): number {
+
     return this.attendanceRecords.length;
+
   }
 
-  get presentClasses(): number {
-    return this.attendanceRecords.filter(
-      record => record.status === 'Present'
-    ).length;
-  }
+  // ==========================================
+  // AVERAGE MARKS
+  // ==========================================
 
-  get absentClasses(): number {
-    return this.attendanceRecords.filter(
-      record => record.status === 'Absent'
-    ).length;
-  }
+  get averageMarks(): number {
 
-  get attendancePercentage(): number {
+    if (this.marksRecords.length === 0) {
+      return 0;
+    }
 
-    if (this.totalClasses === 0) {
+    const validRecords = this.marksRecords.filter(
+      record => Number(record.max_marks) > 0
+    );
+
+    if (validRecords.length === 0) {
+      return 0;
+    }
+
+    const totalObtained = validRecords.reduce(
+      (total, record) =>
+        total + Number(record.obtained_marks || 0),
+      0
+    );
+
+    const totalMaximum = validRecords.reduce(
+      (total, record) =>
+        total + Number(record.max_marks || 0),
+      0
+    );
+
+    if (totalMaximum === 0) {
       return 0;
     }
 
     return Math.round(
-      (this.presentClasses / this.totalClasses) * 100
+      (totalObtained / totalMaximum) * 100
     );
-  }
 
-  // ==========================================
-  // STUDENT STATUS
-  // ==========================================
-
-  get studentStatus(): StudentStatus | null {
-    return this.student?.status || this.authUser?.status || null;
-  }
-
-  // ==========================================
-  // LOGOUT
-  // ==========================================
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
   }
 
 }

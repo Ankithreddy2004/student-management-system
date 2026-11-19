@@ -7,11 +7,25 @@ const db = require('../config/db');
 // ==========================================
 
 exports.signup = async (req, res) => {
+    let connection;
+    let transactionStarted = false;
+
     try {
         const { name, email, phone, course, password } = req.body;
 
         // 1. Validate required fields
-        if (!name || !email || !phone || !course || !password) {
+        if (
+            typeof name !== 'string' ||
+            typeof email !== 'string' ||
+            typeof phone !== 'string' ||
+            typeof course !== 'string' ||
+            typeof password !== 'string' ||
+            !name.trim() ||
+            !email.trim() ||
+            !phone.trim() ||
+            !course.trim() ||
+            !password
+        ) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required.'
@@ -19,7 +33,7 @@ exports.signup = async (req, res) => {
         }
 
         // 2. Validate password
-        if (typeof password !== 'string' || password.length < 8) {
+        if (password.length < 8) {
             return res.status(400).json({
                 success: false,
                 message: 'Password must contain at least 8 characters.'
@@ -51,6 +65,7 @@ exports.signup = async (req, res) => {
             });
         }
 
+        // 6. Validate course
         if (!cleanCourse) {
             return res.status(400).json({
                 success: false,
@@ -58,171 +73,132 @@ exports.signup = async (req, res) => {
             });
         }
 
-        // 6. Check duplicate email in students
-        db.query(
-            'SELECT id FROM students WHERE email = ?',
-            [cleanEmail],
-            async (studentError, students) => {
+        // 7. Hash password
+        const hashedPassword = await bcrypt.hash(password, 12);
 
-                if (studentError) {
-                    console.error(studentError);
-
-                    return res.status(500).json({
-                        success: false,
-                        message: 'Database error.'
-                    });
+        // 8. Get a dedicated connection from the pool
+        connection = await new Promise((resolve, reject) => {
+            db.getConnection((error, conn) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(conn);
                 }
+            });
+        });
 
-                if (students.length > 0) {
-                    return res.status(409).json({
-                        success: false,
-                        message: 'A student with this email already exists.'
-                    });
+        // 9. Start transaction on the connection
+        await new Promise((resolve, reject) => {
+            connection.beginTransaction(error => {
+                if (error) {
+                    reject(error);
+                } else {
+                    transactionStarted = true;
+                    resolve();
                 }
+            });
+        });
 
-                // 7. Check duplicate email in users
-                db.query(
-                    'SELECT id FROM users WHERE email = ?',
-                    [cleanEmail],
-                    async (userError, users) => {
-
-                        if (userError) {
-                            console.error(userError);
-
-                            return res.status(500).json({
-                                success: false,
-                                message: 'Database error.'
-                            });
-                        }
-
-                        if (users.length > 0) {
-                            return res.status(409).json({
-                                success: false,
-                                message: 'An account with this email already exists.'
-                            });
-                        }
-
-                        try {
-                            // 8. Hash password
-                            const hashedPassword = await bcrypt.hash(password, 12);
-
-                            // 9. Start transaction
-                            db.beginTransaction((transactionError) => {
-
-                                if (transactionError) {
-                                    console.error(transactionError);
-
-                                    return res.status(500).json({
-                                        success: false,
-                                        message: 'Unable to start registration.'
-                                    });
-                                }
-
-                                // 10. Insert student with Pending status
-                                db.query(
-                                    `INSERT INTO students
-                                    (name, email, phone, course, status)
-                                    VALUES (?, ?, ?, ?, 'Pending')`,
-                                    [
-                                        cleanName,
-                                        cleanEmail,
-                                        cleanPhone,
-                                        cleanCourse
-                                    ],
-                                    (insertStudentError, studentResult) => {
-
-                                        if (insertStudentError) {
-                                            return db.rollback(() => {
-                                                console.error(insertStudentError);
-
-                                                return res.status(500).json({
-                                                    success: false,
-                                                    message: 'Unable to register student.'
-                                                });
-                                            });
-                                        }
-
-                                        const studentId = studentResult.insertId;
-
-                                        // 11. Create Student login account
-                                        db.query(
-                                            `INSERT INTO users
-                                            (name, email, password, role, student_id)
-                                            VALUES (?, ?, ?, 'Student', ?)`,
-                                            [
-                                                cleanName,
-                                                cleanEmail,
-                                                hashedPassword,
-                                                studentId
-                                            ],
-                                            (insertUserError, userResult) => {
-
-                                                if (insertUserError) {
-                                                    return db.rollback(() => {
-                                                        console.error(insertUserError);
-
-                                                        return res.status(500).json({
-                                                            success: false,
-                                                            message: 'Unable to create student account.'
-                                                        });
-                                                    });
-                                                }
-
-                                                // 12. Commit transaction
-                                                db.commit((commitError) => {
-
-                                                    if (commitError) {
-                                                        return db.rollback(() => {
-                                                            console.error(commitError);
-
-                                                            return res.status(500).json({
-                                                                success: false,
-                                                                message: 'Registration failed.'
-                                                            });
-                                                        });
-                                                    }
-
-                                                    // 13. Registration successful
-                                                    return res.status(201).json({
-                                                        success: true,
-                                                        message: 'Registration successful. Your account is waiting for approval.',
-                                                        data: {
-                                                            student_id: studentId,
-                                                            user_id: userResult.insertId,
-                                                            name: cleanName,
-                                                            email: cleanEmail,
-                                                            role: 'Student',
-                                                            status: 'Pending'
-                                                        }
-                                                    });
-
-                                                });
-                                            }
-                                        );
-                                    }
-                                );
-                            });
-
-                        } catch (error) {
-                            console.error(error);
-
-                            return res.status(500).json({
-                                success: false,
-                                message: 'Password processing failed.'
-                            });
-                        }
+        // 10. Insert student with Pending status
+        const studentResult = await new Promise((resolve, reject) => {
+            connection.query(
+                `INSERT INTO students
+                (name, email, phone, course, status)
+                VALUES (?, ?, ?, ?, 'Pending')`,
+                [
+                    cleanName,
+                    cleanEmail,
+                    cleanPhone,
+                    cleanCourse
+                ],
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
                     }
-                );
+                }
+            );
+        });
+
+        const studentId = studentResult.insertId;
+
+        // 11. Create corresponding Student login account
+        const userResult = await new Promise((resolve, reject) => {
+            connection.query(
+                `INSERT INTO users
+                (name, email, password, role, student_id)
+                VALUES (?, ?, ?, 'Student', ?)`,
+                [
+                    cleanName,
+                    cleanEmail,
+                    hashedPassword,
+                    studentId
+                ],
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result);
+                    }
+                }
+            );
+        });
+
+        // 12. Commit transaction
+        await new Promise((resolve, reject) => {
+            connection.commit(error => {
+                if (error) {
+                    reject(error);
+                } else {
+                    transactionStarted = false;
+                    resolve();
+                }
+            });
+        });
+
+        // 13. Registration successful
+        return res.status(201).json({
+            success: true,
+            message: 'Registration successful. Your account is waiting for approval.',
+            data: {
+                student_id: studentId,
+                user_id: userResult.insertId,
+                name: cleanName,
+                email: cleanEmail,
+                role: 'Student',
+                status: 'Pending'
             }
-        );
+        });
 
     } catch (error) {
-        console.error(error);
+        console.error('Student Signup Error:', error);
+
+        // Roll back both inserts if anything fails
+        if (connection && transactionStarted) {
+            await new Promise(resolve => {
+                connection.rollback(() => resolve());
+            });
+        }
+
+        // Handle duplicate email
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({
+                success: false,
+                message: 'An account with this email already exists. Please use another email or log in.'
+            });
+        }
 
         return res.status(500).json({
             success: false,
-            message: 'Internal server error.'
+            message: 'Registration failed. Please try again.'
         });
+
+    } finally {
+        // Always release the database connection
+        if (connection) {
+            connection.release();
+        }
     }
 };
 
@@ -232,7 +208,6 @@ exports.signup = async (req, res) => {
 // ==========================================
 
 exports.login = async (req, res) => {
-
     try {
         const { email, password } = req.body;
 
@@ -260,7 +235,6 @@ exports.login = async (req, res) => {
              LEFT JOIN students s ON u.student_id = s.id
              WHERE u.email = ?`,
             [cleanEmail],
-
             async (error, results) => {
 
                 if (error) {
@@ -324,7 +298,6 @@ exports.login = async (req, res) => {
                         success: true,
                         message: 'Login successful.',
                         token: token,
-
                         user: {
                             id: user.id,
                             name: user.name,
@@ -357,4 +330,3 @@ exports.login = async (req, res) => {
         });
     }
 };
-

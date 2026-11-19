@@ -8,12 +8,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { MatIconModule } from '@angular/material/icon';
+
 import { Subject } from '../../services/subject';
 
 @Component({
   selector: 'app-admin-subjects',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    MatIconModule
+  ],
   templateUrl: './admin-subjects.html',
   styleUrl: './admin-subjects.css'
 })

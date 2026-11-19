@@ -1,110 +1,155 @@
 <div class="dashboard-layout">
 
-  <!-- TEACHER SIDEBAR -->
-  <aside class="teacher-sidebar">
+  <!-- =====================================
+       TOP HEADER
+  ====================================== -->
 
-    <div class="sidebar-brand">
+  <header class="main-header">
+
+    <!-- BRAND -->
+
+    <div class="header-brand">
 
       <div class="logo">SMS</div>
 
       <div class="brand-info">
-        <h2>Student Management</h2>
+        <h2>Student Management System</h2>
         <p>Teacher Portal</p>
       </div>
 
     </div>
 
-    <div class="sidebar-divider"></div>
+    <!-- PROFILE AND LOGOUT -->
 
-    <!-- NAVIGATION -->
-    <nav class="sidebar-nav">
-
-      <a
-        routerLink="/teacher/dashboard"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon>dashboard</mat-icon>
-        <span>Dashboard</span>
-      </a>
-
-      <a
-        routerLink="/teacher/students"
-        routerLinkActive="active">
-        <mat-icon>school</mat-icon>
-        <span>Students</span>
-      </a>
-
-      <a
-        routerLink="/teacher/add-student"
-        routerLinkActive="active">
-        <mat-icon>person_add</mat-icon>
-        <span>Add Student</span>
-      </a>
-
-      <a
-        routerLink="/teacher/pending-students"
-        routerLinkActive="active">
-        <mat-icon>pending_actions</mat-icon>
-        <span>Pending Requests</span>
-      </a>
-
-      <a
-        routerLink="/teacher/attendance"
-        routerLinkActive="active">
-        <mat-icon>event_available</mat-icon>
-        <span>Attendance</span>
-      </a>
-
-      <a
-        routerLink="/teacher/marks"
-        routerLinkActive="active">
-        <mat-icon>grading</mat-icon>
-        <span>Marks</span>
-      </a>
+    <div class="header-actions">
 
       <a
         routerLink="/teacher/profile"
-        routerLinkActive="active">
-        <mat-icon>person</mat-icon>
-        <span>My Profile</span>
+        class="header-profile">
+
+        <div class="header-avatar">
+          <mat-icon>person</mat-icon>
+        </div>
+
+        <div class="header-profile-info">
+          <h3>Teacher</h3>
+          <p>Teacher</p>
+        </div>
+
       </a>
-
-    </nav>
-
-    <div class="sidebar-footer">
-      <p>Student Management System</p>
-      <span>Teacher Access</span>
-    </div>
-
-  </aside>
-
-
-  <!-- MAIN CONTENT -->
-  <main class="dashboard-main">
-
-    <!-- HEADER -->
-    <header class="main-header">
-
-      <div class="header-title">
-        <h2>Teacher Portal</h2>
-        <p>Student Management System</p>
-      </div>
 
       <button class="header-logout-btn" (click)="logout()">
         <mat-icon>logout</mat-icon>
         <span>Logout</span>
       </button>
 
-    </header>
+    </div>
+
+  </header>
 
 
-    <!-- CHILD COMPONENT CONTENT -->
-    <section class="dashboard-content">
+  <!-- =====================================
+       BODY LAYOUT
+  ====================================== -->
 
-      <router-outlet></router-outlet>
+  <div class="dashboard-body">
 
-    </section>
+    <!-- TEACHER SIDEBAR -->
 
-  </main>
+    <aside class="teacher-sidebar">
+
+      <!-- NAVIGATION -->
+
+      <nav class="sidebar-nav">
+
+        <a
+          routerLink="/teacher/dashboard"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
+
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+
+        </a>
+
+        <a
+          routerLink="/teacher/students"
+          routerLinkActive="active">
+
+          <mat-icon>school</mat-icon>
+          <span>Students</span>
+
+        </a>
+
+        <a
+          routerLink="/teacher/add-student"
+          routerLinkActive="active">
+
+          <mat-icon>person_add</mat-icon>
+          <span>Add Student</span>
+
+        </a>
+
+        <a
+          routerLink="/teacher/pending-students"
+          routerLinkActive="active">
+
+          <mat-icon>pending_actions</mat-icon>
+          <span>Pending Requests</span>
+
+        </a>
+
+        <a
+          routerLink="/teacher/attendance"
+          routerLinkActive="active">
+
+          <mat-icon>event_available</mat-icon>
+          <span>Attendance</span>
+
+        </a>
+
+        <a
+          routerLink="/teacher/marks"
+          routerLinkActive="active">
+
+          <mat-icon>grading</mat-icon>
+          <span>Marks</span>
+
+        </a>
+
+        <a
+          routerLink="/teacher/profile"
+          routerLinkActive="active">
+
+          <mat-icon>person</mat-icon>
+          <span>My Profile</span>
+
+        </a>
+
+      </nav>
+
+      <!-- SIDEBAR FOOTER -->
+
+      <div class="sidebar-footer">
+        <p>Student Management System</p>
+        <span>Teacher Access</span>
+      </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="dashboard-main">
+
+      <section class="dashboard-content">
+
+        <router-outlet></router-outlet>
+
+      </section>
+
+    </main>
+
+  </div>
 
 </div>

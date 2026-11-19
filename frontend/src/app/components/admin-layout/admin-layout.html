@@ -1,83 +1,25 @@
 <div class="dashboard-layout">
 
-  <!-- ADMIN SIDEBAR -->
-  <aside class="sidebar">
+  <!-- =====================================
+       TOP HEADER
+  ====================================== -->
 
-    <div class="sidebar-brand">
+  <header class="main-header">
+
+    <!-- BRAND -->
+    <div class="header-brand">
+
       <div class="logo">SMS</div>
 
       <div class="brand-info">
-        <h2>Student Management</h2>
+        <h2>Student Management System</h2>
         <p>Administrator Portal</p>
       </div>
+
     </div>
 
-    <div class="sidebar-divider"></div>
-
-    <!-- SIDEBAR NAVIGATION -->
-    <nav class="sidebar-nav">
-
-      <a
-        routerLink="/admin/dashboard"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-
-        <mat-icon>dashboard</mat-icon>
-        <span>Dashboard</span>
-
-      </a>
-
-      <a
-        routerLink="/admin/students"
-        routerLinkActive="active">
-
-        <mat-icon>school</mat-icon>
-        <span>Students</span>
-
-      </a>
-
-      <a
-        routerLink="/admin/teachers"
-        routerLinkActive="active">
-
-        <mat-icon>groups</mat-icon>
-        <span>Teachers</span>
-
-      </a>
-
-      <a
-        routerLink="/admin/subjects"
-        routerLinkActive="active">
-
-        <mat-icon>menu_book</mat-icon>
-        <span>Subjects</span>
-
-      </a>
-
-      <a
-        routerLink="/admin/assignments"
-        routerLinkActive="active">
-
-        <mat-icon>assignment</mat-icon>
-        <span>Assignments</span>
-
-      </a>
-
-    </nav>
-
-    <div class="sidebar-footer">
-      <p>Student Management System</p>
-      <span>Administrator Access</span>
-    </div>
-
-  </aside>
-
-
-  <!-- MAIN CONTENT -->
-  <main class="dashboard-main">
-
-    <!-- PERSISTENT HEADER -->
-    <header class="main-header">
+    <!-- PROFILE AND LOGOUT -->
+    <div class="header-actions">
 
       <div class="header-profile">
 
@@ -92,26 +34,100 @@
 
       </div>
 
-      <div class="header-title">
-        <h2>Admin Portal</h2>
-        <p>Student Management System</p>
-      </div>
-
       <button class="header-logout-btn" (click)="logout()">
         <mat-icon>logout</mat-icon>
         <span>Logout</span>
       </button>
 
-    </header>
+    </div>
+
+  </header>
 
 
-    <!-- ONLY THIS SECTION CHANGES -->
-    <section class="dashboard-content">
+  <!-- =====================================
+       BODY LAYOUT
+  ====================================== -->
 
-      <router-outlet></router-outlet>
+  <div class="dashboard-body">
 
-    </section>
+    <!-- ADMIN SIDEBAR -->
 
-  </main>
+    <aside class="sidebar">
+
+      <!-- SIDEBAR NAVIGATION -->
+
+      <nav class="sidebar-nav">
+
+        <a
+          routerLink="/admin/dashboard"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
+
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+
+        </a>
+
+        <a
+          routerLink="/admin/students"
+          routerLinkActive="active">
+
+          <mat-icon>school</mat-icon>
+          <span>Students</span>
+
+        </a>
+
+        <a
+          routerLink="/admin/teachers"
+          routerLinkActive="active">
+
+          <mat-icon>groups</mat-icon>
+          <span>Teachers</span>
+
+        </a>
+
+        <a
+          routerLink="/admin/subjects"
+          routerLinkActive="active">
+
+          <mat-icon>menu_book</mat-icon>
+          <span>Subjects</span>
+
+        </a>
+
+        <a
+          routerLink="/admin/assignments"
+          routerLinkActive="active">
+
+          <mat-icon>assignment</mat-icon>
+          <span>Assignments</span>
+
+        </a>
+
+      </nav>
+
+      <!-- SIDEBAR FOOTER -->
+
+      <div class="sidebar-footer">
+        <p>Student Management System</p>
+        <span>Administrator Access</span>
+      </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="dashboard-main">
+
+      <section class="dashboard-content">
+
+        <router-outlet></router-outlet>
+
+      </section>
+
+    </main>
+
+  </div>
 
 </div>

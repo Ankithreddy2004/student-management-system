@@ -122,17 +122,10 @@ th {
   font-weight: 600;
 }
 
-@media (max-width: 600px) {
-  .container {
-    padding: 15px;
-  }
 
-  .form-card,
-  .teachers-section {
-    padding: 16px;
-  }
-}
-/* Edit Form */
+/* =====================================
+   EDIT FORM
+===================================== */
 
 .edit-card {
   border-left: 4px solid #7c3aed;
@@ -157,45 +150,87 @@ th {
   background: #475569;
 }
 
-/* Table Actions */
+
+/* =====================================
+   TABLE ACTION ICONS
+===================================== */
 
 .action-buttons {
+  vertical-align: middle;
+}
+
+.teacher-actions {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.edit-btn,
-.delete-btn {
+
+/* Common icon button styling */
+
+.teacher-actions .edit-btn,
+.teacher-actions .delete-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  color: white;
+  border-radius: 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   cursor: pointer;
-  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.edit-btn {
-  background: #7c3aed;
+
+/* EDIT ICON */
+
+.teacher-actions .edit-btn {
+  background: #eee5ff;
+  color: #713bd1;
 }
 
-.edit-btn:hover {
-  background: #6d28d9;
+.teacher-actions .edit-btn:hover {
+  background: #713bd1;
+  color: white;
 }
 
-.delete-btn {
+
+/* DELETE ICON */
+
+.teacher-actions .delete-btn {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.teacher-actions .delete-btn:hover {
   background: #dc2626;
+  color: white;
 }
 
-.delete-btn:hover {
-  background: #b91c1c;
+
+/* ICON SIZE */
+
+.teacher-actions mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
 }
 
-.edit-btn:disabled,
-.delete-btn:disabled {
-  opacity: 0.6;
+
+/* DISABLED ICON */
+
+.teacher-actions .edit-btn:disabled,
+.teacher-actions .delete-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
+
+
 /* =====================================
    TEACHER IMAGE PREVIEW
 ===================================== */
@@ -257,14 +292,8 @@ th {
 
 
 /* =====================================
-   TEACHER ACTIONS
+   TEACHER PHOTO ACTIONS
 ===================================== */
-
-.teacher-actions {
-  display: flex;
-  gap: 7px;
-  margin-bottom: 10px;
-}
 
 .teacher-photo-actions {
   display: flex;
@@ -307,9 +336,29 @@ th {
   cursor: not-allowed;
 }
 
+
+/* =====================================
+   RESPONSIVE DESIGN
+===================================== */
+
 @media (max-width: 768px) {
+
   .teacher-photo-actions,
   .teacher-actions {
     flex-wrap: wrap;
   }
+
+}
+
+@media (max-width: 600px) {
+
+  .container {
+    padding: 15px;
+  }
+
+  .form-card,
+  .teachers-section {
+    padding: 16px;
+  }
+
 }

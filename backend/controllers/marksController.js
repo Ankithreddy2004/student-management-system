@@ -98,6 +98,7 @@ const getTeacherSubjects = (req, res) => {
 // ==========================================
 // TEACHER: GET STUDENTS BY SUBJECT
 // ==========================================
+
 const getStudentsForMarks = (req, res) => {
 
     const teacherId = req.user.id;
@@ -110,42 +111,61 @@ const getStudentsForMarks = (req, res) => {
         });
     }
 
-    // Verify teacher assignment and retrieve students
-    const sql = `
-        SELECT
-            st.id,
-            st.name,
-            st.email,
-            st.phone,
-            st.course
-        FROM students st
-        WHERE st.course = (
-            SELECT s.course
-            FROM subjects s
-            JOIN teacher_subjects ts
-                ON ts.subject_id = s.id
-            WHERE s.id = ?
-            AND ts.teacher_id = ?
-        )
-        AND st.status = 'Active'
-        ORDER BY st.name
+    // Verify that the teacher is assigned to this subject
+    const assignmentSql = `
+        SELECT subject_id
+        FROM teacher_subjects
+        WHERE teacher_id = ?
+        AND subject_id = ?
     `;
 
-    db.query(sql, [subjectId, teacherId], (error, results) => {
+    db.query(assignmentSql, [teacherId, subjectId], (assignmentError, assignments) => {
 
-        if (error) {
-            console.error('Get Students For Marks Error:', error);
+        if (assignmentError) {
+            console.error('Subject assignment error:', assignmentError);
 
             return res.status(500).json({
                 success: false,
-                message: 'Unable to fetch students.'
+                message: 'Unable to verify subject assignment.'
             });
         }
 
-        return res.status(200).json({
-            success: true,
-            total_students: results.length,
-            data: results
+        if (assignments.length === 0) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not assigned to this subject.'
+            });
+        }
+
+        // Fetch all active students regardless of course
+        const studentsSql = `
+            SELECT
+                id,
+                name,
+                email,
+                phone,
+                course
+            FROM students
+            WHERE status = 'Active'
+            ORDER BY name
+        `;
+
+        db.query(studentsSql, (studentError, results) => {
+
+            if (studentError) {
+                console.error('Get Students For Marks Error:', studentError);
+
+                return res.status(500).json({
+                    success: false,
+                    message: 'Unable to fetch students.'
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                total_students: results.length,
+                data: results
+            });
         });
     });
 };
@@ -570,9 +590,8 @@ const addMarks = (req, res) => {
     }
 
     const examSql = `
-        SELECT e.id, e.subject_id, e.max_marks, s.course
+        SELECT e.id, e.subject_id, e.max_marks
         FROM exams e
-        JOIN subjects s ON s.id = e.subject_id
         JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
         WHERE e.id = ?
         AND ts.teacher_id = ?
@@ -638,13 +657,12 @@ const addMarks = (req, res) => {
             SELECT id
             FROM students
             WHERE id IN (${placeholders})
-            AND course = ?
             AND status = 'Active'
         `;
 
         db.query(
             studentSql,
-            [...studentIds, exam.course],
+            [...studentIds],
             (studentError, validStudents) => {
 
                 if (studentError) {
@@ -659,7 +677,7 @@ const addMarks = (req, res) => {
                 if (validStudents.length !== studentIds.length) {
                     return res.status(400).json({
                         success: false,
-                        message: 'Some students are invalid, inactive or do not belong to this subject course.'
+                        message: 'Some students are invalid or inactive.'
                     });
                 }
 

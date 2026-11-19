@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 // Dashboard layouts
 import { AdminLayout } from './components/admin-layout/admin-layout';
 import { TeacherLayout } from './components/teacher-layout/teacher-layout';
+import { StudentLayout } from './components/student-layout/student-layout';
 
 // Dashboard components
 import { StudentDashboard } from './components/student-dashboard/student-dashboard';
@@ -20,6 +21,11 @@ import { TeacherAttendance } from './components/teacher-attendance/teacher-atten
 import { TeacherMarks } from './components/teacher-marks/teacher-marks';
 import { TeacherProfile } from './components/teacher-profile/teacher-profile';
 
+// Student components
+import { StudentAttendance } from './components/student-attendance/student-attendance';
+import { StudentMarks } from './components/student-marks/student-marks';
+import { StudentProfile } from './components/student-profile/student-profile';
+
 // Student CRUD components
 import { Students } from './components/students/students';
 import { AddStudent } from './components/add-student/add-student';
@@ -34,13 +40,20 @@ import { authGuard, roleGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
 
+  // ==========================================
+  // DEFAULT ROUTE
+  // ==========================================
+
   {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'
   },
 
-  // Authentication routes
+  // ==========================================
+  // AUTHENTICATION
+  // ==========================================
+
   {
     path: 'login',
     component: Login
@@ -51,19 +64,56 @@ export const routes: Routes = [
     component: Signup
   },
 
+  // ==========================================
+  // STUDENT LAYOUT AND CHILD ROUTES
+  // ==========================================
 
-  // STUDENT DASHBOARD
   {
-    path: 'student-dashboard',
-    component: StudentDashboard,
+    path: 'student',
+    component: StudentLayout,
     canActivate: [authGuard, roleGuard],
     data: {
       roles: ['Student']
-    }
+    },
+    children: [
+
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+
+      // Student Dashboard
+      {
+        path: 'dashboard',
+        component: StudentDashboard
+      },
+
+      // Student Attendance
+      {
+        path: 'attendance',
+        component: StudentAttendance
+      },
+
+      // Student Marks
+      {
+        path: 'marks',
+        component: StudentMarks
+      },
+
+      // Student Profile
+      {
+        path: 'profile',
+        component: StudentProfile
+      }
+
+    ]
   },
 
-
+  // ==========================================
   // ADMIN LAYOUT AND CHILD ROUTES
+  // ==========================================
+
   {
     path: 'admin',
     component: AdminLayout,
@@ -117,8 +167,10 @@ export const routes: Routes = [
     ]
   },
 
-
+  // ==========================================
   // TEACHER LAYOUT AND CHILD ROUTES
+  // ==========================================
+
   {
     path: 'teacher',
     component: TeacherLayout,
@@ -177,9 +229,16 @@ export const routes: Routes = [
     ]
   },
 
+  // ==========================================
+  // LEGACY DASHBOARD URL REDIRECTS
+  // ==========================================
 
-  // Legacy dashboard URLs
-  // These keep existing login redirects working.
+  {
+    path: 'student-dashboard',
+    redirectTo: 'student/dashboard',
+    pathMatch: 'full'
+  },
+
   {
     path: 'admin-dashboard',
     redirectTo: 'admin/dashboard',
@@ -192,8 +251,10 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
 
+  // ==========================================
+  // UNKNOWN ROUTES
+  // ==========================================
 
-  // Unknown routes
   {
     path: '**',
     redirectTo: 'login'

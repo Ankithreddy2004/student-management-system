@@ -1,0 +1,503 @@
+* {
+  box-sizing: border-box;
+}
+
+/* =====================================
+   MAIN LAYOUT
+===================================== */
+
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+
+  height: 100vh;
+  min-height: 0;
+  width: 100%;
+
+  background: #f4f3ff;
+
+  overflow: hidden;
+}
+
+/* =====================================
+   TOP HEADER
+===================================== */
+
+.main-header {
+  width: 100%;
+  min-height: 85px;
+
+  padding: 15px 30px;
+
+  background: linear-gradient(
+    110deg,
+    #5424a8,
+    #8051c8,
+    #a477df
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  color: white;
+
+  box-shadow: 0 3px 12px rgba(39, 19, 75, 0.12);
+
+  flex-shrink: 0;
+}
+
+/* BRAND */
+
+.header-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  min-width: 0;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+
+  background: white;
+  color: #5424a8;
+
+  border-radius: 12px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 17px;
+  font-weight: 800;
+
+  flex-shrink: 0;
+}
+
+.brand-info h2 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.brand-info p {
+  margin: 5px 0 0;
+
+  font-size: 12px;
+
+  color: #eee5ff;
+}
+
+/* =====================================
+   HEADER ACTIONS
+===================================== */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 25px;
+
+  flex-shrink: 0;
+}
+
+/* PROFILE */
+
+.header-profile {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  text-decoration: none;
+  color: white;
+
+  transition: 0.2s ease;
+}
+
+.header-profile:hover {
+  opacity: 0.85;
+}
+
+.header-avatar {
+  width: 43px;
+  height: 43px;
+
+  border-radius: 50%;
+
+  background: white;
+  color: #5424a8;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-avatar mat-icon {
+  font-size: 25px;
+
+  width: 25px;
+  height: 25px;
+}
+
+.header-profile-info h3 {
+  margin: 0;
+
+  font-size: 14px;
+}
+
+.header-profile-info p {
+  margin: 4px 0 0;
+
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* LOGOUT */
+
+.header-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 11px 18px;
+
+  background: white;
+  color: #5424a8;
+
+  border: none;
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+  font-size: 13px;
+
+  min-width: 100px;
+
+  transition: 0.2s ease;
+
+  flex-shrink: 0;
+}
+
+.header-logout-btn mat-icon {
+  font-size: 19px;
+
+  width: 19px;
+  height: 19px;
+}
+
+.header-logout-btn:hover {
+  background: #f0e9ff;
+
+  transform: translateY(-1px);
+}
+
+/* =====================================
+   BODY LAYOUT
+===================================== */
+
+.dashboard-body {
+  display: flex;
+
+  flex: 1;
+
+  min-height: 0;
+  min-width: 0;
+
+  overflow: hidden;
+}
+
+/* =====================================
+   STUDENT SIDEBAR
+===================================== */
+
+.student-sidebar {
+  width: 260px;
+  min-width: 260px;
+
+  height: 100%;
+
+  background: #27134b;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+
+  flex-shrink: 0;
+
+  overflow-y: auto;
+}
+
+/* =====================================
+   NAVIGATION
+===================================== */
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+
+  padding: 22px 12px;
+
+  gap: 8px;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 13px 15px;
+
+  color: #d5c9eb;
+
+  text-decoration: none;
+
+  border-radius: 9px;
+
+  font-size: 14px;
+
+  transition: 0.2s ease;
+
+  flex-shrink: 0;
+}
+
+.sidebar-nav a mat-icon {
+  font-size: 21px;
+
+  width: 22px;
+  height: 22px;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+
+  color: white;
+}
+
+.sidebar-nav a.active {
+  background: #8051c8;
+
+  color: white;
+
+  font-weight: 600;
+}
+
+/* =====================================
+   SIDEBAR FOOTER
+===================================== */
+
+.sidebar-footer {
+  margin-top: auto;
+
+  padding: 20px;
+
+  color: #c5b5e5;
+
+  font-size: 11px;
+
+  flex-shrink: 0;
+}
+
+.sidebar-footer p {
+  margin: 0 0 5px;
+}
+
+.sidebar-footer span {
+  opacity: 0.7;
+}
+
+/* =====================================
+   MAIN CONTENT
+===================================== */
+
+.dashboard-main {
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.dashboard-content {
+  flex: 1;
+
+  min-height: 0;
+  min-width: 0;
+
+  padding: 28px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior-y: contain;
+
+  scrollbar-gutter: stable;
+}
+
+/* SCROLLBAR */
+
+.dashboard-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dashboard-content::-webkit-scrollbar-track {
+  background: #f4f3ff;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb {
+  background: #c5b5e5;
+
+  border-radius: 10px;
+}
+
+.dashboard-content::-webkit-scrollbar-thumb:hover {
+  background: #8051c8;
+}
+
+/* =====================================
+   TABLET
+===================================== */
+
+@media (max-width: 900px) {
+
+  .student-sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .main-header {
+    padding: 15px 20px;
+  }
+
+  .header-actions {
+    gap: 15px;
+  }
+
+  .dashboard-content {
+    padding: 20px;
+  }
+
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 650px) {
+
+  .main-header {
+    min-height: 75px;
+
+    padding: 12px 15px;
+
+    gap: 10px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .brand-info h2 {
+    font-size: 13px;
+  }
+
+  .brand-info p {
+    font-size: 10px;
+  }
+
+  .header-actions {
+    gap: 10px;
+  }
+
+  .header-profile {
+    gap: 7px;
+  }
+
+  .header-avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .header-profile-info h3 {
+    font-size: 11px;
+  }
+
+  .header-profile-info p {
+    font-size: 10px;
+  }
+
+  .header-logout-btn {
+    min-width: auto;
+
+    padding: 9px 10px;
+
+    font-size: 11px;
+  }
+
+  .header-logout-btn mat-icon {
+    font-size: 18px;
+  }
+
+  .dashboard-body {
+    flex-direction: column;
+  }
+
+  .student-sidebar {
+    width: 100%;
+    min-width: 100%;
+
+    height: auto;
+
+    overflow: visible;
+
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+
+    overflow-x: auto;
+
+    padding: 10px;
+  }
+
+  .sidebar-nav a {
+    white-space: nowrap;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .dashboard-main {
+    flex: 1;
+
+    min-height: 0;
+
+    height: auto;
+  }
+
+  .dashboard-content {
+    padding: 15px;
+
+    overflow-y: auto;
+  }
+
+}

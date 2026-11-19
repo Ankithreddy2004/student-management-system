@@ -1,467 +1,112 @@
+<div class="student-dashboard">
 
-<div class="dashboard-container">
+  <!-- DASHBOARD HEADER -->
 
-  <!-- HEADER -->
-  <header class="dashboard-header">
+  <section class="welcome-section">
 
-    <div class="brand">
-      <div class="logo">SMS</div>
+    <div class="welcome-text">
 
-      <div>
-        <h2>Student Management System</h2>
-        <p>Student Portal</p>
-      </div>
-    </div>
+      <span class="section-label">
+        STUDENT PORTAL
+      </span>
 
-    <button class="logout-btn" (click)="logout()">
-      Logout
-    </button>
-
-  </header>
-
-  <!-- MAIN CONTENT -->
-  <main class="dashboard-content">
-
-    <!-- WELCOME SECTION -->
-    <section class="welcome-section">
-
-      <div>
-        <h1>Welcome, {{ student?.name || authUser?.name || 'Student' }}!</h1>
-
-        <p>
-          Welcome to your student dashboard.
-          Here you can view your academic and personal details.
-        </p>
-      </div>
-
-      <div class="student-icon">
-        {{ student?.name?.charAt(0) || 'S' }}
-      </div>
-
-    </section>
-
-    <!-- PENDING MESSAGE -->
-    <section
-      class="status-message pending-message"
-      *ngIf="studentStatus === 'Pending'">
-
-      <h3>Registration Pending</h3>
+      <h1>
+        Dashboard
+      </h1>
 
       <p>
-        Your registration is waiting for approval from your teacher
-        or administrator. You can view your profile while waiting.
+        Here's an overview of your academic performance.
       </p>
 
-    </section>
-
-    <!-- INACTIVE MESSAGE -->
-    <section
-      class="status-message inactive-message"
-      *ngIf="studentStatus === 'Inactive'">
-
-      <h3>Account Inactive</h3>
-
-      <p>
-        Your account is currently inactive.
-        You can view your academic information in read-only mode.
-        Contact your teacher or administrator for assistance.
-      </p>
-
-    </section>
-
-    <!-- ACTIVE MESSAGE -->
-    <section
-      class="status-message active-message"
-      *ngIf="studentStatus === 'Active'">
-
-      <h3>Account Active</h3>
-
-      <p>Your student account has been approved.</p>
-
-    </section>
-
-    <!-- PROFILE LOADING -->
-    <div class="loading" *ngIf="isLoading && !student">
-      Loading your profile...
     </div>
 
-    <!-- PROFILE ERROR -->
-    <div class="error-message" *ngIf="errorMessage">
-      {{ errorMessage }}
+  </section>
 
-      <button (click)="loadStudentDetails()">
-        Try Again
-      </button>
+
+  <!-- LOADING -->
+
+  <div class="loading-message" *ngIf="isLoading">
+
+    Loading your dashboard...
+
+  </div>
+
+
+  <!-- ERROR MESSAGES -->
+
+  <div class="error-message" *ngIf="!isLoading && attendanceError">
+
+    {{ attendanceError }}
+
+  </div>
+
+  <div class="error-message" *ngIf="!isLoading && marksError">
+
+    {{ marksError }}
+
+  </div>
+
+
+  <!-- SUMMARY CARDS -->
+
+  <section class="summary-grid" *ngIf="!isLoading">
+
+    <!-- TOTAL SUBJECTS -->
+
+    <div class="summary-card">
+
+      <div class="summary-icon purple">
+        <span>📚</span>
+      </div>
+
+      <div>
+
+        <p>Total Subjects</p>
+
+        <h2>{{ totalSubjects }}</h2>
+
+      </div>
+
     </div>
 
-    <!-- STUDENT PROFILE -->
-    <section class="profile-section" *ngIf="!isLoading && student">
 
-      <!-- PROFILE HEADING -->
-      <div class="section-heading">
+    <!-- TOTAL CLASSES -->
 
-        <div>
-          <h2>My Profile</h2>
-          <p>Your registered student information</p>
-        </div>
+    <div class="summary-card">
 
-        <div class="profile-actions">
+      <div class="summary-icon blue">
+        <span>📅</span>
+      </div>
 
-          <span
-            class="status-badge"
-            [ngClass]="student.status.toLowerCase()">
+      <div>
 
-            {{ student.status }}
+        <p>Total Classes</p>
 
-          </span>
-
-          <!-- EDIT PROFILE BUTTON -->
-          <button
-            class="edit-profile-btn"
-            *ngIf="canEditProfile && !isEditing"
-            (click)="openEditProfile()">
-
-            Edit Profile
-
-          </button>
-
-        </div>
+        <h2>{{ totalClasses }}</h2>
 
       </div>
 
-      <!-- PROFILE SUCCESS MESSAGE -->
-      <div class="success-message" *ngIf="profileSuccess">
-        {{ profileSuccess }}
+    </div>
+
+
+    <!-- AVERAGE MARKS -->
+
+    <div class="summary-card">
+
+      <div class="summary-icon green">
+        <span>🏆</span>
       </div>
 
-      <!-- PROFILE ERROR MESSAGE -->
-      <div class="error-message" *ngIf="profileError">
-        {{ profileError }}
-      </div>
+      <div>
 
-      <!-- EDIT PROFILE FORM -->
-      <div class="edit-profile-form" *ngIf="isEditing">
+        <p>Average Marks</p>
 
-        <h3>Edit Your Information</h3>
-
-        <p class="form-description">
-          Update your personal information below.
-        </p>
-
-        <div class="form-grid">
-
-          <!-- NAME -->
-          <div class="form-group">
-            <label for="studentName">Full Name</label>
-
-            <input
-              type="text"
-              id="studentName"
-              name="name"
-              [(ngModel)]="profileForm.name"
-              placeholder="Enter your full name"
-              required>
-          </div>
-
-          <!-- PHONE -->
-          <div class="form-group">
-            <label for="studentPhone">Phone Number</label>
-
-            <input
-              type="tel"
-              id="studentPhone"
-              name="phone"
-              maxlength="10"
-              [(ngModel)]="profileForm.phone"
-              placeholder="Enter 10-digit phone number"
-              required>
-          </div>
-
-          <!-- COURSE -->
-          <div class="form-group">
-            <label for="studentCourse">Course</label>
-
-            <input
-              type="text"
-              id="studentCourse"
-              name="course"
-              [(ngModel)]="profileForm.course"
-              placeholder="Enter your course"
-              required>
-          </div>
-
-        </div>
-
-        <!-- FORM BUTTONS -->
-        <div class="form-actions">
-
-          <button
-            class="save-btn"
-            (click)="saveProfile()"
-            [disabled]="isSaving">
-
-            {{ isSaving ? 'Saving...' : 'Save Changes' }}
-
-          </button>
-
-          <button
-            class="cancel-btn"
-            (click)="cancelEdit()"
-            [disabled]="isSaving">
-
-            Cancel
-
-          </button>
-
-        </div>
+        <h2>{{ averageMarks }}%</h2>
 
       </div>
 
-      <!-- PROFILE DETAILS -->
-      <div class="profile-grid">
+    </div>
 
-        <div class="detail-card">
-          <span>Student ID</span>
-          <h3>{{ student.id }}</h3>
-        </div>
-
-        <div class="detail-card">
-          <span>Full Name</span>
-          <h3>{{ student.name }}</h3>
-        </div>
-
-        <div class="detail-card">
-          <span>Email Address</span>
-          <h3>{{ student.email }}</h3>
-        </div>
-
-        <div class="detail-card">
-          <span>Phone Number</span>
-          <h3>{{ student.phone }}</h3>
-        </div>
-
-        <div class="detail-card">
-          <span>Course</span>
-          <h3>{{ student.course }}</h3>
-        </div>
-
-        <div class="detail-card">
-          <span>Account Status</span>
-          <h3>{{ student.status }}</h3>
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- ATTENDANCE SECTION -->
-    <section class="profile-section">
-
-      <div class="section-heading">
-
-        <div>
-          <h2>My Attendance</h2>
-          <p>View your attendance records and percentage.</p>
-        </div>
-
-      </div>
-
-      <!-- ATTENDANCE LOADING -->
-      <div class="loading" *ngIf="attendanceLoading">
-        Loading attendance...
-      </div>
-
-      <!-- ATTENDANCE ERROR -->
-      <div class="error-message" *ngIf="attendanceError">
-        {{ attendanceError }}
-
-        <button (click)="loadAttendance()">
-          Try Again
-        </button>
-      </div>
-
-      <!-- ATTENDANCE SUMMARY -->
-      <div *ngIf="!attendanceLoading && !attendanceError">
-
-        <div class="profile-grid">
-
-          <div class="detail-card">
-            <span>Total Classes</span>
-            <h3>{{ totalClasses }}</h3>
-          </div>
-
-          <div class="detail-card">
-            <span>Present Classes</span>
-            <h3>{{ presentClasses }}</h3>
-          </div>
-
-          <div class="detail-card">
-            <span>Absent Classes</span>
-            <h3>{{ absentClasses }}</h3>
-          </div>
-
-          <div class="detail-card">
-            <span>Attendance Percentage</span>
-            <h3>{{ attendancePercentage }}%</h3>
-          </div>
-
-        </div>
-
-        <!-- ATTENDANCE HISTORY -->
-        <h3 class="sub-heading">Attendance History</h3>
-
-        <div
-          class="table-container"
-          *ngIf="attendanceRecords.length > 0; else noAttendance">
-
-          <table>
-
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Subject</th>
-                <th>Subject Code</th>
-                <th>Status</th>
-                <th>Remarks</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              <tr *ngFor="let record of attendanceRecords">
-
-                <td>
-                  {{ record.attendance_date | date:'dd MMM yyyy' }}
-                </td>
-
-                <td>{{ record.subject_name }}</td>
-
-                <td>{{ record.subject_code }}</td>
-
-                <td>
-                  <span
-                    class="status-badge"
-                    [ngClass]="record.status.toLowerCase()">
-
-                    {{ record.status }}
-
-                  </span>
-                </td>
-
-                <td>{{ record.remarks || '-' }}</td>
-
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-        <ng-template #noAttendance>
-          <p class="empty-message">
-            No attendance records available yet.
-          </p>
-        </ng-template>
-
-      </div>
-
-    </section>
-
-    <!-- MARKS SECTION -->
-    <section class="profile-section">
-
-      <div class="section-heading">
-
-        <div>
-          <h2>My Marks</h2>
-          <p>View your subject-wise academic performance.</p>
-        </div>
-
-      </div>
-
-      <!-- MARKS LOADING -->
-      <div class="loading" *ngIf="marksLoading">
-        Loading marks...
-      </div>
-
-      <!-- MARKS ERROR -->
-      <div class="error-message" *ngIf="marksError">
-        {{ marksError }}
-
-        <button (click)="loadMarks()">
-          Try Again
-        </button>
-      </div>
-
-      <!-- MARKS TABLE -->
-      <div *ngIf="!marksLoading && !marksError">
-
-        <div
-          class="table-container"
-          *ngIf="marksRecords.length > 0; else noMarks">
-
-          <table>
-
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Subject Code</th>
-                <th>Exam</th>
-                <th>Exam Type</th>
-                <th>Exam Date</th>
-                <th>Obtained Marks</th>
-                <th>Maximum Marks</th>
-                <th>Percentage</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              <tr *ngFor="let mark of marksRecords">
-
-                <td>{{ mark.subject_name }}</td>
-
-                <td>{{ mark.subject_code }}</td>
-
-                <td>{{ mark.exam_name }}</td>
-
-                <td>{{ mark.exam_type }}</td>
-
-                <td>
-                  {{ mark.exam_date ? (mark.exam_date | date:'dd MMM yyyy') : '-' }}
-                </td>
-
-                <td>{{ mark.obtained_marks }}</td>
-
-                <td>{{ mark.max_marks }}</td>
-
-                <td>
-                  {{
-                    mark.max_marks > 0
-                      ? ((mark.obtained_marks / mark.max_marks) * 100 | number:'1.1-2') + '%'
-                      : '-'
-                  }}
-                </td>
-
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-        <ng-template #noMarks>
-          <p class="empty-message">
-            No examination results available yet.
-          </p>
-        </ng-template>
-
-      </div>
-
-    </section>
-
-  </main>
+  </section>
 
 </div>

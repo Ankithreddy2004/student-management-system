@@ -1,0 +1,247 @@
+<div class="marks-container">
+
+  <!-- HEADER -->
+
+  <header class="page-header">
+
+    <div>
+
+      <span class="section-label">
+        STUDENT PORTAL
+      </span>
+
+      <h1>My Marks</h1>
+
+      <p>
+        View your examination results and academic performance.
+      </p>
+
+    </div>
+
+  </header>
+
+
+  <!-- LOADING -->
+
+  <div class="loading-message" *ngIf="isLoading">
+
+    Loading marks records...
+
+  </div>
+
+
+  <!-- ERROR -->
+
+  <div class="error-message" *ngIf="errorMessage">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <ng-container *ngIf="!isLoading && !errorMessage">
+
+    <!-- SUMMARY -->
+
+    <section class="summary-grid">
+
+      <div class="summary-card">
+
+        <span>Total Subjects</span>
+
+        <h2>{{ subjectCount }}</h2>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <span>Total Exams</span>
+
+        <h2>{{ totalExams }}</h2>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <span>Marks Obtained</span>
+
+        <h2>{{ totalObtainedMarks }}</h2>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <span>Average Percentage</span>
+
+        <h2>{{ averagePercentage }}%</h2>
+
+      </div>
+
+    </section>
+
+
+    <!-- PERFORMANCE -->
+
+    <section class="performance-card">
+
+      <div class="performance-heading">
+
+        <h2>Overall Academic Performance</h2>
+
+        <p>Your combined marks performance</p>
+
+      </div>
+
+
+      <div class="performance-value">
+
+        {{ averagePercentage }}%
+
+      </div>
+
+
+      <div class="performance-track">
+
+        <div
+          class="performance-fill"
+          [style.width.%]="averagePercentage">
+        </div>
+
+      </div>
+
+      <p class="performance-caption">
+
+        {{ totalObtainedMarks }} out of
+        {{ totalMaximumMarks }} marks
+
+      </p>
+
+    </section>
+
+
+    <!-- MARKS TABLE -->
+
+    <section class="marks-table-card">
+
+      <div class="table-heading">
+
+        <div>
+
+          <h2>Examination Results</h2>
+
+          <p>Your subject-wise examination marks</p>
+
+        </div>
+
+        <span class="record-count">
+          {{ totalExams }} Records
+        </span>
+
+      </div>
+
+
+      <div class="table-responsive">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>#</th>
+
+              <th>Subject</th>
+
+              <th>Subject Code</th>
+
+              <th>Exam</th>
+
+              <th>Exam Type</th>
+
+              <th>Date</th>
+
+              <th>Obtained</th>
+
+              <th>Maximum</th>
+
+              <th>Percentage</th>
+
+              <th>Result</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="let mark of marksRecords; let i = index">
+
+              <td>{{ i + 1 }}</td>
+
+              <td>{{ mark.subject_name }}</td>
+
+              <td>{{ mark.subject_code }}</td>
+
+              <td>{{ mark.exam_name }}</td>
+
+              <td>{{ mark.exam_type }}</td>
+
+              <td>
+                {{ mark.exam_date | date:'dd MMM yyyy' }}
+              </td>
+
+              <td>{{ mark.obtained_marks }}</td>
+
+              <td>{{ mark.max_marks }}</td>
+
+              <td>
+
+                <strong class="percentage-value">
+
+                  {{ getPercentage(mark) }}%
+
+                </strong>
+
+              </td>
+
+              <td>
+
+                <span
+                  class="result-badge"
+                  [ngClass]="getResult(mark) === 'Pass' ? 'pass' : 'fail'">
+
+                  {{ getResult(mark) }}
+
+                </span>
+
+              </td>
+
+            </tr>
+
+
+            <tr *ngIf="marksRecords.length === 0">
+
+              <td colspan="10" class="empty-message">
+
+                No marks records available.
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>

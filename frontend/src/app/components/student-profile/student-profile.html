@@ -1,0 +1,274 @@
+<div class="profile-container">
+
+  <!-- HEADER -->
+
+  <header class="page-header">
+
+    <div>
+
+      <span class="section-label">
+        STUDENT PORTAL
+      </span>
+
+      <h1>My Profile</h1>
+
+      <p>
+        View and manage your personal information.
+      </p>
+
+    </div>
+
+  </header>
+
+
+  <!-- LOADING -->
+
+  <div class="loading-message" *ngIf="isLoading">
+
+    Loading profile information...
+
+  </div>
+
+
+  <!-- ERROR -->
+
+  <div class="error-message" *ngIf="errorMessage">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <!-- SUCCESS -->
+
+  <div class="success-message" *ngIf="successMessage">
+
+    {{ successMessage }}
+
+  </div>
+
+
+  <ng-container *ngIf="student && !isLoading">
+
+    <!-- PROFILE CARD -->
+
+    <section class="profile-card">
+
+      <!-- PROFILE HEADER -->
+
+      <div class="profile-banner">
+
+        <div class="profile-avatar">
+
+          {{ student.name.charAt(0).toUpperCase() }}
+
+        </div>
+
+        <div class="profile-heading">
+
+          <h2>{{ student.name }}</h2>
+
+          <p>Student ID: {{ student.id }}</p>
+
+        </div>
+
+        <span
+          class="status-badge"
+          [ngClass]="student.status.toLowerCase()">
+
+          {{ student.status }}
+
+        </span>
+
+      </div>
+
+
+      <!-- PROFILE INFORMATION -->
+
+      <div class="profile-content">
+
+        <div class="content-heading">
+
+          <div>
+
+            <h2>Personal Information</h2>
+
+            <p>Your registered student information</p>
+
+          </div>
+
+
+          <button
+            *ngIf="!isEditing && canEditProfile"
+            class="edit-btn"
+            (click)="openEditProfile()">
+
+            ✎ Edit Profile
+
+          </button>
+
+        </div>
+
+
+        <!-- VIEW MODE -->
+
+        <div class="profile-grid" *ngIf="!isEditing">
+
+          <div class="detail-card">
+
+            <span>Student Name</span>
+
+            <strong>{{ student.name }}</strong>
+
+          </div>
+
+          <div class="detail-card">
+
+            <span>Email Address</span>
+
+            <strong>{{ student.email }}</strong>
+
+          </div>
+
+          <div class="detail-card">
+
+            <span>Phone Number</span>
+
+            <strong>{{ student.phone || 'Not provided' }}</strong>
+
+          </div>
+
+          <div class="detail-card">
+
+            <span>Course</span>
+
+            <strong>{{ student.course || 'Not assigned' }}</strong>
+
+          </div>
+
+          <div class="detail-card">
+
+            <span>Student ID</span>
+
+            <strong>{{ student.id }}</strong>
+
+          </div>
+
+          <div class="detail-card">
+
+            <span>Account Status</span>
+
+            <strong>{{ student.status }}</strong>
+
+          </div>
+
+          <div
+            class="detail-card"
+            *ngIf="student.created_at">
+
+            <span>Registration Date</span>
+
+            <strong>
+              {{ student.created_at | date:'dd MMM yyyy' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- EDIT MODE -->
+
+        <form
+          *ngIf="isEditing"
+          class="edit-form"
+          (ngSubmit)="saveProfile()">
+
+          <div class="form-grid">
+
+            <div class="form-group">
+
+              <label>Student Name</label>
+
+              <input
+                type="text"
+                name="name"
+                [(ngModel)]="profileForm.name"
+                required>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>Phone Number</label>
+
+              <input
+                type="text"
+                name="phone"
+                [(ngModel)]="profileForm.phone"
+                maxlength="10"
+                required>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>Course</label>
+
+              <input
+                type="text"
+                name="course"
+                [(ngModel)]="profileForm.course"
+                required>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-actions">
+
+            <button
+              type="submit"
+              class="save-btn"
+              [disabled]="isSaving">
+
+              {{ isSaving ? 'Saving...' : 'Save Changes' }}
+
+            </button>
+
+
+            <button
+              type="button"
+              class="cancel-btn"
+              (click)="cancelEdit()"
+              [disabled]="isSaving">
+
+              Cancel
+
+            </button>
+
+          </div>
+
+        </form>
+
+
+        <!-- INACTIVE MESSAGE -->
+
+        <div
+          class="notice-message"
+          *ngIf="!canEditProfile">
+
+          Profile editing is available only for active student accounts.
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>

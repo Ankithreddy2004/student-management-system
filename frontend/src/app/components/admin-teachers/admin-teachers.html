@@ -24,9 +24,7 @@
   </p>
 
 
-  <!-- ================================= -->
   <!-- CREATE TEACHER FORM -->
-  <!-- ================================= -->
 
   <div class="form-card" *ngIf="!isEditing">
 
@@ -104,11 +102,11 @@
           />
 
           <button
-              type="button"
-                class="remove-image-btn"
-                 (click)="clearCreateImage()"
->
-                   Remove Photo
+            type="button"
+            class="remove-image-btn"
+            (click)="clearCreateImage()"
+          >
+            Remove Photo
           </button>
 
         </div>
@@ -127,9 +125,7 @@
   </div>
 
 
-  <!-- ================================= -->
   <!-- EDIT TEACHER FORM -->
-  <!-- ================================= -->
 
   <div class="form-card edit-card" *ngIf="isEditing">
 
@@ -193,9 +189,7 @@
   </div>
 
 
-  <!-- ================================= -->
   <!-- REGISTERED TEACHERS -->
-  <!-- ================================= -->
 
   <div class="teachers-section">
 
@@ -281,33 +275,41 @@
             </td>
 
 
-            <!-- ACTIONS -->
+            <!-- ACTION ICONS -->
 
             <td class="action-buttons">
 
               <div class="teacher-actions">
 
+                <!-- EDIT ICON -->
+
                 <button
                   type="button"
                   class="edit-btn"
                   (click)="editTeacher(teacher)"
+                  title="Edit Teacher"
+                  aria-label="Edit Teacher"
                 >
-                  Edit
+
+                  <mat-icon>edit</mat-icon>
+
                 </button>
 
+
+                <!-- DELETE ICON -->
 
                 <button
                   type="button"
                   class="delete-btn"
                   (click)="deleteTeacher(teacher.id)"
                   [disabled]="isDeletingId === teacher.id"
+                  title="Delete Teacher"
+                  aria-label="Delete Teacher"
                 >
 
-                  {{
-                    isDeletingId === teacher.id
-                      ? 'Deleting...'
-                      : 'Delete'
-                  }}
+                  <mat-icon>
+                    {{ isDeletingId === teacher.id ? 'hourglass_empty' : 'delete' }}
+                  </mat-icon>
 
                 </button>
 

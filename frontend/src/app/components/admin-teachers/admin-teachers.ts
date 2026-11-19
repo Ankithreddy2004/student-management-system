@@ -9,6 +9,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
+import { MatIconModule } from '@angular/material/icon';
+
 import { Auth } from '../../services/auth';
 
 @Component({
@@ -16,7 +18,8 @@ import { Auth } from '../../services/auth';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    MatIconModule
   ],
   templateUrl: './admin-teachers.html',
   styleUrl: './admin-teachers.css'
