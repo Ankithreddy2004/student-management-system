@@ -26,87 +26,280 @@
   <!-- LOADING -->
 
   <div class="loading-message" *ngIf="isLoading">
-
     Loading your dashboard...
-
   </div>
 
 
   <!-- ERROR MESSAGES -->
 
-  <div class="error-message" *ngIf="!isLoading && attendanceError">
+  <div
+    class="error-message"
+    *ngIf="!isLoading && attendanceError">
 
     {{ attendanceError }}
 
   </div>
 
-  <div class="error-message" *ngIf="!isLoading && marksError">
+  <div
+    class="error-message"
+    *ngIf="!isLoading && marksError">
 
     {{ marksError }}
 
   </div>
 
 
-  <!-- SUMMARY CARDS -->
+  <ng-container *ngIf="!isLoading">
 
-  <section class="summary-grid" *ngIf="!isLoading">
+    <!-- SUMMARY CARDS -->
 
-    <!-- TOTAL SUBJECTS -->
+    <section class="summary-grid">
 
-    <div class="summary-card">
+      <!-- TOTAL SUBJECTS -->
 
-      <div class="summary-icon purple">
-        <span>📚</span>
-      </div>
+      <div class="summary-card">
 
-      <div>
+        <div class="summary-icon purple">
+          <span>📚</span>
+        </div>
 
-        <p>Total Subjects</p>
+        <div>
 
-        <h2>{{ totalSubjects }}</h2>
+          <p>Total Subjects</p>
 
-      </div>
+          <h2>{{ totalSubjects }}</h2>
 
-    </div>
-
-
-    <!-- TOTAL CLASSES -->
-
-    <div class="summary-card">
-
-      <div class="summary-icon blue">
-        <span>📅</span>
-      </div>
-
-      <div>
-
-        <p>Total Classes</p>
-
-        <h2>{{ totalClasses }}</h2>
+        </div>
 
       </div>
 
-    </div>
 
+      <!-- TOTAL CLASSES -->
 
-    <!-- AVERAGE MARKS -->
+      <div class="summary-card">
 
-    <div class="summary-card">
+        <div class="summary-icon blue">
+          <span>📅</span>
+        </div>
 
-      <div class="summary-icon green">
-        <span>🏆</span>
+        <div>
+
+          <p>Total Classes</p>
+
+          <h2>{{ totalClasses }}</h2>
+
+        </div>
+
       </div>
 
-      <div>
 
-        <p>Average Marks</p>
+      <!-- AVERAGE MARKS -->
 
-        <h2>{{ averageMarks }}%</h2>
+      <div class="summary-card">
+
+        <div class="summary-icon green">
+          <span>🏆</span>
+        </div>
+
+        <div>
+
+          <p>Average Marks</p>
+
+          <h2>{{ averageMarks }}%</h2>
+
+        </div>
 
       </div>
 
-    </div>
+    </section>
 
-  </section>
+
+    <!-- ATTENDANCE OVERVIEW -->
+
+    <section class="charts-grid">
+
+      <div class="chart-card">
+
+        <div class="chart-heading">
+
+          <h2>Attendance Overview</h2>
+
+          <p>
+            Your overall attendance performance
+          </p>
+
+        </div>
+
+
+        <!-- ATTENDANCE PIE CHART -->
+
+        <div class="attendance-chart-area">
+
+          <div
+            class="attendance-pie"
+            [style.background]="attendanceChartBackground">
+
+            <div class="pie-center">
+
+              <h2>{{ attendancePercentage }}%</h2>
+
+              <p>Attendance</p>
+
+            </div>
+
+          </div>
+
+
+          <!-- LEGEND -->
+
+          <div class="chart-legend">
+
+            <div>
+
+              <span class="legend-dot present"></span>
+
+              <span>Present</span>
+
+              <strong>{{ presentClasses }}</strong>
+
+            </div>
+
+
+            <div>
+
+              <span class="legend-dot absent"></span>
+
+              <span>Absent</span>
+
+              <strong>{{ absentClasses }}</strong>
+
+            </div>
+
+
+            <div>
+
+              <span class="legend-dot late"></span>
+
+              <span>Late</span>
+
+              <strong>{{ lateClasses }}</strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- EMPTY STATE -->
+
+        <div
+          class="no-chart-data"
+          *ngIf="totalClasses === 0">
+
+          No attendance records available yet.
+
+        </div>
+
+      </div>
+
+
+      <!-- ATTENDANCE SUMMARY -->
+
+      <div class="chart-card attendance-summary-card">
+
+        <div class="chart-heading">
+
+          <h2>Attendance Summary</h2>
+
+          <p>
+            Your class attendance statistics
+          </p>
+
+        </div>
+
+
+        <div class="bar-chart">
+
+
+          <!-- PRESENT -->
+
+          <div>
+
+            <div class="bar-label">
+
+              <span>Present Classes</span>
+
+              <strong>{{ presentClasses }}</strong>
+
+            </div>
+
+            <div class="bar-track">
+
+              <div
+                class="bar-fill present-fill"
+                [style.width]="totalClasses ? (presentClasses / totalClasses * 100) + '%' : '0%'">
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ABSENT -->
+
+          <div>
+
+            <div class="bar-label">
+
+              <span>Absent Classes</span>
+
+              <strong>{{ absentClasses }}</strong>
+
+            </div>
+
+            <div class="bar-track">
+
+              <div
+                class="bar-fill absent-fill"
+                [style.width]="totalClasses ? (absentClasses / totalClasses * 100) + '%' : '0%'">
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- LATE -->
+
+          <div>
+
+            <div class="bar-label">
+
+              <span>Late Classes</span>
+
+              <strong>{{ lateClasses }}</strong>
+
+            </div>
+
+            <div class="bar-track">
+
+              <div
+                class="bar-fill late-fill"
+                [style.width]="totalClasses ? (lateClasses / totalClasses * 100) + '%' : '0%'">
+              </div>
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </ng-container>
 
 </div>

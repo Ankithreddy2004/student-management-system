@@ -42,9 +42,9 @@ interface MarkRecord {
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.css'
 })
+
 export class StudentDashboard implements OnInit {
 
-  // Dashboard loading
   isLoading = true;
 
   // Attendance
@@ -116,7 +116,7 @@ export class StudentDashboard implements OnInit {
 
       next: (response) => {
 
-        // Attendance response
+        // Attendance
         if (response.attendance?.success === false) {
 
           this.attendanceError =
@@ -132,7 +132,7 @@ export class StudentDashboard implements OnInit {
 
         }
 
-        // Marks response
+        // Marks
         if (response.marks?.success === false) {
 
           this.marksError =
@@ -150,8 +150,7 @@ export class StudentDashboard implements OnInit {
 
         this.isLoading = false;
 
-        // Update Angular view after API response
-        this.cdr.markForCheck();
+        this.cdr.detectChanges();
 
       },
 
@@ -161,8 +160,7 @@ export class StudentDashboard implements OnInit {
 
         this.isLoading = false;
 
-        // Update Angular view after error
-        this.cdr.markForCheck();
+        this.cdr.detectChanges();
 
       }
 
@@ -191,6 +189,96 @@ export class StudentDashboard implements OnInit {
   get totalClasses(): number {
 
     return this.attendanceRecords.length;
+
+  }
+
+  // ==========================================
+  // PRESENT CLASSES
+  // ==========================================
+
+  get presentClasses(): number {
+
+    return this.attendanceRecords.filter(
+      record => record.status?.toLowerCase() === 'present'
+    ).length;
+
+  }
+
+  // ==========================================
+  // ABSENT CLASSES
+  // ==========================================
+
+  get absentClasses(): number {
+
+    return this.attendanceRecords.filter(
+      record => record.status?.toLowerCase() === 'absent'
+    ).length;
+
+  }
+
+  // ==========================================
+  // LATE CLASSES
+  // ==========================================
+
+  get lateClasses(): number {
+
+    return this.attendanceRecords.filter(
+      record => record.status?.toLowerCase() === 'late'
+    ).length;
+
+  }
+
+  // ==========================================
+  // ATTENDANCE PERCENTAGE
+  // ==========================================
+
+  get attendancePercentage(): number {
+
+    if (this.totalClasses === 0) {
+      return 0;
+    }
+
+    return Math.round(
+      (this.presentClasses / this.totalClasses) * 100
+    );
+
+  }
+
+  // ==========================================
+  // PIE CHART BACKGROUND
+  // ==========================================
+
+  get attendanceChartBackground(): string {
+
+    const total = this.totalClasses;
+
+    if (total === 0) {
+      return '#eeeaf5';
+    }
+
+    const presentPercentage =
+      (this.presentClasses / total) * 100;
+
+    const absentPercentage =
+      (this.absentClasses / total) * 100;
+
+    const latePercentage =
+      (this.lateClasses / total) * 100;
+
+    const presentEnd = presentPercentage;
+
+    const absentEnd =
+      presentEnd + absentPercentage;
+
+    const lateEnd =
+      absentEnd + latePercentage;
+
+    return `conic-gradient(
+      #22a06b 0% ${presentEnd}%,
+      #e05252 ${presentEnd}% ${absentEnd}%,
+      #f0ad4e ${absentEnd}% ${lateEnd}%,
+      #eeeaf5 ${lateEnd}% 100%
+    )`;
 
   }
 

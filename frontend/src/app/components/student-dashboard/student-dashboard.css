@@ -537,3 +537,70 @@
   }
 
 }
+/* ATTENDANCE DASHBOARD */
+
+.attendance-summary-card {
+  min-width: 0;
+}
+
+.attendance-pie {
+  flex-shrink: 0;
+}
+
+/* BAR COLORS */
+
+.present-fill {
+  background: #22a06b;
+}
+
+.absent-fill {
+  background: #e05252;
+}
+
+.late-fill {
+  background: #f0ad4e;
+}
+
+/* RESPONSIVE CHART */
+
+@media (max-width: 1000px) {
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 650px) {
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .attendance-chart-area {
+    justify-content: center;
+  }
+
+  .attendance-pie {
+    width: 160px;
+    height: 160px;
+  }
+
+  .pie-center {
+    width: 105px;
+    height: 105px;
+  }
+
+  .pie-center h2 {
+    font-size: 23px;
+  }
+
+}
+
+@media (max-width: 420px) {
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
