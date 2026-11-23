@@ -42,6 +42,16 @@ export interface AuthResponse {
 }
 
 // ==========================================
+// EMAIL CHECK RESPONSE
+// ==========================================
+
+export interface EmailCheckResponse {
+  success: boolean;
+  available: boolean;
+  message: string;
+}
+
+// ==========================================
 // AUTH SERVICE
 // ==========================================
 
@@ -54,6 +64,17 @@ export class Auth {
 
   constructor(private http: HttpClient) { }
 
+  // ==========================================
+  // CHECK EMAIL AVAILABILITY
+  // ==========================================
+
+  checkEmailAvailability(email: string): Observable<EmailCheckResponse> {
+
+    return this.http.get<EmailCheckResponse>(
+      `${this.apiUrl}/check-email?email=${encodeURIComponent(email)}`
+    );
+
+  }
 
   // ==========================================
   // STUDENT SIGNUP
@@ -74,7 +95,6 @@ export class Auth {
 
   }
 
-
   // ==========================================
   // USER LOGIN
   // ==========================================
@@ -93,10 +113,8 @@ export class Auth {
 
         if (response.success && response.token && response.user) {
 
-          // Store JWT token
           localStorage.setItem('token', response.token);
 
-          // Store logged-in user details
           this.setUser(response.user);
 
         }
@@ -106,7 +124,6 @@ export class Auth {
     );
 
   }
-
 
   // ==========================================
   // STORE USER DETAILS
@@ -121,7 +138,6 @@ export class Auth {
 
   }
 
-
   // ==========================================
   // GET JWT TOKEN
   // ==========================================
@@ -131,7 +147,6 @@ export class Auth {
     return localStorage.getItem('token');
 
   }
-
 
   // ==========================================
   // GET CURRENT USER
@@ -157,7 +172,6 @@ export class Auth {
 
   }
 
-
   // ==========================================
   // GET USER ROLE
   // ==========================================
@@ -169,7 +183,6 @@ export class Auth {
     return user ? user.role : null;
 
   }
-
 
   // ==========================================
   // GET STUDENT STATUS
@@ -187,7 +200,6 @@ export class Auth {
 
   }
 
-
   // ==========================================
   // CHECK STUDENT STATUS
   // ==========================================
@@ -198,20 +210,17 @@ export class Auth {
 
   }
 
-
   isStudentActive(): boolean {
 
     return this.getStudentStatus() === 'Active';
 
   }
 
-
   isStudentInactive(): boolean {
 
     return this.getStudentStatus() === 'Inactive';
 
   }
-
 
   // ==========================================
   // CHECK READ-ONLY ACCESS
@@ -229,7 +238,6 @@ export class Auth {
 
   }
 
-
   // ==========================================
   // CHECK LOGIN STATUS
   // ==========================================
@@ -239,7 +247,6 @@ export class Auth {
     return !!this.getToken();
 
   }
-
 
   // ==========================================
   // LOGOUT

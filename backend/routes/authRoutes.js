@@ -1,26 +1,51 @@
 const express = require('express');
+
 const router = express.Router();
 
 const {
-signup,
-login
+    signup,
+    login,
+    checkEmail
 } = require('../controllers/authController');
 
-const { verifyToken } = require('../middleware/authMiddleware');
+const {
+    verifyToken
+} = require('../middleware/authMiddleware');
 
-// Student Signup
+// ==========================================
+// CHECK EMAIL AVAILABILITY
+// ==========================================
+
+router.get('/check-email', checkEmail);
+
+// ==========================================
+// STUDENT SIGNUP
+// ==========================================
+
 router.post('/signup', signup);
 
-// User Login
+// ==========================================
+// USER LOGIN
+// ==========================================
+
 router.post('/login', login);
 
-// Protected route - Get logged-in user details
+// ==========================================
+// PROTECTED ROUTE - GET LOGGED-IN USER
+// ==========================================
+
 router.get('/me', verifyToken, (req, res) => {
-res.status(200).json({
-success: true,
-message: 'Authenticated user details fetched successfully.',
-user: req.user
-});
+
+    res.status(200).json({
+
+        success: true,
+
+        message: 'Authenticated user details fetched successfully.',
+
+        user: req.user
+
+    });
+
 });
 
 module.exports = router;

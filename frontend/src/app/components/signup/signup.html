@@ -30,8 +30,10 @@
           #nameField="ngModel"
         >
 
-        <small class="validation-error"
-          *ngIf="nameField.invalid && nameField.touched">
+        <small
+          class="validation-error"
+          *ngIf="nameField.invalid && nameField.touched"
+        >
           Name is required.
         </small>
 
@@ -46,15 +48,51 @@
           type="email"
           name="email"
           [(ngModel)]="email"
+          (ngModelChange)="onEmailChange($event)"
           placeholder="Enter your email"
           required
           email
           #emailField="ngModel"
         >
 
-        <small class="validation-error"
-          *ngIf="emailField.invalid && emailField.touched">
-          Please enter a valid email.
+        <!-- Email format error -->
+        <small
+          class="validation-error"
+          *ngIf="emailField.invalid && emailField.touched"
+        >
+          Please enter a valid email address.
+        </small>
+
+        <!-- Checking -->
+        <small
+          class="email-checking"
+          *ngIf="emailStatus === 'checking' && emailField.valid"
+        >
+          ⏳ Checking email availability...
+        </small>
+
+        <!-- Available -->
+        <small
+          class="validation-success"
+          *ngIf="emailStatus === 'available'"
+        >
+          ✓ Email is available.
+        </small>
+
+        <!-- Already registered -->
+        <small
+          class="validation-error"
+          *ngIf="emailStatus === 'taken'"
+        >
+          ✕ Email already registered. Please use another email.
+        </small>
+
+        <!-- Server error -->
+        <small
+          class="validation-error"
+          *ngIf="emailStatus === 'error'"
+        >
+          {{ emailStatusMessage }}
         </small>
 
       </div>
@@ -68,16 +106,28 @@
           type="tel"
           name="phone"
           [(ngModel)]="phone"
+          (input)="onPhoneInput($event)"
           placeholder="Enter 10-digit phone number"
+          inputmode="numeric"
           required
           pattern="[0-9]{10}"
           maxlength="10"
+          minlength="10"
           #phoneField="ngModel"
         >
 
-        <small class="validation-error"
-          *ngIf="phoneField.invalid && phoneField.touched">
-          Please enter a valid 10-digit phone number.
+        <small
+          class="validation-error"
+          *ngIf="phoneField.invalid && phoneField.touched"
+        >
+          Please enter exactly 10 digits.
+        </small>
+
+        <small
+          class="validation-success"
+          *ngIf="phoneField.valid && phoneField.touched"
+        >
+          ✓ Valid mobile number.
         </small>
 
       </div>
@@ -96,8 +146,10 @@
           #courseField="ngModel"
         >
 
-        <small class="validation-error"
-          *ngIf="courseField.invalid && courseField.touched">
+        <small
+          class="validation-error"
+          *ngIf="courseField.invalid && courseField.touched"
+        >
           Course is required.
         </small>
 
@@ -115,12 +167,22 @@
           placeholder="Create a password"
           required
           minlength="8"
+          pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
           #passwordField="ngModel"
         >
 
-        <small class="validation-error"
-          *ngIf="passwordField.invalid && passwordField.touched">
-          Password must contain at least 8 characters.
+        <small
+          class="validation-error"
+          *ngIf="passwordField.invalid && passwordField.touched"
+        >
+          Password must contain uppercase, lowercase, number, special character and at least 8 characters.
+        </small>
+
+        <small
+          class="validation-success"
+          *ngIf="passwordField.valid && passwordField.touched"
+        >
+          ✓ Strong password.
         </small>
 
       </div>
@@ -136,7 +198,22 @@
           [(ngModel)]="confirmPassword"
           placeholder="Confirm your password"
           required
+          #confirmPasswordField="ngModel"
         >
+
+        <small
+          class="validation-error"
+          *ngIf="confirmPasswordField.touched && confirmPassword && !passwordsMatch()"
+        >
+          Passwords do not match.
+        </small>
+
+        <small
+          class="validation-success"
+          *ngIf="confirmPasswordField.touched && passwordsMatch()"
+        >
+          ✓ Passwords match.
+        </small>
 
       </div>
 
@@ -167,7 +244,13 @@
       <button
         type="submit"
         class="signup-btn"
-        [disabled]="signupForm.invalid || isLoading">
+        [disabled]="
+          signupForm.invalid ||
+          isLoading ||
+          emailStatus !== 'available' ||
+          !passwordsMatch()
+        "
+      >
 
         {{ isLoading ? 'Creating Account...' : 'Create Account' }}
 
