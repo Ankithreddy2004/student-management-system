@@ -24,18 +24,14 @@
   <!-- LOADING -->
 
   <div class="loading-message" *ngIf="isLoading">
-
     Loading attendance records...
-
   </div>
 
 
   <!-- ERROR -->
 
   <div class="error-message" *ngIf="errorMessage">
-
     {{ errorMessage }}
-
   </div>
 
 
@@ -84,7 +80,8 @@
 
 
     <!-- ATTENDANCE OVERVIEW -->
-<!-- 
+
+    <!--
     <section class="attendance-overview">
 
       <div class="overview-heading">
@@ -94,7 +91,6 @@
         <p>Your overall attendance performance</p>
 
       </div>
-
 
       <div class="overview-content">
 
@@ -111,7 +107,6 @@
           </div>
 
         </div>
-
 
         <div class="attendance-legend">
 
@@ -150,7 +145,8 @@
       </div>
 
     </section>
- -->
+    -->
+
 
     <!-- ATTENDANCE HISTORY -->
 
@@ -201,9 +197,11 @@
           <tbody>
 
             <tr
-              *ngFor="let record of attendanceRecords; let i = index">
+              *ngFor="let record of paginatedAttendance; let i = index">
 
-              <td>{{ i + 1 }}</td>
+              <td>
+                {{ (currentPage - 1) * pageSize + i + 1 }}
+              </td>
 
               <td>
                 {{ record.attendance_date | date:'dd MMM yyyy' }}
@@ -232,12 +230,12 @@
             </tr>
 
 
+            <!-- EMPTY MESSAGE -->
+
             <tr *ngIf="attendanceRecords.length === 0">
 
               <td colspan="6" class="empty-message">
-
                 No attendance records available.
-
               </td>
 
             </tr>
@@ -248,8 +246,88 @@
 
       </div>
 
+
+      <!-- PAGINATION -->
+
+      <div class="pagination-container" *ngIf="totalClasses > 0">
+
+        <div class="pagination-info">
+
+          Showing
+
+          <strong>{{ startRecord }}–{{ endRecord }}</strong>
+
+          of
+
+          <strong>{{ totalClasses }}</strong>
+
+          records
+
+        </div>
+
+
+        <div class="pagination-controls">
+
+          <!-- PAGE SIZE -->
+
+          <select
+            class="page-size-select"
+            [value]="pageSize"
+            (change)="changePageSize($event)">
+
+            <option
+              *ngFor="let size of pageSizeOptions"
+              [value]="size">
+
+              {{ size }} per page
+
+            </option>
+
+          </select>
+
+
+          <!-- PREVIOUS -->
+
+          <button
+            class="page-btn"
+            [disabled]="currentPage === 1"
+            (click)="changePage(currentPage - 1)">
+
+            Previous
+
+          </button>
+
+
+          <!-- PAGE NUMBERS -->
+
+          <button
+            *ngFor="let page of pages"
+            class="page-number"
+            [class.active]="currentPage === page"
+            (click)="changePage(page)">
+
+            {{ page }}
+
+          </button>
+
+
+          <!-- NEXT -->
+
+          <button
+            class="page-btn"
+            [disabled]="currentPage === totalPages"
+            (click)="changePage(currentPage + 1)">
+
+            Next
+
+          </button>
+
+        </div>
+
+      </div>
+
     </section>
 
   </ng-container>
 
-</div>
+</div> 

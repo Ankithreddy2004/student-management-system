@@ -51,7 +51,82 @@ export class AdminTeachers implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
 
+  // =====================================
+  // TABLE PAGINATION
+  // =====================================
+
+  currentPage = 1;
+  pageSize = 5;
+
+  get totalPages(): number {
+    return Math.ceil(this.teachers.length / this.pageSize);
+  }
+
+  get paginatedTeachers(): any[] {
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+
+    const endIndex = startIndex + this.pageSize;
+
+    return this.teachers.slice(startIndex, endIndex);
+  }
+
+  get pageNumbers(): number[] {
+
+    return Array.from(
+      { length: this.totalPages },
+      (_, index) => index + 1
+    );
+  }
+
+  get startItem(): number {
+
+    if (this.teachers.length === 0) {
+      return 0;
+    }
+
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endItem(): number {
+
+    return Math.min(
+      this.currentPage * this.pageSize,
+      this.teachers.length
+    );
+  }
+
+  // GO TO SPECIFIC PAGE
+  goToPage(page: number): void {
+
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
+  }
+
+  // PREVIOUS PAGE
+  previousPage(): void {
+
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  // NEXT PAGE
+  nextPage(): void {
+
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+
+  // =====================================
   // CREATE TEACHER IMAGE
+  // =====================================
+
   selectedImage: File | null = null;
   imagePreviewUrl = '';
 
@@ -78,6 +153,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
 
   // AUTHORIZATION HEADER
   private getHeaders(): HttpHeaders {
+
     const token = this.authService.getToken();
 
     return new HttpHeaders({
@@ -85,7 +161,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
+
+  // =====================================
   // LOAD ALL TEACHERS
+  // =====================================
+
   loadTeachers(): void {
 
     this.isLoading = true;
@@ -100,6 +180,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
         this.teachers = Array.isArray(response.data)
           ? response.data.filter((user: any) => user.role === 'Teacher')
           : [];
+
+        // Keep current page valid after loading or deleting teachers
+        if (this.currentPage > this.totalPages) {
+          this.currentPage = Math.max(1, this.totalPages);
+        }
 
         this.teachers.forEach((teacher: any) => {
 
@@ -127,7 +212,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
+
+  // =====================================
   // LOAD INDIVIDUAL TEACHER IMAGE
+  // =====================================
+
   loadTeacherImage(teacherId: number): void {
 
     this.http.get(
@@ -163,7 +252,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
+
+  // =====================================
   // IMAGE VALIDATION
+  // =====================================
+
   private validateImage(file: File): boolean {
 
     const allowedTypes = [
@@ -189,7 +282,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     return true;
   }
 
+
+  // =====================================
   // SELECT IMAGE WHILE CREATING TEACHER
+  // =====================================
+
   onImageSelected(event: Event): void {
 
     const input = event.target as HTMLInputElement;
@@ -216,6 +313,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+
   // REMOVE CREATE IMAGE PREVIEW
   clearCreateImage(): void {
 
@@ -227,7 +325,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     }
   }
 
+
+  // =====================================
   // CREATE TEACHER
+  // =====================================
+
   createTeacher(): void {
 
     this.errorMessage = '';
@@ -302,7 +404,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
+
+  // =====================================
   // SELECT IMAGE FOR EXISTING TEACHER
+  // =====================================
+
   onTeacherImageSelected(event: Event, teacherId: number): void {
 
     const input = event.target as HTMLInputElement;
@@ -330,7 +436,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+
+  // =====================================
   // UPDATE EXISTING TEACHER IMAGE
+  // =====================================
+
   updateTeacherImage(teacherId: number): void {
 
     const selectedFile = this.selectedTeacherImages[teacherId];
@@ -360,7 +470,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
 
         this.cancelTeacherImage(teacherId);
 
-        // Reload the saved image
         this.loadTeacherImage(teacherId);
 
         this.isUpdatingImageId = null;
@@ -382,6 +491,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
+
   // CANCEL TEACHER IMAGE CHANGE
   cancelTeacherImage(teacherId: number): void {
 
@@ -399,7 +509,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+
+  // =====================================
   // EDIT TEACHER
+  // =====================================
+
   editTeacher(teacher: any): void {
 
     this.isEditing = true;
@@ -413,6 +527,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
   }
+
 
   // UPDATE TEACHER DETAILS
   updateTeacher(): void {
@@ -465,6 +580,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
+
   // CANCEL EDIT
   cancelEdit(): void {
 
@@ -479,7 +595,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.errorMessage = '';
   }
 
+
+  // =====================================
   // DELETE TEACHER
+  // =====================================
+
   deleteTeacher(teacherId: number): void {
 
     const confirmDelete = confirm(
@@ -531,7 +651,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
+
+  // =====================================
   // CLEAN UP IMAGE URLS
+  // =====================================
+
   ngOnDestroy(): void {
 
     if (this.imagePreviewUrl) {

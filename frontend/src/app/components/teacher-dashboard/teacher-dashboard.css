@@ -283,3 +283,64 @@
     gap: 8px;
   }
 }
+
+/* Force all dashboard icons to monochrome */
+
+.teacher-dashboard-content mat-icon {
+  color: #444444 !important;
+}
+
+/* Keep all statistic icons consistent */
+
+.stat-card .stat-icon mat-icon {
+  color: #444444 !important;
+}
+
+/* Pending student icon */
+
+.pending-card .stat-icon mat-icon {
+  color: #444444 !important;
+}
+
+/* Pending arrow icon */
+
+.pending-card .view-details mat-icon {
+  color: #444444 !important;
+}
+
+/* Remove coloured backgrounds from all dashboard icon boxes */
+
+.teacher-dashboard-content .stat-icon,
+.teacher-dashboard-content .pending-card .stat-icon {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid #e5e5e5 !important;
+  box-shadow: none !important;
+}
+
+/* Make all dashboard icons monochrome */
+
+.teacher-dashboard-content .stat-icon mat-icon {
+  color: #444444 !important;
+  background: transparent !important;
+}
+
+/* Remove pending card colour effects */
+
+.teacher-dashboard-content .pending-card {
+  background: #ffffff !important;
+}
+
+.teacher-dashboard-content .pending-card:hover {
+  background: #ffffff !important;
+}
+
+/* Remove any yellow/orange pseudo-elements */
+
+.teacher-dashboard-content .pending-card::before,
+.teacher-dashboard-content .pending-card::after,
+.teacher-dashboard-content .pending-card .stat-icon::before,
+.teacher-dashboard-content .pending-card .stat-icon::after {
+  background: transparent !important;
+  box-shadow: none !important;
+}

@@ -173,7 +173,7 @@
   margin: 0;
 }
 
-/* CARD COLORS */
+/* CARD COLORS
 
 .students-card .stat-icon {
   background: #eee7ff;
@@ -208,6 +208,43 @@
 .assignments-card .stat-icon {
   background: #ffebdf;
   color: #d16c2f;
+} */
+
+/* ==========================================
+   MONOCHROME DASHBOARD OVERVIEW ICONS
+========================================== */
+
+/* All statistic icon containers */
+
+.stats-grid .stat-icon {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+/* All Angular Material icons */
+
+.stats-grid .stat-icon mat-icon {
+  color: #444444 !important;
+  font-size: 27px;
+  width: 27px;
+  height: 27px;
+  line-height: 27px;
+}
+
+/* Remove individual card colours */
+
+.students-card .stat-icon,
+.active-card .stat-icon,
+.inactive-card .stat-icon,
+.pending-card .stat-icon,
+.teachers-card .stat-icon,
+.subjects-card .stat-icon,
+.assignments-card .stat-icon {
+  background: transparent !important;
+  color: #444444 !important;
 }
 
 /* RESPONSIVE */

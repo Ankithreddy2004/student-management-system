@@ -24,18 +24,14 @@
   <!-- LOADING -->
 
   <div class="loading-message" *ngIf="isLoading">
-
     Loading marks records...
-
   </div>
 
 
   <!-- ERROR -->
 
   <div class="error-message" *ngIf="errorMessage">
-
     {{ errorMessage }}
-
   </div>
 
 
@@ -97,9 +93,7 @@
 
 
       <div class="performance-value">
-
         {{ averagePercentage }}%
-
       </div>
 
 
@@ -179,9 +173,11 @@
           <tbody>
 
             <tr
-              *ngFor="let mark of marksRecords; let i = index">
+              *ngFor="let mark of paginatedMarks; let i = index">
 
-              <td>{{ i + 1 }}</td>
+              <td>
+                {{ (currentPage - 1) * pageSize + i + 1 }}
+              </td>
 
               <td>{{ mark.subject_name }}</td>
 
@@ -202,9 +198,7 @@
               <td>
 
                 <strong class="percentage-value">
-
                   {{ getPercentage(mark) }}%
-
                 </strong>
 
               </td>
@@ -224,12 +218,12 @@
             </tr>
 
 
+            <!-- EMPTY MESSAGE -->
+
             <tr *ngIf="marksRecords.length === 0">
 
               <td colspan="10" class="empty-message">
-
                 No marks records available.
-
               </td>
 
             </tr>
@@ -237,6 +231,86 @@
           </tbody>
 
         </table>
+
+      </div>
+
+
+      <!-- PAGINATION -->
+
+      <div class="pagination-container" *ngIf="totalExams > 0">
+
+        <div class="pagination-info">
+
+          Showing
+
+          <strong>{{ startRecord }}–{{ endRecord }}</strong>
+
+          of
+
+          <strong>{{ totalExams }}</strong>
+
+          records
+
+        </div>
+
+
+        <div class="pagination-controls">
+
+          <!-- PAGE SIZE -->
+
+          <select
+            class="page-size-select"
+            [value]="pageSize"
+            (change)="changePageSize($event)">
+
+            <option
+              *ngFor="let size of pageSizeOptions"
+              [value]="size">
+
+              {{ size }} per page
+
+            </option>
+
+          </select>
+
+
+          <!-- PREVIOUS -->
+
+          <button
+            class="page-btn"
+            [disabled]="currentPage === 1"
+            (click)="changePage(currentPage - 1)">
+
+            Previous
+
+          </button>
+
+
+          <!-- PAGE NUMBERS -->
+
+          <button
+            *ngFor="let page of pages"
+            class="page-number"
+            [class.active]="currentPage === page"
+            (click)="changePage(page)">
+
+            {{ page }}
+
+          </button>
+
+
+          <!-- NEXT -->
+
+          <button
+            class="page-btn"
+            [disabled]="currentPage === totalPages"
+            (click)="changePage(currentPage + 1)">
+
+            Next
+
+          </button>
+
+        </div>
 
       </div>
 

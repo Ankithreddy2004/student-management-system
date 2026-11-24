@@ -13,24 +13,21 @@
 
       <ng-template #defaultTeacherIcon>
         <div class="teacher-icon">
-          <mat-icon>person</mat-icon>
+          <mat-icon>person_outline</mat-icon>
         </div>
       </ng-template>
 
     </div>
 
-
     <div class="welcome-text">
 
-      <span class="welcome-label">TEACHER DASHBOARD</span>
+      <span class="welcome-label">TEACHER PORTAL</span>
 
-      <h1>
-        Welcome, {{ teacherName }}!
-      </h1>
+      <h1>Welcome, {{ teacherName }}!</h1>
 
       <p>
-        Welcome to your Student Management Portal.
-        Manage your students and monitor their academic progress.
+        Manage your students, monitor their academic progress
+        and access your teaching activities.
       </p>
 
     </div>
@@ -38,99 +35,87 @@
   </section>
 
 
-  <!-- DASHBOARD HEADING -->
+  <!-- DASHBOARD HEADER -->
   <div class="dashboard-header">
 
     <div>
       <h2>Dashboard Overview</h2>
-      <p>Here is your student information at a glance.</p>
+      <p>A summary of your student information.</p>
     </div>
 
-    <!-- <button
-      class="refresh-btn"
-      (click)="refreshDashboard()">
-
-      <mat-icon>refresh</mat-icon>
-      Refresh
-
-    </button> -->
-
   </div>
 
 
-  <!-- GENERAL ERROR -->
+  <!-- ERROR MESSAGE -->
   <div class="error-message" *ngIf="errorMessage">
-
     <mat-icon>error_outline</mat-icon>
-
     <span>{{ errorMessage }}</span>
-
   </div>
 
 
-  <!-- PENDING ERROR -->
+  <!-- PENDING ERROR MESSAGE -->
   <div class="error-message" *ngIf="pendingErrorMessage">
-
-    <mat-icon>error_outline</mat-icon>
-
+    <mat-icon>warning_amber</mat-icon>
     <span>{{ pendingErrorMessage }}</span>
-
   </div>
 
 
-  <!-- LOADING -->
-  <div class="loading-message" *ngIf="isLoading || pendingLoading">
-
-    <mat-icon>hourglass_top</mat-icon>
-
+  <!-- LOADING MESSAGE -->
+  <div
+    class="loading-message"
+    *ngIf="isLoading || pendingLoading"
+  >
+    <mat-icon>hourglass_empty</mat-icon>
     <span>Loading dashboard information...</span>
-
   </div>
 
 
-  <!-- STUDENT STATISTICS -->
+  <!-- STATISTICS -->
   <div class="stats-grid" *ngIf="!isLoading">
 
     <!-- TOTAL STUDENTS -->
-    <div class="stat-card students-card">
+    <div class="stat-card">
 
       <div class="stat-icon">
-        <mat-icon>school</mat-icon>
+        <mat-icon>groups</mat-icon>
       </div>
 
       <div class="stat-details">
         <p>Total Students</p>
         <h2>{{ totalStudents }}</h2>
+        <span class="stat-description">Registered students</span>
       </div>
 
     </div>
 
 
     <!-- ACTIVE STUDENTS -->
-    <div class="stat-card active-card">
+    <div class="stat-card">
 
       <div class="stat-icon">
-        <mat-icon>check_circle</mat-icon>
+        <mat-icon>verified_user</mat-icon>
       </div>
 
       <div class="stat-details">
         <p>Active Students</p>
         <h2>{{ activeStudents }}</h2>
+        <span class="stat-description">Currently active</span>
       </div>
 
     </div>
 
 
     <!-- INACTIVE STUDENTS -->
-    <div class="stat-card inactive-card">
+    <div class="stat-card">
 
       <div class="stat-icon">
-        <mat-icon>cancel</mat-icon>
+        <mat-icon>person_off</mat-icon>
       </div>
 
       <div class="stat-details">
         <p>Inactive Students</p>
         <h2>{{ inactiveStudents }}</h2>
+        <span class="stat-description">Currently inactive</span>
       </div>
 
     </div>
@@ -139,7 +124,12 @@
     <!-- PENDING STUDENTS -->
     <div
       class="stat-card pending-card"
-      (click)="viewPendingRequests()">
+      (click)="viewPendingRequests()"
+      role="button"
+      tabindex="0"
+      (keydown.enter)="viewPendingRequests()"
+      (keydown.space)="viewPendingRequests(); $event.preventDefault()"
+    >
 
       <div class="stat-icon">
         <mat-icon>pending_actions</mat-icon>
@@ -148,7 +138,11 @@
       <div class="stat-details">
         <p>Pending Students</p>
         <h2>{{ pendingStudents }}</h2>
-        <span class="view-details">View requests</span>
+
+        <span class="view-details">
+          View pending requests
+          <mat-icon>arrow_forward</mat-icon>
+        </span>
       </div>
 
     </div>
@@ -156,10 +150,10 @@
   </div>
 
 
-  <!-- FOOTER -->
+  <!-- DASHBOARD FOOTER -->
   <footer class="dashboard-footer">
 
-    <p>Student Management System</p>
+    <span>Student Management System</span>
 
     <span>Teacher Dashboard</span>
 

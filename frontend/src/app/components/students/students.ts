@@ -1,26 +1,61 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { Student } from '../../services/student';
 import { Auth } from '../../services/auth';
-import { RouterLink, Router } from '@angular/router';
+
+import {
+  RouterLink,
+  Router
+} from '@angular/router';
+
 
 @Component({
   selector: 'app-students',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule
+  ],
+
   templateUrl: './students.html',
   styleUrl: './students.css',
 })
+
 export class Students implements OnInit {
 
+  // ==========================================
+  // STUDENT DATA
+  // ==========================================
+
   students: any[] = [];
+
   isLoading = false;
+
   errorMessage = '';
   successMessage = '';
+
   searchTerm = '';
 
   userRole = '';
+
+
+  // ==========================================
+  // PAGINATION
+  // ==========================================
+
+  pageSize = 5;
+
+  currentPage = 1;
+
 
   constructor(
     private studentService: Student,
@@ -29,25 +64,48 @@ export class Students implements OnInit {
     private router: Router
   ) {}
 
+
+  // ==========================================
+  // INITIALIZATION
+  // ==========================================
+
   ngOnInit(): void {
+
     this.userRole = this.authService.getRole() || '';
+
     this.getStudents();
+
   }
 
-  // Check user role
+
+  // ==========================================
+  // USER ROLE
+  // ==========================================
+
   get isAdmin(): boolean {
+
     return this.userRole === 'Admin';
+
   }
+
 
   get isTeacher(): boolean {
+
     return this.userRole === 'Teacher';
+
   }
 
-  // GET all students
+
+  // ==========================================
+  // GET ALL STUDENTS
+  // ==========================================
+
   getStudents(): void {
 
     this.isLoading = true;
+
     this.errorMessage = '';
+
     this.successMessage = '';
 
     this.studentService.getStudents().subscribe({
@@ -55,7 +113,19 @@ export class Students implements OnInit {
       next: (response) => {
 
         this.students = response.data || [];
+
         this.isLoading = false;
+
+        // Ensure current page remains valid after deletion.
+        const maxPage = Math.max(
+          1,
+          Math.ceil(this.filteredStudents.length / this.pageSize)
+        );
+
+        this.currentPage = Math.min(
+          this.currentPage,
+          maxPage
+        );
 
         this.cdr.detectChanges();
 
@@ -78,40 +148,155 @@ export class Students implements OnInit {
 
   }
 
-  // Search students
+
+  // ==========================================
+  // SEARCH STUDENTS
+  // ==========================================
+
   get filteredStudents(): any[] {
 
     const search = this.searchTerm.toLowerCase().trim();
 
     return this.students.filter(student =>
 
-      student.name.toLowerCase().includes(search) ||
-      student.email.toLowerCase().includes(search) ||
-      student.phone.includes(search) ||
-      student.course.toLowerCase().includes(search)
+      (student.name || '').toLowerCase().includes(search) ||
+
+      (student.email || '').toLowerCase().includes(search) ||
+
+      String(student.phone || '').includes(search) ||
+
+      (student.course || '').toLowerCase().includes(search)
 
     );
 
   }
 
-  // EDIT student - Admin and Teacher
-  editStudent(id: number): void {
 
-    if (this.isAdmin) {
-      this.router.navigate(['/admin/edit-student', id]);
-    }
-    else if (this.isTeacher) {
-      this.router.navigate(['/teacher/edit-student', id]);
+  // Reset pagination whenever search changes.
+  onSearchChange(): void {
+
+    this.currentPage = 1;
+
+  }
+
+
+  // ==========================================
+  // PAGINATED STUDENTS
+  // ==========================================
+
+  get paginatedStudents(): any[] {
+
+    const start = (this.currentPage - 1) * this.pageSize;
+
+    return this.filteredStudents.slice(
+      start,
+      start + this.pageSize
+    );
+
+  }
+
+
+  // ==========================================
+  // TOTAL PAGES
+  // ==========================================
+
+  get totalPages(): number {
+
+    return Math.ceil(
+      this.filteredStudents.length / this.pageSize
+    );
+
+  }
+
+
+  // ==========================================
+  // PAGINATION START INDEX
+  // ==========================================
+
+  get startIndex(): number {
+
+    return this.filteredStudents.length === 0
+      ? 0
+      : (this.currentPage - 1) * this.pageSize + 1;
+
+  }
+
+
+  // ==========================================
+  // PAGINATION END INDEX
+  // ==========================================
+
+  get endIndex(): number {
+
+    return Math.min(
+      this.currentPage * this.pageSize,
+      this.filteredStudents.length
+    );
+
+  }
+
+
+  // ==========================================
+  // PREVIOUS PAGE
+  // ==========================================
+
+  previousPage(): void {
+
+    if (this.currentPage > 1) {
+
+      this.currentPage--;
+
     }
 
   }
 
-  // DELETE student - Admin only
+
+  // ==========================================
+  // NEXT PAGE
+  // ==========================================
+
+  nextPage(): void {
+
+    if (this.currentPage < this.totalPages) {
+
+      this.currentPage++;
+
+    }
+
+  }
+
+
+  // ==========================================
+  // EDIT STUDENT - ADMIN AND TEACHER
+  // ==========================================
+
+  editStudent(id: number): void {
+
+    if (this.isAdmin) {
+
+      this.router.navigate(['/admin/edit-student', id]);
+
+    }
+
+    else if (this.isTeacher) {
+
+      this.router.navigate(['/teacher/edit-student', id]);
+
+    }
+
+  }
+
+
+  // ==========================================
+  // DELETE STUDENT - ADMIN ONLY
+  // ==========================================
+
   deleteStudent(id: number): void {
 
     if (!this.isAdmin) {
 
       this.errorMessage = 'Only Admin can delete students.';
+
       return;
 
     }
@@ -121,7 +306,9 @@ export class Students implements OnInit {
     );
 
     if (!confirmDelete) {
+
       return;
+
     }
 
     this.studentService.deleteStudent(id).subscribe({
@@ -152,7 +339,12 @@ export class Students implements OnInit {
 
   }
 
-  // CHANGE ACTIVE / INACTIVE STATUS - Admin and Teacher
+
+  // ==========================================
+  // CHANGE ACTIVE / INACTIVE STATUS
+  // ADMIN AND TEACHER
+  // ==========================================
+
   updateStudentStatus(student: any, event: Event): void {
 
     const selectElement = event.target as HTMLSelectElement;
@@ -184,6 +376,7 @@ export class Students implements OnInit {
         console.error('Status Update Error:', error);
 
         student.status = previousStatus;
+
         selectElement.value = previousStatus;
 
         this.errorMessage =

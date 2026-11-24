@@ -4,17 +4,15 @@
 
   <header class="page-header">
 
+    <div>
+      <span class="page-label">TEACHER PORTAL</span>
+      <h1>Marks Management</h1>
+      <p>Manage examinations and student academic results.</p>
+    </div>
 
-<div>
-  <span class="page-label">TEACHER PORTAL</span>
-  <h1>Marks Management</h1>
-  <p>Manage examinations and student academic results.</p>
-</div>
-
-<a routerLink="/teacher-dashboard" class="back-btn">
-  ← Dashboard
-</a>
-
+    <a routerLink="/teacher-dashboard" class="back-btn">
+      ← Dashboard
+    </a>
 
   </header>
 
@@ -32,40 +30,38 @@
 
   <section class="selection-card">
 
+    <h2>Select Subject</h2>
 
-<h2>Select Subject</h2>
+    <div class="form-group">
 
-<div class="form-group">
+      <label>Assigned Subject</label>
 
-  <label>Assigned Subject</label>
+      <select
+        [(ngModel)]="selectedSubjectId"
+        (change)="onSubjectChange()">
 
-  <select
-    [(ngModel)]="selectedSubjectId"
-    (change)="onSubjectChange()">
+        <option [ngValue]="null">Select a subject</option>
 
-    <option [ngValue]="null">Select a subject</option>
+        <option
+          *ngFor="let subject of subjects"
+          [ngValue]="subject.id">
 
-    <option
-      *ngFor="let subject of subjects"
-      [ngValue]="subject.id">
+          {{ subject.subject_name }}
+          ({{ subject.subject_code }})
 
-      {{ subject.subject_name }}
-      ({{ subject.subject_code }})
+        </option>
 
-    </option>
+      </select>
 
-  </select>
+      <small *ngIf="isLoadingSubjects">
+        Loading subjects...
+      </small>
 
-  <small *ngIf="isLoadingSubjects">
-    Loading subjects...
-  </small>
+      <small *ngIf="!isLoadingSubjects && subjects.length === 0">
+        No assigned subjects found.
+      </small>
 
-  <small *ngIf="!isLoadingSubjects && subjects.length === 0">
-    No assigned subjects found.
-  </small>
-
-</div>
-
+    </div>
 
   </section>
 
@@ -73,426 +69,513 @@
 
   <section class="exam-section" *ngIf="selectedSubjectId">
 
+    <div class="section-header">
 
-<div class="section-header">
+      <div>
+        <span class="section-label">EXAMINATIONS</span>
+        <h2>Manage Examinations</h2>
+      </div>
 
-  <div>
-    <span class="section-label">EXAMINATIONS</span>
-    <h2>Manage Examinations</h2>
-  </div>
+      <button
+        class="primary-btn"
+        (click)="openExamForm()">
 
-  <button
-    class="primary-btn"
-    (click)="openExamForm()">
+        + Create Examination
 
-    + Create Examination
-
-  </button>
-
-</div>
-
-
-<!-- EXAM FORM -->
-
-<div class="exam-form-card" *ngIf="showExamForm">
-
-  <h3>
-    {{ isEditingExam ? 'Update Examination' : 'Create Examination' }}
-  </h3>
-
-  <div class="form-grid">
-
-    <div class="form-group">
-
-      <label>Exam Name</label>
-
-      <input
-        type="text"
-        [(ngModel)]="examForm.exam_name"
-        placeholder="Internal Examination 1">
+      </button>
 
     </div>
 
+    <!-- EXAM FORM -->
 
-    <div class="form-group">
+    <div class="exam-form-card" *ngIf="showExamForm">
 
-      <label>Exam Type</label>
+      <h3>
+        {{ isEditingExam ? 'Update Examination' : 'Create Examination' }}
+      </h3>
 
-      <select [(ngModel)]="examForm.exam_type">
+      <div class="form-grid">
 
-        <option value="Internal">Internal</option>
-        <option value="Midterm">Midterm</option>
-        <option value="Final">Final</option>
-        <option value="Practical">Practical</option>
-        <option value="Assignment">Assignment</option>
+        <div class="form-group">
 
-      </select>
+          <label>Exam Name</label>
+
+          <input
+            type="text"
+            [(ngModel)]="examForm.exam_name"
+            placeholder="Internal Examination 1">
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Exam Type</label>
+
+          <select [(ngModel)]="examForm.exam_type">
+
+            <option value="Internal">Internal</option>
+            <option value="Midterm">Midterm</option>
+            <option value="Final">Final</option>
+            <option value="Practical">Practical</option>
+            <option value="Assignment">Assignment</option>
+
+          </select>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Exam Date</label>
+
+          <input
+            type="date"
+            [(ngModel)]="examForm.exam_date">
+
+        </div>
+
+        <div class="form-group">
+
+          <label>Maximum Marks</label>
+
+          <input
+            type="number"
+            min="1"
+            max="9999.99"
+            step="0.01"
+            [(ngModel)]="examForm.max_marks">
+
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+
+        <button
+          class="primary-btn"
+          (click)="isEditingExam ? updateExam() : saveExam()"
+          [disabled]="isSaving">
+
+          {{ isSaving ? 'Saving...' : (isEditingExam ? 'Update Exam' : 'Create Exam') }}
+
+        </button>
+
+        <button
+          class="cancel-btn"
+          (click)="showExamForm = false">
+
+          Cancel
+
+        </button>
+
+      </div>
 
     </div>
 
+    <!-- EXAM LIST -->
 
-    <div class="form-group">
+    <div class="exam-list-card">
 
-      <label>Exam Date</label>
+      <h3>Available Examinations</h3>
 
-      <input
-        type="date"
-        [(ngModel)]="examForm.exam_date">
+      <div *ngIf="isLoadingExams" class="loading">
+        Loading examinations...
+      </div>
+
+      <div *ngIf="!isLoadingExams && exams.length === 0" class="empty-state">
+        No examinations available. Create your first examination.
+      </div>
+
+      <div class="table-wrapper" *ngIf="!isLoadingExams && exams.length > 0">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Exam Name</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Maximum Marks</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr *ngFor="let exam of exams">
+
+              <td>{{ exam.exam_name }}</td>
+
+              <td>{{ exam.exam_type }}</td>
+
+              <td>{{ exam.exam_date || '-' }}</td>
+
+              <td>{{ exam.max_marks }}</td>
+
+              <td class="action-buttons">
+
+                <button
+                  class="edit-btn"
+                  (click)="editExam(exam)">
+
+                  Edit
+
+                </button>
+
+                <button
+                  class="delete-btn"
+                  (click)="deleteExam(exam.id)">
+
+                  Delete
+
+                </button>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
-
-
-    <div class="form-group">
-
-      <label>Maximum Marks</label>
-
-      <input
-        type="number"
-        min="1"
-        max="9999.99"
-        step="0.01"
-        [(ngModel)]="examForm.max_marks">
-
-    </div>
-
-  </div>
-
-
-  <div class="form-actions">
-
-    <button
-      class="primary-btn"
-      (click)="isEditingExam ? updateExam() : saveExam()"
-      [disabled]="isSaving">
-
-      {{ isSaving ? 'Saving...' : (isEditingExam ? 'Update Exam' : 'Create Exam') }}
-
-    </button>
-
-    <button
-      class="cancel-btn"
-      (click)="showExamForm = false">
-
-      Cancel
-
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- EXAM LIST -->
-
-<div class="exam-list-card">
-
-  <h3>Available Examinations</h3>
-
-  <div *ngIf="isLoadingExams" class="loading">
-    Loading examinations...
-  </div>
-
-  <div *ngIf="!isLoadingExams && exams.length === 0" class="empty-state">
-    No examinations available. Create your first examination.
-  </div>
-
-  <div class="table-wrapper" *ngIf="!isLoadingExams && exams.length > 0">
-
-    <table>
-
-      <thead>
-        <tr>
-          <th>Exam Name</th>
-          <th>Type</th>
-          <th>Date</th>
-          <th>Maximum Marks</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-
-        <tr *ngFor="let exam of exams">
-
-          <td>{{ exam.exam_name }}</td>
-
-          <td>{{ exam.exam_type }}</td>
-
-          <td>{{ exam.exam_date || '-' }}</td>
-
-          <td>{{ exam.max_marks }}</td>
-
-          <td class="action-buttons">
-
-            <button
-              class="edit-btn"
-              (click)="editExam(exam)">
-
-              Edit
-
-            </button>
-
-            <button
-              class="delete-btn"
-              (click)="deleteExam(exam.id)">
-
-              Delete
-
-            </button>
-
-          </td>
-
-        </tr>
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-</div>
-
 
   </section>
 
   <!-- MARKS ENTRY -->
 
-  <section class="marks-entry-section" *ngIf="selectedSubjectId && exams.length > 0">
+  <section
+    class="marks-entry-section"
+    *ngIf="selectedSubjectId && exams.length > 0">
 
+    <div class="section-header">
 
-<div class="section-header">
+      <div>
+        <span class="section-label">ACADEMIC RECORDS</span>
+        <h2>Student Marks</h2>
+      </div>
 
-  <div>
-    <span class="section-label">ACADEMIC RECORDS</span>
-    <h2>Student Marks</h2>
-  </div>
+    </div>
 
-</div>
+    <div class="selection-card">
 
+      <div class="form-group">
 
-<div class="selection-card">
+        <label>Select Examination</label>
 
-  <div class="form-group">
+        <select
+          [(ngModel)]="selectedExamId"
+          (change)="clearMessages()">
 
-    <label>Select Examination</label>
+          <option [ngValue]="null">Select examination</option>
 
-    <select
-      [(ngModel)]="selectedExamId"
-      (change)="clearMessages()">
+          <option
+            *ngFor="let exam of exams"
+            [ngValue]="exam.id">
 
-      <option [ngValue]="null">Select examination</option>
+            {{ exam.exam_name }} -
+            {{ exam.exam_type }} ({{ exam.max_marks }} marks)
 
-      <option
-        *ngFor="let exam of exams"
-        [ngValue]="exam.id">
+          </option>
 
-        {{ exam.exam_name }} -
-        {{ exam.exam_type }} ({{ exam.max_marks }} marks)
+        </select>
 
-      </option>
+      </div>
 
-    </select>
+      <div class="form-actions">
 
-  </div>
+        <button
+          class="primary-btn"
+          (click)="loadStudents()"
+          [disabled]="!selectedExamId || isLoadingStudents">
 
+          {{ isLoadingStudents ? 'Loading Students...' : 'Load Students' }}
 
-  <div class="form-actions">
+        </button>
 
-    <button
-      class="primary-btn"
-      (click)="loadStudents()"
-      [disabled]="!selectedExamId || isLoadingStudents">
+        <button
+          class="secondary-btn"
+          (click)="viewMarks()"
+          [disabled]="!selectedExamId || isLoadingRecords">
 
-      {{ isLoadingStudents ? 'Loading Students...' : 'Load Students' }}
+          {{ isLoadingRecords ? 'Loading Records...' : 'View Saved Marks' }}
 
-    </button>
+        </button>
 
-    <button
-      class="secondary-btn"
-      (click)="viewMarks()"
-      [disabled]="!selectedExamId || isLoadingRecords">
+      </div>
 
-      {{ isLoadingRecords ? 'Loading Records...' : 'View Saved Marks' }}
+    </div>
 
-    </button>
+    <!-- STUDENT MARKS ENTRY TABLE -->
 
-  </div>
+    <div
+      class="table-card"
+      *ngIf="students.length > 0 && !showRecords">
 
-</div>
+      <div class="table-heading">
 
+        <h3>Enter Student Marks</h3>
 
-<!-- STUDENT MARKS ENTRY TABLE -->
+        <span>{{ students.length }} Students</span>
 
-<div class="table-card" *ngIf="students.length > 0 && !showRecords">
+      </div>
 
-  <div class="table-heading">
+      <div class="table-wrapper">
 
-    <h3>Enter Student Marks</h3>
+        <table>
 
-    <span>{{ students.length }} Students</span>
+          <thead>
 
-  </div>
+            <tr>
+              <th>Student ID</th>
+              <th>Student Name</th>
+              <th>Email</th>
+              <th>Obtained Marks</th>
+              <th>Remarks</th>
+            </tr>
 
-  <div class="table-wrapper">
+          </thead>
 
-    <table>
+          <tbody>
 
-      <thead>
+            <!-- PAGINATED STUDENTS -->
 
-        <tr>
-          <th>Student ID</th>
-          <th>Student Name</th>
-          <th>Email</th>
-          <th>Obtained Marks</th>
-          <th>Remarks</th>
-        </tr>
+            <tr *ngFor="let student of paginatedStudents">
 
-      </thead>
+              <td>{{ student.id }}</td>
 
-      <tbody>
+              <td>{{ student.name }}</td>
 
-        <tr *ngFor="let student of students">
+              <td>{{ student.email }}</td>
 
-          <td>{{ student.id }}</td>
+              <td>
 
-          <td>{{ student.name }}</td>
+                <input
+                  type="number"
+                  min="0"
+                  [max]="selectedExam?.max_marks || 9999"
+                  step="0.01"
+                  [(ngModel)]="student.obtained_marks"
+                  placeholder="Enter marks">
 
-          <td>{{ student.email }}</td>
+              </td>
 
-          <td>
+              <td>
 
-            <input
-                type="number"
-                min="0"
-                [max]="selectedExam?.max_marks || 9999"
-                step="0.01"
-                [(ngModel)]="student.obtained_marks"
-                placeholder="Enter marks">
+                <input
+                  type="text"
+                  [(ngModel)]="student.remarks"
+                  placeholder="Remarks">
 
-          </td>
+              </td>
 
-          <td>
+            </tr>
 
-            <input
-              type="text"
-              [(ngModel)]="student.remarks"
-              placeholder="Remarks">
+          </tbody>
 
-          </td>
+        </table>
 
-        </tr>
+      </div>
 
-      </tbody>
+      <!-- STUDENT PAGINATION -->
 
-    </table>
+      <div
+        class="pagination-container"
+        *ngIf="students.length > pageSize">
 
-  </div>
+        <span class="pagination-info">
 
+          Showing {{ studentStart }} - {{ studentEnd }}
+          of {{ students.length }} students
 
-  <div class="save-section">
+        </span>
 
-    <button
-      class="primary-btn save-btn"
-      (click)="saveMarks()"
-      [disabled]="isSaving">
+        <div class="pagination-controls">
 
-      {{ isSaving ? 'Saving Marks...' : 'Save All Marks' }}
+          <button
+            type="button"
+            class="page-btn"
+            (click)="previousStudentPage()"
+            [disabled]="studentPage <= 1">
 
-    </button>
+            Previous
 
-  </div>
+          </button>
 
-</div>
+          <span class="page-number">
 
+            Page {{ studentPage }} of {{ totalStudentPages }}
 
-<!-- SAVED MARKS RECORDS -->
+          </span>
 
-<div class="table-card" *ngIf="showRecords">
+          <button
+            type="button"
+            class="page-btn"
+            (click)="nextStudentPage()"
+            [disabled]="studentPage >= totalStudentPages">
 
-  <div class="table-heading">
+            Next
 
-    <h3>Saved Examination Results</h3>
+          </button>
 
-    <span>{{ marksRecords.length }} Records</span>
+        </div>
 
-  </div>
+      </div>
 
-  <div *ngIf="isLoadingRecords" class="loading">
-    Loading marks records...
-  </div>
+      <!-- SAVE MARKS -->
 
-  <div
-    *ngIf="!isLoadingRecords && marksRecords.length === 0"
-    class="empty-state">
+      <div class="save-section">
 
-    No marks records found for this examination.
+        <button
+          class="primary-btn save-btn"
+          (click)="saveMarks()"
+          [disabled]="isSaving">
 
-  </div>
+          {{ isSaving ? 'Saving Marks...' : 'Save All Marks' }}
 
-  <div class="table-wrapper" *ngIf="!isLoadingRecords && marksRecords.length > 0">
+        </button>
 
-    <table>
+      </div>
 
-      <thead>
+    </div>
 
-        <tr>
-          <th>Student ID</th>
-          <th>Student Name</th>
-          <th>Email</th>
-          <th>Obtained Marks</th>
-          <th>Maximum Marks</th>
-          <th>Remarks</th>
-          <th>Actions</th>
-        </tr>
+    <!-- SAVED MARKS RECORDS -->
 
-      </thead>
+    <div class="table-card" *ngIf="showRecords">
 
-      <tbody>
+      <div class="table-heading">
 
-        <tr *ngFor="let record of marksRecords">
+        <h3>Saved Examination Results</h3>
 
-          <td>{{ record.student_id }}</td>
+        <span>{{ marksRecords.length }} Records</span>
 
-          <td>{{ record.student_name }}</td>
+      </div>
 
-          <td>{{ record.email }}</td>
+      <div *ngIf="isLoadingRecords" class="loading">
+        Loading marks records...
+      </div>
 
-          <td>{{ record.obtained_marks }}</td>
+      <div
+        *ngIf="!isLoadingRecords && marksRecords.length === 0"
+        class="empty-state">
 
-          <td>{{ record.max_marks }}</td>
+        No marks records found for this examination.
 
-          <td>{{ record.remarks || '-' }}</td>
+      </div>
 
-          <td class="action-buttons">
+      <div
+        class="table-wrapper"
+        *ngIf="!isLoadingRecords && marksRecords.length > 0">
 
-            <button
-              class="edit-btn"
-              (click)="editMarks(record)">
+        <table>
 
-              Edit
+          <thead>
 
-            </button>
+            <tr>
+              <th>Student ID</th>
+              <th>Student Name</th>
+              <th>Email</th>
+              <th>Obtained Marks</th>
+              <th>Maximum Marks</th>
+              <th>Remarks</th>
+              <th>Actions</th>
+            </tr>
 
-            <button
-              class="delete-btn"
-              (click)="deleteMarks(record.mark_id)">
+          </thead>
 
-              Delete
+          <tbody>
 
-            </button>
+            <!-- PAGINATED MARKS RECORDS -->
 
-          </td>
+            <tr *ngFor="let record of paginatedMarksRecords">
 
-        </tr>
+              <td>{{ record.student_id }}</td>
 
-      </tbody>
+              <td>{{ record.student_name }}</td>
 
-    </table>
+              <td>{{ record.email }}</td>
 
-  </div>
+              <td>{{ record.obtained_marks }}</td>
 
-</div>
+              <td>{{ record.max_marks }}</td>
 
+              <td>{{ record.remarks || '-' }}</td>
+
+              <td class="action-buttons">
+
+                <button
+                  class="edit-btn"
+                  (click)="editMarks(record)">
+
+                  Edit
+
+                </button>
+
+                <button
+                  class="delete-btn"
+                  (click)="deleteMarks(record.mark_id)">
+
+                  Delete
+
+                </button>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <!-- SAVED RECORDS PAGINATION -->
+
+      <div
+        class="pagination-container"
+        *ngIf="!isLoadingRecords && marksRecords.length > pageSize">
+
+        <span class="pagination-info">
+
+          Showing {{ recordsStart }} - {{ recordsEnd }}
+          of {{ marksRecords.length }} records
+
+        </span>
+
+        <div class="pagination-controls">
+
+          <button
+            type="button"
+            class="page-btn"
+            (click)="previousRecordsPage()"
+            [disabled]="recordsPage <= 1">
+
+            Previous
+
+          </button>
+
+          <span class="page-number">
+
+            Page {{ recordsPage }} of {{ totalRecordsPages }}
+
+          </span>
+
+          <button
+            type="button"
+            class="page-btn"
+            (click)="nextRecordsPage()"
+            [disabled]="recordsPage >= totalRecordsPages">
+
+            Next
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
 
   </section>
 

@@ -15,6 +15,7 @@
   box-sizing: border-box;
 }
 
+
 /* =========================================
    PAGE HEADER
 ========================================= */
@@ -75,6 +76,7 @@
   box-shadow: 0 6px 14px rgba(112, 70, 211, 0.22);
 }
 
+
 /* =========================================
    COMMON CARDS
 ========================================= */
@@ -89,6 +91,7 @@
   border: 1px solid #eeedf5;
   box-shadow: 0 4px 18px rgba(35, 20, 75, 0.045);
 }
+
 
 /* =========================================
    SECTION HEADINGS
@@ -109,6 +112,7 @@
   line-height: 1.6;
   margin: 0;
 }
+
 
 /* =========================================
    SUBJECT AND DATE SELECTION
@@ -167,6 +171,7 @@
   color: #d14b4b;
 }
 
+
 /* =========================================
    BUTTONS
 ========================================= */
@@ -224,6 +229,7 @@ input:disabled {
   cursor: not-allowed;
 }
 
+
 /* =========================================
    SUCCESS AND ERROR MESSAGES
 ========================================= */
@@ -256,6 +262,7 @@ input:disabled {
   border: 1px solid #d2f2df;
 }
 
+
 /* =========================================
    TABLE CARD HEADER
 ========================================= */
@@ -285,6 +292,7 @@ input:disabled {
   font-weight: 700;
   white-space: nowrap;
 }
+
 
 /* =========================================
    ATTENDANCE TABLE
@@ -342,7 +350,8 @@ td strong {
   font-weight: 600;
 }
 
-/* Column widths */
+
+/* COLUMN WIDTHS */
 
 th:nth-child(1),
 td:nth-child(1) {
@@ -374,6 +383,7 @@ th:nth-child(6),
 td:nth-child(6) {
   width: 12%;
 }
+
 
 /* =========================================
    TABLE INPUTS
@@ -413,6 +423,7 @@ select option {
   color: #25213a;
 }
 
+
 /* =========================================
    RECORD STATUS BADGES
 ========================================= */
@@ -438,6 +449,107 @@ select option {
   color: #7046d3;
 }
 
+
+/* =========================================
+   TABLE PAGINATION
+========================================= */
+
+.pagination-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 2px;
+  margin-top: 5px;
+  border-bottom: 1px solid #f0eef6;
+}
+
+.pagination-info {
+  color: #858196;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pagination-info strong {
+  color: #39334f;
+  font-weight: 700;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-size label {
+  color: #777187;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.page-size select {
+  height: 34px;
+  min-width: 58px;
+  padding: 0 9px;
+  border: 1px solid #e1deed;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #49435d;
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.page-size select:focus {
+  border-color: #7651d5;
+  box-shadow: 0 0 0 3px rgba(118, 81, 213, 0.08);
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e1deed;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #7046d3;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #7046d3;
+  border-color: #7046d3;
+  color: #ffffff;
+}
+
+.pagination-btn:disabled {
+  background: #f7f6fa;
+  color: #b5afc3;
+  border-color: #eeedf4;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.page-indicator {
+  color: #514a65;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+
 /* =========================================
    SAVE ATTENDANCE SECTION
 ========================================= */
@@ -449,7 +561,6 @@ select option {
   gap: 15px;
   margin-top: 23px;
   padding-top: 18px;
-  border-top: 1px solid #f0eef6;
 }
 
 .save-info {
@@ -461,6 +572,7 @@ select option {
 .save-attendance-btn {
   min-width: 170px;
 }
+
 
 /* =========================================
    LOADING SECTION
@@ -509,6 +621,7 @@ select option {
   }
 }
 
+
 /* =========================================
    EMPTY STATE
 ========================================= */
@@ -552,6 +665,7 @@ select option {
   margin: 0 0 22px;
 }
 
+
 /* =========================================
    RESPONSIVE DESIGN - TABLETS
 ========================================= */
@@ -572,6 +686,7 @@ select option {
   }
 
 }
+
 
 /* =========================================
    RESPONSIVE DESIGN - MOBILE
@@ -617,7 +732,20 @@ select option {
     padding: 18px;
   }
 
+  .pagination-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .pagination-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
 }
+
 
 /* =========================================
    SMALL MOBILE
@@ -654,6 +782,14 @@ select option {
 
   .empty-message h3 {
     font-size: 16px;
+  }
+
+  .pagination-info {
+    font-size: 11px;
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap;
   }
 
 }

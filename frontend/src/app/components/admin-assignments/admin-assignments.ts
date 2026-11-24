@@ -8,13 +8,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { MatIconModule } from '@angular/material/icon';
+
 import { Subject } from '../../services/subject';
 import { Admin } from '../../services/admin';
 
 @Component({
   selector: 'app-admin-assignments',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    MatIconModule
+  ],
   templateUrl: './admin-assignments.html',
   styleUrl: './admin-assignments.css'
 })
@@ -33,15 +40,26 @@ export class AdminAssignments implements OnInit {
   successMessage = '';
   errorMessage = '';
 
+
+  // =====================================
+  // PAGINATION
+  // =====================================
+
+  currentPage = 1;
+  pageSize = 5;
+
+
   constructor(
     private subjectService: Subject,
     private adminService: Admin,
     private cdr: ChangeDetectorRef
   ) {}
 
+
   ngOnInit(): void {
     this.loadInitialData();
   }
+
 
   // =====================================
   // LOAD INITIAL DATA
@@ -60,17 +78,22 @@ export class AdminAssignments implements OnInit {
       if (completed === 3) {
 
         this.isLoading = false;
+
+        this.adjustCurrentPage();
+
         this.cdr.detectChanges();
 
       }
 
     };
 
+
     this.adminService.getTeachers().subscribe({
 
       next: response => {
 
         this.teachers = response.data || [];
+
         finish();
 
       },
@@ -80,17 +103,20 @@ export class AdminAssignments implements OnInit {
         console.error(error);
 
         this.errorMessage = 'Unable to load teachers.';
+
         finish();
 
       }
 
     });
 
+
     this.subjectService.getSubjects().subscribe({
 
       next: response => {
 
         this.subjects = response.data || [];
+
         finish();
 
       },
@@ -100,15 +126,18 @@ export class AdminAssignments implements OnInit {
         console.error(error);
 
         this.errorMessage = 'Unable to load subjects.';
+
         finish();
 
       }
 
     });
 
+
     this.loadAssignments(finish);
 
   }
+
 
   // =====================================
   // LOAD ASSIGNMENTS
@@ -121,6 +150,8 @@ export class AdminAssignments implements OnInit {
       next: response => {
 
         this.assignments = response.data || [];
+
+        this.adjustCurrentPage();
 
         if (finish) {
           finish();
@@ -148,13 +179,123 @@ export class AdminAssignments implements OnInit {
 
   }
 
+
+  // =====================================
+  // PAGINATION GETTERS
+  // =====================================
+
+  get totalPages(): number {
+
+    return Math.ceil(
+      this.assignments.length / this.pageSize
+    );
+
+  }
+
+
+  get paginatedAssignments(): any[] {
+
+    const startIndex =
+      (this.currentPage - 1) * this.pageSize;
+
+    const endIndex =
+      startIndex + this.pageSize;
+
+    return this.assignments.slice(startIndex, endIndex);
+
+  }
+
+
+  get pageNumbers(): number[] {
+
+    return Array.from(
+      { length: this.totalPages },
+      (_, index) => index + 1
+    );
+
+  }
+
+
+  get startItem(): number {
+
+    if (this.assignments.length === 0) {
+      return 0;
+    }
+
+    return (this.currentPage - 1) * this.pageSize + 1;
+
+  }
+
+
+  get endItem(): number {
+
+    return Math.min(
+      this.currentPage * this.pageSize,
+      this.assignments.length
+    );
+
+  }
+
+
+  // =====================================
+  // PAGINATION METHODS
+  // =====================================
+
+  goToPage(page: number): void {
+
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
+
+  }
+
+
+  previousPage(): void {
+
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+
+  }
+
+
+  nextPage(): void {
+
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+
+  }
+
+
+  // =====================================
+  // ADJUST CURRENT PAGE
+  // =====================================
+
+  adjustCurrentPage(): void {
+
+    if (this.currentPage > this.totalPages) {
+
+      this.currentPage = Math.max(
+        1,
+        this.totalPages
+      );
+
+    }
+
+  }
+
+
   // =====================================
   // CHECK SUBJECT SELECTION
   // =====================================
 
   toggleSubject(subjectId: number, event: Event): void {
 
-    const checked = (event.target as HTMLInputElement).checked;
+    const checked =
+      (event.target as HTMLInputElement).checked;
 
     if (checked) {
 
@@ -171,11 +312,13 @@ export class AdminAssignments implements OnInit {
 
   }
 
+
   isSubjectSelected(subjectId: number): boolean {
 
     return this.selectedSubjectIds.includes(subjectId);
 
   }
+
 
   // =====================================
   // ASSIGN SUBJECTS
@@ -220,6 +363,9 @@ export class AdminAssignments implements OnInit {
 
         this.isSaving = false;
 
+        // Return to first page after assigning
+        this.currentPage = 1;
+
         this.loadAssignments();
 
         this.cdr.detectChanges();
@@ -240,6 +386,7 @@ export class AdminAssignments implements OnInit {
     });
 
   }
+
 
   // =====================================
   // REMOVE ASSIGNMENT
@@ -283,8 +430,9 @@ export class AdminAssignments implements OnInit {
 
   }
 
+
   // =====================================
-  // RESET
+  // RESET / CLEAR MESSAGES
   // =====================================
 
   clearMessages(): void {

@@ -1,274 +1,547 @@
+/* ==========================================
+   MAIN CONTAINER
+========================================== */
+
 .marks-container {
-min-height: 100vh;
-background: #f6f5fc;
-padding: 35px 6%;
-color: #25233a;
-font-family: Arial, sans-serif;
+  min-height: 100vh;
+  background: #f6f5fc;
+  padding: 35px 6%;
+  color: #25233a;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
 
+
+/* ==========================================
+   PAGE HEADER
+========================================== */
+
 .page-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 .page-label,
 .section-label {
-color: #7655d9;
-font-size: 12px;
-font-weight: 700;
-letter-spacing: 1.5px;
+  color: #7655d9;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
 }
 
 .page-header h1 {
-margin: 8px 0;
-font-size: 30px;
+  margin: 8px 0;
+  font-size: 30px;
+  font-weight: 700;
 }
 
 .page-header p {
-color: #77748b;
+  color: #77748b;
+  margin-bottom: 0;
+  line-height: 1.5;
 }
 
 .back-btn {
-text-decoration: none;
-background: white;
-color: #6846ca;
-padding: 12px 18px;
-border-radius: 9px;
-font-weight: 600;
+  text-decoration: none;
+  background: white;
+  color: #6846ca;
+  padding: 12px 18px;
+  border-radius: 9px;
+  font-weight: 600;
+  transition: 0.2s ease;
+  white-space: nowrap;
 }
+
+.back-btn:hover {
+  background: #eee8fc;
+  transform: translateY(-2px);
+}
+
+
+/* ==========================================
+   CARDS
+========================================== */
 
 .selection-card,
 .exam-form-card,
 .exam-list-card,
 .table-card {
-background: white;
-padding: 25px;
-border-radius: 14px;
-margin-bottom: 25px;
-box-shadow: 0 5px 20px rgba(45, 35, 90, 0.05);
+  background: white;
+  padding: 25px;
+  border-radius: 14px;
+  margin-bottom: 25px;
+  box-shadow: 0 5px 20px rgba(45, 35, 90, 0.05);
+  box-sizing: border-box;
 }
 
 .selection-card h2,
 .section-header h2 {
-margin-top: 0;
+  margin-top: 0;
+  color: #302b49;
 }
 
+
+/* ==========================================
+   FORM GROUPS
+========================================== */
+
 .form-group {
-display: flex;
-flex-direction: column;
-gap: 9px;
-margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 18px;
 }
 
 .form-group label {
-font-weight: 600;
-font-size: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #45415c;
 }
 
 .form-group input,
 .form-group select,
 table input {
-width: 100%;
-padding: 12px;
-border: 1px solid #dedbea;
-border-radius: 8px;
-outline: none;
-background: #fff;
-box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dedbea;
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+  transition: 0.2s ease;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 table input:focus {
-border-color: #7655d9;
-box-shadow: 0 0 0 3px rgba(118, 85, 217, 0.1);
+  border-color: #7655d9;
+  box-shadow: 0 0 0 3px rgba(118, 85, 217, 0.1);
 }
+
+
+/* ==========================================
+   SECTION HEADERS
+========================================== */
 
 .section-header,
 .table-heading {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
 .exam-section,
 .marks-entry-section {
-margin-top: 30px;
+  margin-top: 30px;
 }
+
+
+/* ==========================================
+   FORM GRID
+========================================== */
 
 .form-grid {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 15px 20px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px 20px;
 }
 
+
+/* ==========================================
+   FORM ACTIONS
+========================================== */
+
 .form-actions {
-display: flex;
-gap: 12px;
-flex-wrap: wrap;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
+
+
+/* ==========================================
+   BUTTONS
+========================================== */
 
 .primary-btn,
 .secondary-btn,
 .cancel-btn,
 .edit-btn,
 .delete-btn {
-border: none;
-border-radius: 8px;
-padding: 11px 17px;
-font-weight: 600;
-cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 17px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  transition: 0.2s ease;
 }
 
 .primary-btn {
-background: #7655d9;
-color: white;
+  background: #7655d9;
+  color: white;
 }
 
 .primary-btn:hover {
-background: #6240c4;
+  background: #6240c4;
+  transform: translateY(-1px);
 }
 
 .secondary-btn {
-background: #e9e3fa;
-color: #6846ca;
+  background: #e9e3fa;
+  color: #6846ca;
+}
+
+.secondary-btn:hover {
+  background: #dcd2f6;
 }
 
 .cancel-btn {
-background: #eeeef3;
-color: #555;
+  background: #eeeef3;
+  color: #555;
+}
+
+.cancel-btn:hover {
+  background: #dedee7;
 }
 
 .edit-btn {
-background: #e7f1ff;
-color: #2868b2;
+  background: #e7f1ff;
+  color: #2868b2;
+}
+
+.edit-btn:hover {
+  background: #d3e6ff;
 }
 
 .delete-btn {
-background: #ffe8e8;
-color: #d33d3d;
+  background: #ffe8e8;
+  color: #d33d3d;
+}
+
+.delete-btn:hover {
+  background: #ffd5d5;
 }
 
 button:disabled {
-opacity: 0.6;
-cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
+
+
+/* ==========================================
+   TABLE WRAPPER
+========================================== */
 
 .table-wrapper {
-width: 100%;
-overflow-x: auto;
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 9px;
 }
 
+
+/* ==========================================
+   TABLE
+========================================== */
+
 table {
-width: 100%;
-border-collapse: collapse;
-min-width: 750px;
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 750px;
 }
 
 th {
-background: #f5f2fc;
-color: #62518d;
-font-size: 13px;
-text-align: left;
+  background: #f5f2fc;
+  color: #62518d;
+  font-size: 13px;
+  text-align: left;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 th,
 td {
-padding: 15px 12px;
-border-bottom: 1px solid #eeedf3;
+  padding: 15px 12px;
+  border-bottom: 1px solid #eeedf3;
 }
 
 td {
-font-size: 14px;
+  font-size: 14px;
+  color: #45415c;
 }
 
-tr:hover td {
-background: #faf9fe;
+tbody tr {
+  transition: background 0.2s ease;
 }
+
+tbody tr:hover td {
+  background: #faf9fe;
+}
+
+td input {
+  min-width: 90px;
+}
+
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
 
 .action-buttons {
-display: flex;
-gap: 7px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
 }
+
+
+/* ==========================================
+   TABLE HEADING COUNT
+========================================== */
 
 .table-heading span {
-background: #eee8fc;
-color: #6846ca;
-padding: 7px 12px;
-border-radius: 20px;
-font-size: 13px;
+  background: #eee8fc;
+  color: #6846ca;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
+
+/* ==========================================
+   SAVE BUTTON
+========================================== */
+
 .save-section {
-display: flex;
-justify-content: flex-end;
-margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 .save-btn {
-padding: 13px 25px;
+  padding: 13px 25px;
 }
 
+
+/* ==========================================
+   TABLE PAGINATION
+========================================== */
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding: 15px 5px 0;
+  border-top: 1px solid #eeedf3;
+}
+
+.pagination-info {
+  color: #77748b;
+  font-size: 13px;
+}
+
+.pagination-info strong {
+  color: #6846ca;
+  font-weight: 700;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  min-width: 38px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #dedbea;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #6846ca;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #eee8fc;
+  border-color: #7655d9;
+}
+
+.pagination-btn:disabled {
+  background: #f5f4f8;
+  color: #aaa6b8;
+  border-color: #e9e7ef;
+  cursor: not-allowed;
+}
+
+.pagination-current {
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #7655d9;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* ==========================================
+   MESSAGES
+========================================== */
+
 .message {
-padding: 14px 18px;
-margin-bottom: 18px;
-border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
 .success-message {
-background: #e7f8ee;
-color: #20864b;
+  background: #e7f8ee;
+  color: #20864b;
 }
 
 .error-message {
-background: #ffeded;
-color: #c83232;
+  background: #ffeded;
+  color: #c83232;
 }
+
+
+/* ==========================================
+   LOADING
+========================================== */
 
 .loading {
-padding: 25px;
-text-align: center;
-color: #7655d9;
+  padding: 25px;
+  text-align: center;
+  color: #7655d9;
+  font-size: 14px;
+  font-weight: 600;
 }
 
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
 .empty-state {
-text-align: center;
-padding: 30px;
-color: #88849b;
-background: #faf9fd;
-border-radius: 10px;
+  text-align: center;
+  padding: 30px;
+  color: #88849b;
+  background: #faf9fd;
+  border-radius: 10px;
+  font-size: 14px;
 }
+
+
+/* ==========================================
+   RESPONSIVE DESIGN
+========================================== */
 
 @media (max-width: 768px) {
 
-.marks-container {
-padding: 20px 4%;
+  .marks-container {
+    padding: 20px 4%;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+
+  .page-header h1 {
+    font-size: 25px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+
+  .table-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .selection-card,
+  .exam-form-card,
+  .exam-list-card,
+  .table-card {
+    padding: 17px;
+  }
+
+  .pagination-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pagination-controls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
 }
 
-.page-header {
-align-items: flex-start;
-gap: 15px;
-flex-direction: column;
-}
 
-.form-grid {
-grid-template-columns: 1fr;
-}
+/* ==========================================
+   SMALL MOBILE DEVICES
+========================================== */
 
-.section-header {
-align-items: flex-start;
-gap: 15px;
-flex-direction: column;
-}
+@media (max-width: 480px) {
 
-.selection-card,
-.exam-form-card,
-.exam-list-card,
-.table-card {
-padding: 17px;
-}
+  .marks-container {
+    padding: 15px 3%;
+  }
+
+  .page-header h1 {
+    font-size: 22px;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .cancel-btn {
+    padding: 10px 13px;
+    font-size: 12px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .pagination-info {
+    font-size: 12px;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+  }
 
 }

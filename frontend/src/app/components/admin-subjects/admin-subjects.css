@@ -3,7 +3,13 @@
   padding: 30px;
   background: #f8f7fc;
   font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
+
+
+/* =====================================
+   PAGE HEADER
+===================================== */
 
 .page-header {
   display: flex;
@@ -30,6 +36,11 @@
   text-decoration: none;
 }
 
+
+/* =====================================
+   CARDS
+===================================== */
+
 .form-card,
 .subjects-card {
   background: white;
@@ -43,6 +54,11 @@ h3 {
   color: #5424a8;
   margin-bottom: 20px;
 }
+
+
+/* =====================================
+   FORM
+===================================== */
 
 .form-grid {
   display: grid;
@@ -71,6 +87,7 @@ h3 {
   outline: none;
   font-size: 14px;
   background: white;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -111,6 +128,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+
+/* =====================================
+   SECTION HEADER
+===================================== */
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -122,12 +144,30 @@ button:disabled {
   font-size: 13px;
 }
 
+.refresh-btn {
+  transition: background 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: #5424a8;
+}
+
+
+/* =====================================
+   FILTERS
+===================================== */
+
 .filter-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   gap: 15px;
   margin-bottom: 22px;
 }
+
+
+/* =====================================
+   TABLE
+===================================== */
 
 .table-wrapper {
   overflow-x: auto;
@@ -241,6 +281,125 @@ th {
 
 
 /* =====================================
+   PAGINATION
+===================================== */
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+
+  padding: 20px 5px 5px;
+  margin-top: 10px;
+
+  border-top: 1px solid #eee;
+}
+
+
+/* PAGINATION INFO */
+
+.pagination-info {
+  font-size: 13px;
+  color: #777;
+}
+
+.pagination-info strong {
+  color: #5424a8;
+  font-weight: 700;
+}
+
+
+/* PAGINATION BUTTONS */
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-controls .pagination-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  background: white;
+  color: #5424a8;
+
+  border: 1px solid #e5def2;
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+
+/* PAGE NUMBER HOVER */
+
+.pagination-controls .page-number:hover:not(.active) {
+  background: #f2edfc;
+  border-color: #713bd1;
+}
+
+
+/* ACTIVE PAGE */
+
+.pagination-controls .page-number.active {
+  background: #713bd1;
+  color: white;
+  border-color: #713bd1;
+
+  box-shadow: 0 3px 8px rgba(113, 59, 209, 0.2);
+}
+
+
+/* PREVIOUS AND NEXT */
+
+.pagination-controls .previous-btn,
+.pagination-controls .next-btn {
+  background: #f8f7fc;
+  color: #5424a8;
+}
+
+.pagination-controls .previous-btn:hover:not(:disabled),
+.pagination-controls .next-btn:hover:not(:disabled) {
+  background: #713bd1;
+  color: white;
+  border-color: #713bd1;
+}
+
+
+/* DISABLED PAGINATION */
+
+.pagination-controls .pagination-btn:disabled {
+  background: #f5f5f5;
+  color: #b8b8b8;
+  border-color: #eee;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+
+/* PAGINATION ICONS */
+
+.pagination-controls mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 18px;
+}
+
+
+/* =====================================
    SUCCESS AND ERROR MESSAGES
 ===================================== */
 
@@ -277,6 +436,20 @@ th {
    RESPONSIVE DESIGN
 ===================================== */
 
+@media (max-width: 768px) {
+
+  .pagination-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap;
+  }
+
+}
+
+
 @media (max-width: 700px) {
 
   .container {
@@ -296,6 +469,22 @@ th {
   .form-card,
   .subjects-card {
     padding: 17px;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .pagination-controls .pagination-btn {
+    min-width: 32px;
+    height: 34px;
+    padding: 0 7px;
+  }
+
+  .pagination-controls .previous-btn,
+  .pagination-controls .next-btn {
+    font-size: 11px;
   }
 
 }

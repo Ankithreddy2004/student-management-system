@@ -1,7 +1,6 @@
 <div class="container">
 
   <!-- Header -->
-
   <div class="page-header">
 
     <div>
@@ -17,7 +16,6 @@
 
 
   <!-- Messages -->
-
   <div class="success-message" *ngIf="successMessage">
     {{ successMessage }}
   </div>
@@ -28,7 +26,6 @@
 
 
   <!-- Subject Form -->
-
   <div class="form-card">
 
     <h3>
@@ -141,7 +138,6 @@
 
 
   <!-- Subject List -->
-
   <div class="subjects-card">
 
     <div class="section-header">
@@ -151,7 +147,11 @@
         <p>Total Subjects: {{ subjects.length }}</p>
       </div>
 
-      <button class="refresh-btn" (click)="loadSubjects()">
+      <button
+        type="button"
+        class="refresh-btn"
+        (click)="loadSubjects()"
+      >
         Refresh
       </button>
 
@@ -159,16 +159,19 @@
 
 
     <!-- Filters -->
-
     <div class="filter-grid">
 
       <input
         type="text"
         [(ngModel)]="searchTerm"
+        (ngModelChange)="onFilterChange()"
         placeholder="Search subjects..."
       />
 
-      <select [(ngModel)]="selectedCourse">
+      <select
+        [(ngModel)]="selectedCourse"
+        (ngModelChange)="onFilterChange()"
+      >
 
         <option value="">All Courses</option>
 
@@ -182,12 +185,17 @@
       </select>
 
 
-      <select [(ngModel)]="selectedSemester">
+      <select
+        [(ngModel)]="selectedSemester"
+        (ngModelChange)="onFilterChange()"
+      >
 
         <option value="">All Semesters</option>
 
-        <option *ngFor="let semester of [1,2,3,4,5,6,7,8]"
-                [value]="semester">
+        <option
+          *ngFor="let semester of [1,2,3,4,5,6,7,8]"
+          [value]="semester"
+        >
           Semester {{ semester }}
         </option>
 
@@ -196,13 +204,17 @@
     </div>
 
 
+    <!-- Loading -->
     <div class="loading" *ngIf="isLoading">
       Loading subjects...
     </div>
 
 
-    <div class="table-wrapper"
-         *ngIf="!isLoading && filteredSubjects.length > 0">
+    <!-- Subject Table -->
+    <div
+      class="table-wrapper"
+      *ngIf="!isLoading && filteredSubjects.length > 0"
+    >
 
       <table>
 
@@ -222,7 +234,7 @@
 
         <tbody>
 
-          <tr *ngFor="let item of filteredSubjects">
+          <tr *ngFor="let item of paginatedSubjects">
 
             <td>{{ item.id }}</td>
 
@@ -240,7 +252,7 @@
 
             <td class="action-buttons">
 
-              <div class="subject-actions ">
+              <div class="subject-actions">
 
                 <button
                   type="button"
@@ -272,9 +284,72 @@
 
       </table>
 
+
+      <!-- PAGINATION -->
+      <div class="pagination-container">
+
+        <div class="pagination-info">
+
+          Showing
+          <strong>{{ startItem }}</strong>
+          to
+          <strong>{{ endItem }}</strong>
+          of
+          <strong>{{ filteredSubjects.length }}</strong>
+          subjects
+
+        </div>
+
+
+        <div class="pagination-controls">
+
+          <!-- Previous -->
+          <button
+            type="button"
+            class="pagination-btn previous-btn"
+            (click)="previousPage()"
+            [disabled]="currentPage === 1"
+          >
+
+            <mat-icon>chevron_left</mat-icon>
+            Previous
+
+          </button>
+
+
+          <!-- Page Numbers -->
+          <button
+            type="button"
+            class="pagination-btn page-number"
+            *ngFor="let page of pageNumbers"
+            [class.active]="currentPage === page"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+
+
+          <!-- Next -->
+          <button
+            type="button"
+            class="pagination-btn next-btn"
+            (click)="nextPage()"
+            [disabled]="currentPage === totalPages"
+          >
+
+            Next
+            <mat-icon>chevron_right</mat-icon>
+
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
 
 
+    <!-- Empty Message -->
     <div
       class="empty-message"
       *ngIf="!isLoading && filteredSubjects.length === 0"

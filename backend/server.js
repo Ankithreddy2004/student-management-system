@@ -12,9 +12,12 @@ const userRoutes = require('./routes/userRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const marksRoutes = require('./routes/marksRoutes');
 
-// New Admin routes
+// Admin routes
 const subjectRoutes = require('./routes/subjectRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+
+// Enrollment routes
+const enrollmentRoutes = require('./routes/enrollmentRoutes');
 
 const app = express();
 
@@ -51,9 +54,12 @@ app.use('/api/users', userRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/marks', marksRoutes);
 
-// New Admin API routes
+// Admin API routes
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Enrollment API routes
+app.use('/api/enrollments', enrollmentRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

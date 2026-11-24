@@ -34,8 +34,13 @@ export class StudentMarks implements OnInit {
   marksRecords: MarkRecord[] = [];
 
   isLoading = false;
-
   errorMessage = '';
+
+  // PAGINATION
+  pageSize = 5;
+  currentPage = 1;
+
+  pageSizeOptions = [5, 10, 25, 50];
 
   constructor(
     private marksService: Marks,
@@ -59,6 +64,8 @@ export class StudentMarks implements OnInit {
           ? response.data
           : [];
 
+        this.currentPage = 1;
+
         this.isLoading = false;
 
         this.cdr.markForCheck();
@@ -79,6 +86,63 @@ export class StudentMarks implements OnInit {
 
     });
   }
+
+  // PAGINATION GETTERS
+
+  get totalPages(): number {
+    return Math.ceil(this.marksRecords.length / this.pageSize);
+  }
+
+  get paginatedMarks(): MarkRecord[] {
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+
+    return this.marksRecords.slice(
+      startIndex,
+      startIndex + this.pageSize
+    );
+  }
+
+  get startRecord(): number {
+    return this.marksRecords.length === 0
+      ? 0
+      : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+    return Math.min(
+      this.currentPage * this.pageSize,
+      this.marksRecords.length
+    );
+  }
+
+  get pages(): number[] {
+    return Array.from(
+      { length: this.totalPages },
+      (_, index) => index + 1
+    );
+  }
+
+  changePage(page: number): void {
+
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
+  }
+
+  changePageSize(event: Event): void {
+
+    const value = Number(
+      (event.target as HTMLSelectElement).value
+    );
+
+    this.pageSize = value;
+    this.currentPage = 1;
+  }
+
+  // SUMMARY
 
   get totalExams(): number {
     return this.marksRecords.length;

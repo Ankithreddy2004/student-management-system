@@ -1,179 +1,238 @@
-/* Main Container */
+/* ==========================================
+   MAIN CONTAINER
+========================================== */
+
 .container {
-max-width: 1200px;
-margin: 35px auto;
-padding: 30px;
-font-family: Arial, sans-serif;
-background: #ffffff;
+  max-width: 1200px;
+  margin: 35px auto;
+  padding: 30px;
+  font-family: Arial, sans-serif;
+  background: #ffffff;
+  box-sizing: border-box;
 }
 
-/* Page Header */
+
+/* ==========================================
+   PAGE HEADER
+========================================== */
+
 .page-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 .page-header h2 {
-color: #5b21b6;
-font-size: 28px;
-font-weight: 700;
-margin: 0 0 8px;
+  color: #5b21b6;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px;
 }
 
 .page-header p {
-color: #777;
-font-size: 14px;
-margin: 0;
+  color: #777;
+  font-size: 14px;
+  margin: 0;
 }
 
-/* Add Student Button */
+
+/* ==========================================
+   ADD STUDENT BUTTON
+========================================== */
+
 .add-btn {
-background: linear-gradient(135deg, #7c3aed, #5b21b6);
-color: white;
-padding: 12px 22px;
-border-radius: 8px;
-text-decoration: none;
-font-size: 14px;
-font-weight: 600;
-transition: 0.3s;
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  color: white;
+  padding: 12px 22px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.3s;
+  white-space: nowrap;
 }
 
 .add-btn:hover {
-background: #4c1d95;
-transform: translateY(-2px);
+  background: #4c1d95;
+  transform: translateY(-2px);
 }
 
-/* Search Section */
+
+/* ==========================================
+   SEARCH SECTION
+========================================== */
+
 .search-section {
-margin-bottom: 25px;
+  margin-bottom: 25px;
 }
 
 .search-section input {
-width: 100%;
-max-width: 400px;
-padding: 13px 16px;
-border: 1px solid #ddd6fe;
-border-radius: 8px;
-outline: none;
-font-size: 14px;
-box-sizing: border-box;
-transition: 0.3s;
+  width: 100%;
+  max-width: 400px;
+  padding: 13px 16px;
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: 0.3s;
 }
 
 .search-section input:focus {
-border-color: #7c3aed;
-box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
-/* Table Wrapper */
+
+/* ==========================================
+   TABLE WRAPPER
+========================================== */
+
 .table-wrapper {
-overflow-x: auto;
-border-radius: 12px;
-box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
 }
 
-/* Table */
+
+/* ==========================================
+   TABLE
+========================================== */
+
 table {
-width: 100%;
-border-collapse: collapse;
-background: #ffffff;
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
 }
 
 thead {
-background: #6d28d9;
-color: #ffffff;
+  background: #6d28d9;
+  color: #ffffff;
 }
 
 th {
-padding: 17px;
-text-align: left;
-font-size: 14px;
-font-weight: 600;
+  padding: 17px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 td {
-padding: 16px 17px;
-border-bottom: 1px solid #eee;
-color: #333;
-font-size: 14px;
+  padding: 16px 17px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+tbody tr {
+  transition: 0.2s;
 }
 
 tbody tr:hover {
-background: #f5f0ff;
+  background: #f5f0ff;
 }
 
-/* Action Buttons */
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
+
 .action-buttons {
-display: flex;
-align-items: center;
-gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* Edit Button */
+
+/* ==========================================
+   EDIT BUTTON
+========================================== */
+
 .edit-btn {
-background: #ede9fe;
-color: #6d28d9;
-border: 1px solid #ddd6fe;
-padding: 8px 17px;
-border-radius: 6px;
-font-size: 13px;
-font-weight: 600;
-cursor: pointer;
-transition: 0.3s;
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+  padding: 8px 17px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 .edit-btn:hover {
-background: #6d28d9;
-color: white;
+  background: #6d28d9;
+  color: white;
 }
 
-/* Delete Button */
+
+/* ==========================================
+   DELETE BUTTON
+========================================== */
+
 .delete-btn {
-background: #fee2e2;
-color: #dc2626;
-border: 1px solid #fecaca;
-padding: 8px 17px;
-border-radius: 6px;
-font-size: 13px;
-font-weight: 600;
-cursor: pointer;
-transition: 0.3s;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 8px 17px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 .delete-btn:hover {
-background: #dc2626;
-color: white;
+  background: #dc2626;
+  color: white;
 }
 
-/* Success Message */
+
+/* ==========================================
+   SUCCESS MESSAGE
+========================================== */
+
 .success-message {
-color: #15803d;
-background: #f0fdf4;
-padding: 12px 15px;
-border-radius: 7px;
-font-size: 14px;
-margin-bottom: 20px;
+  color: #15803d;
+  background: #f0fdf4;
+  padding: 12px 15px;
+  border-radius: 7px;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
-/* Error Message */
+
+/* ==========================================
+   ERROR MESSAGE
+========================================== */
+
 .error-message {
-color: #dc2626;
-background: #fef2f2;
-padding: 12px 15px;
-border-radius: 7px;
-font-size: 14px;
-margin-bottom: 20px;
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 12px 15px;
+  border-radius: 7px;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
-/* General Messages */
+
+/* ==========================================
+   GENERAL MESSAGES
+========================================== */
+
 .container > p {
-margin-top: 18px;
-font-size: 14px;
+  margin-top: 18px;
+  font-size: 14px;
 }
 
-/* Status Dropdown */
+
+/* ==========================================
+   STATUS DROPDOWN
+========================================== */
+
 .status-select {
   padding: 8px 30px 8px 12px;
   border-radius: 20px;
@@ -185,51 +244,206 @@ font-size: 14px;
   transition: 0.3s;
 }
 
-/* Active */
+
+/* ACTIVE */
+
 .active-status {
   background: #dcfce7;
   color: #15803d;
   border-color: #bbf7d0;
 }
 
-/* Inactive */
+
+/* INACTIVE */
+
 .inactive-status {
   background: #fee2e2;
   color: #dc2626;
   border-color: #fecaca;
 }
 
-/* Dropdown focus */
+
+/* DROPDOWN FOCUS */
+
 .status-select:focus {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
-/* Responsive */
+
+/* ==========================================
+   LOADING
+========================================== */
+
+.loading {
+  color: #7c3aed;
+  font-size: 14px;
+  padding: 20px 0;
+  font-weight: 600;
+}
+
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: #88849b;
+  background: #faf9fd;
+  border-radius: 10px;
+}
+
+
+/* ==========================================
+   PAGINATION
+========================================== */
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 20px;
+  background: #ffffff;
+  border-top: 1px solid #eee;
+}
+
+.pagination-info {
+  color: #777;
+  font-size: 13px;
+}
+
+.pagination-info strong {
+  color: #5b21b6;
+  font-weight: 700;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-btn {
+  padding: 9px 16px;
+  border: 1px solid #ddd6fe;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #6d28d9;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #6d28d9;
+  color: #ffffff;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: #f5f3fa;
+}
+
+.pagination-current {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #6d28d9;
+  color: #ffffff;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pagination-total {
+  color: #777;
+  font-size: 13px;
+}
+
+
+/* ==========================================
+   RESPONSIVE DESIGN
+========================================== */
+
 @media (max-width: 768px) {
-.container {
-padding: 15px;
+
+  .container {
+    padding: 15px;
+    margin: 20px auto;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    gap: 18px;
+    flex-direction: column;
+  }
+
+  .page-header h2 {
+    font-size: 23px;
+  }
+
+  .search-section input {
+    max-width: 100%;
+  }
+
+  table {
+    min-width: 750px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pagination-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pagination-controls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
 }
 
-.page-header {
-align-items: flex-start;
-gap: 18px;
-flex-direction: column;
-}
 
-.page-header h2 {
-font-size: 23px;
-}
+/* ==========================================
+   SMALL MOBILE DEVICES
+========================================== */
 
-.search-section input {
-max-width: 100%;
-}
+@media (max-width: 480px) {
 
-table {
-min-width: 750px;
-}
+  .container {
+    padding: 12px;
+  }
 
-.action-buttons {
-flex-direction: column;
-align-items: flex-start;
-}
+  .page-header h2 {
+    font-size: 21px;
+  }
+
+  .add-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .pagination-container {
+    padding: 15px 10px;
+  }
+
+  .pagination-info {
+    font-size: 12px;
+  }
+
+  .pagination-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
 }

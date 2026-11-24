@@ -36,13 +36,94 @@ export class TeacherAttendance implements OnInit {
 
   showAttendanceRecords = false;
 
+  // ================= PAGINATION =================
+
+  currentPage = 1;
+  pageSize = 5;
+
+  pageSizeOptions = [5, 10, 20];
+
+  get totalPages(): number {
+    return Math.ceil(this.students.length / this.pageSize);
+  }
+
+  get paginatedStudents(): any[] {
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+
+    const endIndex = startIndex + this.pageSize;
+
+    return this.students.slice(startIndex, endIndex);
+  }
+
+  get startRecord(): number {
+
+    if (this.students.length === 0) {
+      return 0;
+    }
+
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+
+    return Math.min(
+      this.currentPage * this.pageSize,
+      this.students.length
+    );
+  }
+
+  // Change page
+  changePage(page: number): void {
+
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
+
+    this.cdr.detectChanges();
+  }
+
+  // Previous page
+  previousPage(): void {
+
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+  // Next page
+  nextPage(): void {
+
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  // Change page size
+  onPageSizeChange(): void {
+
+    this.currentPage = 1;
+
+    this.cdr.detectChanges();
+  }
+
+  // Reset pagination
+  resetPagination(): void {
+
+    this.currentPage = 1;
+  }
+
   constructor(
     private attendanceService: Attendance,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+
     this.loadSubjects();
+
   }
 
   // Get today's date in YYYY-MM-DD format
@@ -57,7 +138,8 @@ export class TeacherAttendance implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  // Load subjects assigned to teacher
+  // ================= LOAD SUBJECTS =================
+
   loadSubjects(): void {
 
     if (this.isLoadingSubjects) {
@@ -70,8 +152,11 @@ export class TeacherAttendance implements OnInit {
     this.attendanceService.getTeacherSubjects()
       .pipe(
         finalize(() => {
+
           this.isLoadingSubjects = false;
+
           this.cdr.detectChanges();
+
         })
       )
       .subscribe({
@@ -83,11 +168,14 @@ export class TeacherAttendance implements OnInit {
           console.log('Teacher Subjects:', this.subjects);
 
           if (this.subjects.length === 0) {
+
             this.errorMessage =
               'No subjects have been assigned to you.';
+
           }
 
           this.cdr.detectChanges();
+
         },
 
         error: (error) => {
@@ -98,13 +186,15 @@ export class TeacherAttendance implements OnInit {
             error.error?.message || 'Unable to load subjects.';
 
           this.cdr.detectChanges();
+
         }
 
       });
 
   }
 
-  // Handle subject selection
+  // ================= SUBJECT CHANGE =================
+
   onSubjectChange(event: Event): void {
 
     const value = (event.target as HTMLSelectElement).value;
@@ -112,27 +202,37 @@ export class TeacherAttendance implements OnInit {
     this.selectedSubjectId = value ? Number(value) : null;
 
     this.students = [];
+
+    this.resetPagination();
+
     this.showAttendanceRecords = false;
 
     this.errorMessage = '';
     this.successMessage = '';
 
     this.cdr.detectChanges();
+
   }
 
-  // Handle date selection
+  // ================= DATE CHANGE =================
+
   onDateChange(): void {
 
     this.students = [];
+
+    this.resetPagination();
+
     this.showAttendanceRecords = false;
 
     this.errorMessage = '';
     this.successMessage = '';
 
     this.cdr.detectChanges();
+
   }
 
-  // Load all active students and existing attendance
+  // ================= LOAD STUDENTS =================
+
   loadStudents(): void {
 
     if (this.isLoading || this.isSaving) {
@@ -143,15 +243,22 @@ export class TeacherAttendance implements OnInit {
     this.successMessage = '';
 
     this.students = [];
+
+    this.resetPagination();
+
     this.showAttendanceRecords = false;
 
     if (!this.selectedSubjectId) {
+
       this.errorMessage = 'Please select a subject first.';
+
       return;
     }
 
     if (!this.selectedDate) {
+
       this.errorMessage = 'Please select an attendance date.';
+
       return;
     }
 
@@ -175,8 +282,11 @@ export class TeacherAttendance implements OnInit {
     })
     .pipe(
       finalize(() => {
+
         this.isLoading = false;
+
         this.cdr.detectChanges();
+
       })
     )
     .subscribe({
@@ -184,6 +294,7 @@ export class TeacherAttendance implements OnInit {
       next: ({ studentsResponse, attendanceResponse }) => {
 
         const studentList = studentsResponse.data || [];
+
         const attendanceList = attendanceResponse.data || [];
 
         // Match existing attendance with students
@@ -222,14 +333,19 @@ export class TeacherAttendance implements OnInit {
 
         });
 
+        this.resetPagination();
+
         console.log('Loaded Students:', this.students);
 
         if (this.students.length === 0) {
+
           this.errorMessage =
             'No active students found for this subject.';
+
         }
 
         this.cdr.detectChanges();
+
       },
 
       error: (error) => {
@@ -241,13 +357,15 @@ export class TeacherAttendance implements OnInit {
           'Unable to load students and attendance.';
 
         this.cdr.detectChanges();
+
       }
 
     });
 
   }
 
-  // View only saved attendance records
+  // ================= VIEW ATTENDANCE =================
+
   viewAttendance(): void {
 
     if (this.isLoading || this.isSaving) {
@@ -258,17 +376,26 @@ export class TeacherAttendance implements OnInit {
     this.successMessage = '';
 
     this.students = [];
+
+    this.resetPagination();
+
     this.showAttendanceRecords = true;
 
     if (!this.selectedSubjectId) {
+
       this.errorMessage = 'Please select a subject first.';
+
       this.showAttendanceRecords = false;
+
       return;
     }
 
     if (!this.selectedDate) {
+
       this.errorMessage = 'Please select an attendance date.';
+
       this.showAttendanceRecords = false;
+
       return;
     }
 
@@ -283,8 +410,11 @@ export class TeacherAttendance implements OnInit {
       )
       .pipe(
         finalize(() => {
+
           this.isLoading = false;
+
           this.cdr.detectChanges();
+
         })
       )
       .subscribe({
@@ -313,17 +443,22 @@ export class TeacherAttendance implements OnInit {
 
           }));
 
+          this.resetPagination();
+
           console.log(
             'Saved Attendance Records:',
             this.students
           );
 
           if (this.students.length === 0) {
+
             this.successMessage =
               'No attendance records found for this subject and date.';
+
           }
 
           this.cdr.detectChanges();
+
         },
 
         error: (error) => {
@@ -335,13 +470,15 @@ export class TeacherAttendance implements OnInit {
             'Unable to load attendance records.';
 
           this.cdr.detectChanges();
+
         }
 
       });
 
   }
 
-  // Save new attendance and update existing records
+  // ================= SAVE ATTENDANCE =================
+
   saveAttendance(): void {
 
     if (this.isSaving || this.isLoading) {
@@ -352,18 +489,22 @@ export class TeacherAttendance implements OnInit {
     this.successMessage = '';
 
     if (!this.selectedSubjectId || !this.selectedDate) {
+
       this.errorMessage =
         'Please select a subject and date.';
+
       return;
     }
 
     if (this.students.length === 0) {
+
       this.errorMessage =
         'Please load students first.';
+
       return;
     }
 
-    // Validate attendance status
+    // Validate attendance status for ALL students
     const invalidStudent = this.students.find(
       student => !student.status
     );
@@ -372,6 +513,14 @@ export class TeacherAttendance implements OnInit {
 
       this.errorMessage =
         `Please select attendance status for ${invalidStudent.name}.`;
+
+      // Navigate to the page containing the student
+      const studentIndex = this.students.indexOf(invalidStudent);
+
+      this.currentPage =
+        Math.floor(studentIndex / this.pageSize) + 1;
+
+      this.cdr.detectChanges();
 
       return;
     }
@@ -469,8 +618,11 @@ export class TeacherAttendance implements OnInit {
     forkJoin(requests)
       .pipe(
         finalize(() => {
+
           this.isSaving = false;
+
           this.cdr.detectChanges();
+
         })
       )
       .subscribe({
@@ -480,14 +632,19 @@ export class TeacherAttendance implements OnInit {
           this.successMessage =
             'Attendance saved and updated successfully.';
 
-          // Refresh the current page after saving
+          // Refresh current attendance data
           if (this.showAttendanceRecords) {
+
             this.viewAttendance();
+
           } else {
+
             this.loadStudents();
+
           }
 
           this.cdr.detectChanges();
+
         },
 
         error: (error) => {
@@ -499,6 +656,7 @@ export class TeacherAttendance implements OnInit {
             'Unable to save attendance.';
 
           this.cdr.detectChanges();
+
         }
 
       });

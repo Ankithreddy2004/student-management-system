@@ -1,7 +1,6 @@
 <div class="container">
 
   <!-- Page Header -->
-
   <div class="page-header">
 
     <div>
@@ -20,38 +19,39 @@
 
   </div>
 
-  <!-- Success Message -->
 
+  <!-- Success Message -->
   <p *ngIf="successMessage" class="success-message">
     {{ successMessage }}
   </p>
 
-  <!-- Error Message -->
 
+  <!-- Error Message -->
   <p *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
   </p>
 
-  <!-- Search -->
 
+  <!-- Search -->
   <div class="search-section">
 
     <input
       type="text"
       placeholder="Search by name, email, phone or course..."
       [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
     />
 
   </div>
 
-  <!-- Loading -->
 
-  <p *ngIf="isLoading">
+  <!-- Loading -->
+  <p *ngIf="isLoading" class="loading">
     Loading students...
   </p>
 
-  <!-- Students Table -->
 
+  <!-- Students Table -->
   <div
     class="table-wrapper"
     *ngIf="!isLoading && filteredStudents.length > 0"
@@ -73,9 +73,13 @@
 
       <tbody>
 
-        <tr *ngFor="let student of filteredStudents; let i = index">
+        <tr
+          *ngFor="let student of paginatedStudents; let i = index"
+        >
 
-          <td>{{ i + 1 }}</td>
+          <td>
+            {{ (currentPage - 1) * pageSize + i + 1 }}
+          </td>
 
           <td>{{ student.name }}</td>
 
@@ -85,8 +89,8 @@
 
           <td>{{ student.course }}</td>
 
-          <!-- Student Status -->
 
+          <!-- Student Status -->
           <td>
 
             <select
@@ -104,12 +108,11 @@
 
           </td>
 
-          <!-- Actions -->
 
+          <!-- Actions -->
           <td class="action-buttons">
 
             <!-- Edit - Admin and Teacher -->
-
             <button
               class="edit-btn"
               (click)="editStudent(student.id)"
@@ -117,8 +120,8 @@
               Edit
             </button>
 
-            <!-- Delete - Admin only -->
 
+            <!-- Delete - Admin only -->
             <button
               *ngIf="isAdmin"
               class="delete-btn"
@@ -135,11 +138,73 @@
 
     </table>
 
+
+    <!-- PAGINATION -->
+    <div
+      class="pagination-container"
+      *ngIf="filteredStudents.length > pageSize"
+    >
+
+      <div class="pagination-info">
+
+        Showing
+
+        <strong>{{ startIndex }}</strong>
+
+        to
+
+        <strong>{{ endIndex }}</strong>
+
+        of
+
+        <strong>{{ filteredStudents.length }}</strong>
+
+        students
+
+      </div>
+
+
+      <div class="pagination-controls">
+
+        <button
+          class="pagination-btn"
+          (click)="previousPage()"
+          [disabled]="currentPage === 1"
+        >
+          Previous
+        </button>
+
+
+        <span class="pagination-current">
+          {{ currentPage }}
+        </span>
+
+
+        <span class="pagination-total">
+          of {{ totalPages }}
+        </span>
+
+
+        <button
+          class="pagination-btn"
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages"
+        >
+          Next
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- No Students -->
 
-  <p *ngIf="!isLoading && filteredStudents.length === 0">
+  <!-- No Students -->
+  <p
+    class="empty-state"
+    *ngIf="!isLoading && filteredStudents.length === 0"
+  >
     No students found.
   </p>
 

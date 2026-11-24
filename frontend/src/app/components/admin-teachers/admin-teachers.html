@@ -231,9 +231,15 @@
 
         <tbody>
 
-          <tr *ngFor="let teacher of teachers; let i = index">
+          <tr
+            *ngFor="let teacher of paginatedTeachers; let i = index"
+          >
 
-            <td>{{ i + 1 }}</td>
+            <!-- CONTINUOUS SERIAL NUMBER -->
+
+            <td>
+              {{ (currentPage - 1) * pageSize + i + 1 }}
+            </td>
 
 
             <!-- TEACHER PHOTO -->
@@ -371,6 +377,83 @@
         </tbody>
 
       </table>
+
+
+      <!-- =====================================
+           TABLE PAGINATION
+      ====================================== -->
+
+      <div class="pagination-container">
+
+        <!-- LEFT SIDE: RECORD INFORMATION -->
+
+        <div class="pagination-info">
+
+          Showing
+          <strong>{{ startItem }}</strong>
+          to
+          <strong>{{ endItem }}</strong>
+          of
+          <strong>{{ teachers.length }}</strong>
+          teachers
+
+        </div>
+
+
+        <!-- RIGHT SIDE: PAGINATION BUTTONS -->
+
+        <div class="pagination-controls">
+
+          <!-- PREVIOUS BUTTON -->
+
+          <button
+            type="button"
+            class="pagination-btn previous-btn"
+            (click)="previousPage()"
+            [disabled]="currentPage === 1"
+          >
+
+            <mat-icon>chevron_left</mat-icon>
+
+            <span>Previous</span>
+
+          </button>
+
+
+          <!-- PAGE NUMBERS -->
+
+          <button
+            type="button"
+            *ngFor="let page of pageNumbers"
+            class="pagination-btn page-number"
+            [class.active]="currentPage === page"
+            (click)="goToPage(page)"
+          >
+
+            {{ page }}
+
+          </button>
+
+
+          <!-- NEXT BUTTON -->
+
+          <button
+            type="button"
+            class="pagination-btn next-btn"
+            (click)="nextPage()"
+            [disabled]="currentPage === totalPages"
+          >
+
+            <span>Next</span>
+
+            <mat-icon>chevron_right</mat-icon>
+
+          </button>
+
+        </div>
+
+      </div>
+
 
     </div>
 

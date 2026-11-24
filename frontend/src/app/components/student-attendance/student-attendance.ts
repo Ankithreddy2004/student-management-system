@@ -30,8 +30,13 @@ export class StudentAttendance implements OnInit {
   attendanceRecords: AttendanceRecord[] = [];
 
   isLoading = false;
-
   errorMessage = '';
+
+  // PAGINATION
+  pageSize = 5;
+  currentPage = 1;
+
+  pageSizeOptions = [5, 10, 25, 50];
 
   constructor(
     private attendanceService: Attendance,
@@ -55,6 +60,8 @@ export class StudentAttendance implements OnInit {
           ? response.data
           : [];
 
+        this.currentPage = 1;
+
         this.isLoading = false;
 
         this.cdr.markForCheck();
@@ -75,6 +82,65 @@ export class StudentAttendance implements OnInit {
 
     });
   }
+
+  // PAGINATION GETTERS
+
+  get totalPages(): number {
+    return Math.ceil(
+      this.attendanceRecords.length / this.pageSize
+    );
+  }
+
+  get paginatedAttendance(): AttendanceRecord[] {
+
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+
+    return this.attendanceRecords.slice(
+      startIndex,
+      startIndex + this.pageSize
+    );
+  }
+
+  get startRecord(): number {
+    return this.attendanceRecords.length === 0
+      ? 0
+      : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get endRecord(): number {
+    return Math.min(
+      this.currentPage * this.pageSize,
+      this.attendanceRecords.length
+    );
+  }
+
+  get pages(): number[] {
+    return Array.from(
+      { length: this.totalPages },
+      (_, index) => index + 1
+    );
+  }
+
+  changePage(page: number): void {
+
+    if (page < 1 || page > this.totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
+  }
+
+  changePageSize(event: Event): void {
+
+    const value = Number(
+      (event.target as HTMLSelectElement).value
+    );
+
+    this.pageSize = value;
+    this.currentPage = 1;
+  }
+
+  // SUMMARY
 
   get totalClasses(): number {
     return this.attendanceRecords.length;

@@ -1,7 +1,6 @@
-
 <div class="attendance-container">
 
-  <!-- ================= HEADER ================= -->
+  <!-- HEADER -->
 
   <header class="page-header">
 
@@ -22,7 +21,7 @@
   </header>
 
 
-  <!-- ================= ERROR MESSAGE ================= -->
+  <!-- ERROR MESSAGE -->
 
   <div
     class="message error"
@@ -34,7 +33,7 @@
   </div>
 
 
-  <!-- ================= SUCCESS MESSAGE ================= -->
+  <!-- SUCCESS MESSAGE -->
 
   <div
     class="message success"
@@ -46,7 +45,7 @@
   </div>
 
 
-  <!-- ================= SUBJECT AND DATE SELECTION ================= -->
+  <!-- SUBJECT AND DATE SELECTION -->
 
   <section class="selection-card">
 
@@ -127,11 +126,9 @@
     </div>
 
 
-    <!-- ================= ACTION BUTTONS ================= -->
+    <!-- ACTION BUTTONS -->
 
     <div class="button-group">
-
-      <!-- LOAD STUDENTS -->
 
       <button
         type="button"
@@ -154,8 +151,6 @@
 
       </button>
 
-
-      <!-- VIEW ATTENDANCE -->
 
       <button
         type="button"
@@ -183,7 +178,7 @@
   </section>
 
 
-  <!-- ================= LOADING INDICATOR ================= -->
+  <!-- LOADING INDICATOR -->
 
   <div
     class="loading"
@@ -206,7 +201,7 @@
   </div>
 
 
-  <!-- ================= ATTENDANCE TABLE ================= -->
+  <!-- ATTENDANCE TABLE -->
 
   <section
     class="table-card"
@@ -261,7 +256,7 @@
     </div>
 
 
-    <!-- TABLE CONTENT -->
+    <!-- TABLE -->
 
     <div class="table-responsive">
 
@@ -290,7 +285,7 @@
 
         <tbody>
 
-          <tr *ngFor="let student of students">
+          <tr *ngFor="let student of paginatedStudents">
 
 
             <!-- STUDENT ID -->
@@ -393,7 +388,102 @@
     </div>
 
 
-    <!-- ================= SAVE BUTTON ================= -->
+    <!-- ================= PAGINATION ================= -->
+
+    <div class="pagination-section">
+
+      <!-- RECORD INFORMATION -->
+
+      <div class="pagination-info">
+
+        Showing
+
+        <strong>{{ startRecord }}</strong>
+
+        to
+
+        <strong>{{ endRecord }}</strong>
+
+        of
+
+        <strong>{{ students.length }}</strong>
+
+        students
+
+      </div>
+
+
+      <!-- PAGINATION CONTROLS -->
+
+      <div class="pagination-controls">
+
+        <!-- PAGE SIZE -->
+
+        <div class="page-size">
+
+          <label for="pageSize">
+            Rows:
+          </label>
+
+          <select
+            id="pageSize"
+            [(ngModel)]="pageSize"
+            (ngModelChange)="onPageSizeChange()"
+            [disabled]="isSaving">
+
+            <option
+              *ngFor="let size of pageSizeOptions"
+              [ngValue]="size">
+
+              {{ size }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- PREVIOUS -->
+
+        <button
+          type="button"
+          class="pagination-btn"
+          (click)="previousPage()"
+          [disabled]="currentPage === 1 || isSaving">
+
+          ‹
+
+        </button>
+
+
+        <!-- CURRENT PAGE -->
+
+        <span class="page-indicator">
+
+          Page {{ currentPage }} of {{ totalPages }}
+
+        </span>
+
+
+        <!-- NEXT -->
+
+        <button
+          type="button"
+          class="pagination-btn"
+          (click)="nextPage()"
+          [disabled]="currentPage === totalPages || isSaving">
+
+          ›
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- SAVE ATTENDANCE -->
 
     <div class="save-section">
 
@@ -420,7 +510,7 @@
   </section>
 
 
-  <!-- ================= NO SAVED RECORDS ================= -->
+  <!-- NO SAVED RECORDS -->
 
   <div
     class="empty-message"
@@ -453,7 +543,7 @@
   </div>
 
 
-  <!-- ================= INITIAL STATE ================= -->
+  <!-- INITIAL STATE -->
 
   <div
     class="empty-message"
@@ -474,6 +564,5 @@
     </p>
 
   </div>
-
 
 </div>
