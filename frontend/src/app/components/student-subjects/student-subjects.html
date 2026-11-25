@@ -1,0 +1,437 @@
+<div class="subjects-page">
+
+  <!-- PAGE HEADER -->
+
+  <div class="page-header">
+
+    <div class="page-heading">
+
+      <span class="page-label">STUDENT PORTAL</span>
+
+      <h1>Subject Enrollment</h1>
+
+      <p>
+        Explore available subjects and submit your enrollment requests.
+      </p>
+
+    </div>
+
+    <button
+      class="refresh-btn"
+      (click)="refresh()"
+      [disabled]="loading">
+
+      <mat-icon>refresh</mat-icon>
+
+      <span>Refresh</span>
+
+    </button>
+
+  </div>
+
+
+  <!-- SUCCESS MESSAGE -->
+
+  <div
+    class="alert success-alert"
+    *ngIf="successMessage">
+
+    <mat-icon>check_circle</mat-icon>
+
+    <span>{{ successMessage }}</span>
+
+    <button
+      type="button"
+      (click)="successMessage = ''">
+
+      <mat-icon>close</mat-icon>
+
+    </button>
+
+  </div>
+
+
+  <!-- ERROR MESSAGE -->
+
+  <div
+    class="alert error-alert"
+    *ngIf="errorMessage">
+
+    <mat-icon>error</mat-icon>
+
+    <span>{{ errorMessage }}</span>
+
+    <button
+      type="button"
+      (click)="errorMessage = ''">
+
+      <mat-icon>close</mat-icon>
+
+    </button>
+
+  </div>
+
+
+  <!-- SUMMARY CARDS -->
+
+  <div class="summary-grid">
+
+    <div class="summary-card">
+
+      <div class="summary-icon available-icon">
+        <mat-icon>menu_book</mat-icon>
+      </div>
+
+      <div>
+        <p>Available Subjects</p>
+        <h2>{{ availableCount }}</h2>
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-icon pending-icon">
+        <mat-icon>hourglass_top</mat-icon>
+      </div>
+
+      <div>
+        <p>Pending Requests</p>
+        <h2>{{ pendingCount }}</h2>
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-icon approved-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div>
+        <p>Approved Subjects</p>
+        <h2>{{ approvedCount }}</h2>
+      </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <div class="summary-icon rejected-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div>
+        <p>Rejected Requests</p>
+        <h2>{{ rejectedCount }}</h2>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- SUBJECT SECTION -->
+
+  <section class="subjects-section">
+
+    <div class="section-header">
+
+      <div>
+
+        <h2>Available Subjects</h2>
+
+        <p>
+          Select a subject to submit your enrollment request.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- SEARCH AND FILTER -->
+
+    <div class="filter-section">
+
+      <div class="search-box">
+
+        <mat-icon>search</mat-icon>
+
+        <input
+          type="text"
+          placeholder="Search subject name, code or course..."
+          [(ngModel)]="searchText">
+
+      </div>
+
+
+      <div class="filter-buttons">
+
+        <button
+          [class.active]="selectedFilter === 'All'"
+          (click)="setFilter('All')">
+
+          All
+
+        </button>
+
+        <button
+          [class.active]="selectedFilter === 'Pending'"
+          (click)="setFilter('Pending')">
+
+          Pending
+
+        </button>
+
+        <button
+          [class.active]="selectedFilter === 'Approved'"
+          (click)="setFilter('Approved')">
+
+          Approved
+
+        </button>
+
+        <button
+          [class.active]="selectedFilter === 'Rejected'"
+          (click)="setFilter('Rejected')">
+
+          Rejected
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- LOADING -->
+
+    <div class="loading-container" *ngIf="loading">
+
+      <mat-icon class="loading-icon">sync</mat-icon>
+
+      <p>Loading subjects...</p>
+
+    </div>
+
+
+    <!-- SUBJECT CARDS -->
+
+    <div
+      class="subjects-grid"
+      *ngIf="!loading && filteredSubjects.length > 0">
+
+      <div
+        class="subject-card"
+        *ngFor="let subject of filteredSubjects">
+
+        <div class="subject-card-top">
+
+          <div class="subject-icon">
+
+            <mat-icon>auto_stories</mat-icon>
+
+          </div>
+
+          <span class="subject-code">
+            {{ subject.subject_code }}
+          </span>
+
+        </div>
+
+
+        <div class="subject-details">
+
+          <h3>{{ subject.subject_name }}</h3>
+
+          <div class="subject-info">
+
+            <p>
+
+              <mat-icon>school</mat-icon>
+
+              {{ subject.course }}
+
+            </p>
+
+            <p>
+
+              <mat-icon>calendar_month</mat-icon>
+
+              Semester {{ subject.semester }}
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- SUBJECT NOT YET REQUESTED -->
+
+        <button
+          *ngIf="!isAlreadyEnrolled(subject.id)"
+          class="enroll-btn"
+          (click)="enrollSubject(subject)"
+          [disabled]="submitting">
+
+          <mat-icon>add_circle</mat-icon>
+
+          {{ submitting ? 'Submitting...' : 'Enroll Now' }}
+
+        </button>
+
+
+        <!-- EXISTING ENROLLMENT -->
+
+        <div
+          *ngIf="isAlreadyEnrolled(subject.id)"
+          class="enrollment-status">
+
+          <span
+            class="status-badge"
+            [ngClass]="getEnrollmentStatus(subject.id)?.toLowerCase()">
+
+            <mat-icon>
+
+              {{
+                getEnrollmentStatus(subject.id) === 'Approved'
+                  ? 'check_circle'
+                  : getEnrollmentStatus(subject.id) === 'Rejected'
+                    ? 'cancel'
+                    : 'hourglass_top'
+              }}
+
+            </mat-icon>
+
+            {{ getEnrollmentStatus(subject.id) }}
+
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- NO SUBJECTS -->
+
+    <div
+      class="empty-state"
+      *ngIf="!loading && filteredSubjects.length === 0">
+
+      <mat-icon>library_books</mat-icon>
+
+      <h3>No Subjects Found</h3>
+
+      <p>
+        No subjects match your search or selected filter.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- MY ENROLLMENT HISTORY -->
+
+  <section class="history-section">
+
+    <div class="section-header">
+
+      <div>
+
+        <h2>My Enrollment History</h2>
+
+        <p>
+          Track the status of your subject enrollment requests.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      class="table-container"
+      *ngIf="!loading && myEnrollments.length > 0">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Subject</th>
+
+            <th>Subject Code</th>
+
+            <th>Course</th>
+
+            <th>Semester</th>
+
+            <th>Request Date</th>
+
+            <th>Status</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          <tr *ngFor="let enrollment of myEnrollments">
+
+            <td class="subject-name-cell">
+              {{ enrollment.subject_name }}
+            </td>
+
+            <td>{{ enrollment.subject_code }}</td>
+
+            <td>{{ enrollment.course }}</td>
+
+            <td>{{ enrollment.semester }}</td>
+
+            <td>
+              {{ enrollment.enrollment_date | date:'dd MMM yyyy' }}
+            </td>
+
+            <td>
+
+              <span
+                class="status-badge"
+                [ngClass]="enrollment.status.toLowerCase()">
+
+                {{ enrollment.status }}
+
+              </span>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <div
+      class="empty-history"
+      *ngIf="!loading && myEnrollments.length === 0">
+
+      <mat-icon>history</mat-icon>
+
+      <p>You haven't submitted any enrollment requests yet.</p>
+
+    </div>
+
+  </section>
+
+</div>

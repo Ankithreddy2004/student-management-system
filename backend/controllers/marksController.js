@@ -137,20 +137,24 @@ const getStudentsForMarks = (req, res) => {
             });
         }
 
-        // Fetch all active students regardless of course
+        // Fetch only active students with approved enrollment in this subject
         const studentsSql = `
             SELECT
-                id,
-                name,
-                email,
-                phone,
-                course
-            FROM students
-            WHERE status = 'Active'
-            ORDER BY name
+                st.id,
+                st.name,
+                st.email,
+                st.phone,
+                st.course
+            FROM students st
+            INNER JOIN student_subjects ss
+                ON ss.student_id = st.id
+                AND ss.subject_id = ?
+                AND ss.status = 'Approved'
+            WHERE st.status = 'Active'
+            ORDER BY st.name
         `;
 
-        db.query(studentsSql, (studentError, results) => {
+        db.query(studentsSql, [subjectId], (studentError, results) => {
 
             if (studentError) {
                 console.error('Get Students For Marks Error:', studentError);
@@ -653,16 +657,21 @@ const addMarks = (req, res) => {
 
         const placeholders = studentIds.map(() => '?').join(',');
 
+        // Verify every student is active and approved for the exam's subject
         const studentSql = `
-            SELECT id
-            FROM students
-            WHERE id IN (${placeholders})
-            AND status = 'Active'
+            SELECT st.id
+            FROM students st
+            INNER JOIN student_subjects ss
+                ON ss.student_id = st.id
+                AND ss.subject_id = ?
+                AND ss.status = 'Approved'
+            WHERE st.id IN (${placeholders})
+            AND st.status = 'Active'
         `;
 
         db.query(
             studentSql,
-            [...studentIds],
+            [exam.subject_id, ...studentIds],
             (studentError, validStudents) => {
 
                 if (studentError) {
@@ -675,9 +684,9 @@ const addMarks = (req, res) => {
                 }
 
                 if (validStudents.length !== studentIds.length) {
-                    return res.status(400).json({
+                    return res.status(403).json({
                         success: false,
-                        message: 'Some students are invalid or inactive.'
+                        message: 'One or more students are inactive or do not have approved enrollment in this subject.'
                     });
                 }
 
@@ -886,6 +895,10 @@ const editMarks = (req, res) => {
         UPDATE marks m
         JOIN exams e ON e.id = m.exam_id
         JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
+        JOIN student_subjects ss
+            ON ss.student_id = m.student_id
+            AND ss.subject_id = e.subject_id
+            AND ss.status = 'Approved'
         SET
             m.obtained_marks = ?,
             m.remarks = ?

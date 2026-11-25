@@ -46,6 +46,7 @@ const getMyAttendance = (req, res) => {
 
 };
 
+
 // Get subjects assigned to the logged-in teacher
 const getTeacherSubjects = (req, res) => {
 
@@ -85,7 +86,8 @@ const getTeacherSubjects = (req, res) => {
 
 };
 
-// Get all active students for a subject assigned to the logged-in teacher
+
+// Get approved and active students for a subject assigned to the logged-in teacher
 const getStudentsForAttendance = (req, res) => {
 
     const teacherId = req.user.id;
@@ -122,20 +124,24 @@ const getStudentsForAttendance = (req, res) => {
             });
         }
 
-        // Fetch all active students regardless of course
+        // Fetch only active students with approved enrollment in this subject
         const studentsSql = `
             SELECT
-                id,
-                name,
-                email,
-                phone,
-                course
-            FROM students
-            WHERE status = 'Active'
-            ORDER BY name ASC
+                st.id,
+                st.name,
+                st.email,
+                st.phone,
+                st.course
+            FROM students st
+            INNER JOIN student_subjects ss
+                ON ss.student_id = st.id
+                AND ss.subject_id = ?
+                AND ss.status = 'Approved'
+            WHERE st.status = 'Active'
+            ORDER BY st.name ASC
         `;
 
-        db.query(studentsSql, (studentError, results) => {
+        db.query(studentsSql, [subjectId], (studentError, results) => {
 
             if (studentError) {
                 console.error('Students attendance error:', studentError);
@@ -155,6 +161,7 @@ const getStudentsForAttendance = (req, res) => {
     });
 
 };
+
 
 // Mark and save attendance for multiple students
 const markAttendance = (req, res) => {
@@ -272,17 +279,21 @@ const markAttendance = (req, res) => {
                 });
             }
 
-            // Verify all students are active
+            // Verify that every student is active AND approved for this subject
             const studentSql = `
-                SELECT id
-                FROM students
-                WHERE id IN (?)
-                AND status = 'Active'
+                SELECT st.id
+                FROM students st
+                INNER JOIN student_subjects ss
+                    ON ss.student_id = st.id
+                    AND ss.subject_id = ?
+                    AND ss.status = 'Approved'
+                WHERE st.id IN (?)
+                AND st.status = 'Active'
             `;
 
             db.query(
                 studentSql,
-                [Array.from(studentIds)],
+                [Number(subject_id), Array.from(studentIds)],
                 (studentError, validStudents) => {
 
                     if (studentError) {
@@ -295,9 +306,9 @@ const markAttendance = (req, res) => {
                     }
 
                     if (validStudents.length !== students.length) {
-                        return res.status(400).json({
+                        return res.status(403).json({
                             success: false,
-                            message: 'One or more students are invalid or inactive.'
+                            message: 'One or more students are inactive or do not have approved enrollment in this subject.'
                         });
                     }
 
@@ -411,6 +422,7 @@ const markAttendance = (req, res) => {
     );
 
 };
+
 
 // Get attendance records for a subject assigned to the logged-in teacher
 const getTeacherAttendanceRecords = (req, res) => {
@@ -526,6 +538,7 @@ const getTeacherAttendanceRecords = (req, res) => {
 
 };
 
+
 // Edit an existing attendance record
 const editAttendance = (req, res) => {
 
@@ -567,7 +580,8 @@ const editAttendance = (req, res) => {
         });
     }
 
-    // Verify that this attendance belongs to a subject assigned to the teacher
+    // Verify attendance belongs to a subject assigned to the teacher
+    // and the student is still approved for that subject
     const checkSql = `
         SELECT
             a.id,
@@ -577,6 +591,10 @@ const editAttendance = (req, res) => {
         FROM attendance a
         JOIN teacher_subjects ts
             ON a.subject_id = ts.subject_id
+        JOIN student_subjects ss
+            ON ss.student_id = a.student_id
+            AND ss.subject_id = a.subject_id
+            AND ss.status = 'Approved'
         WHERE a.id = ?
         AND ts.teacher_id = ?
     `;
@@ -598,7 +616,7 @@ const editAttendance = (req, res) => {
             if (records.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Attendance record not found or you are not authorized to edit it.'
+                    message: 'Attendance record not found, enrollment is not approved, or you are not authorized to edit it.'
                 });
             }
 
@@ -663,6 +681,7 @@ const editAttendance = (req, res) => {
     );
 
 };
+
 
 module.exports = {
     getMyAttendance,

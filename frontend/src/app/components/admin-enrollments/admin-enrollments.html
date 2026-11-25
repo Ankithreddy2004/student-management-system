@@ -1,0 +1,461 @@
+<div class="enrollment-container">
+
+  <!-- HEADER -->
+  <header class="page-header">
+
+    <div>
+      <span class="page-label">ADMINISTRATOR PORTAL</span>
+
+      <h1>Subject Enrollment Management</h1>
+
+      <p>
+        Manage student subject registrations and enrollment approvals.
+      </p>
+    </div>
+
+    <button class="refresh-btn" (click)="refreshEnrollments()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+
+  </header>
+
+
+  <!-- SUCCESS MESSAGE -->
+  <div class="alert success-alert" *ngIf="successMessage">
+
+    <mat-icon>check_circle</mat-icon>
+
+    <span>{{ successMessage }}</span>
+
+    <button (click)="successMessage = ''">
+      <mat-icon>close</mat-icon>
+    </button>
+
+  </div>
+
+
+  <!-- ERROR MESSAGE -->
+  <div class="alert error-alert" *ngIf="errorMessage">
+
+    <mat-icon>error_outline</mat-icon>
+
+    <span>{{ errorMessage }}</span>
+
+    <button (click)="errorMessage = ''">
+      <mat-icon>close</mat-icon>
+    </button>
+
+  </div>
+
+
+  <!-- SUMMARY CARDS -->
+  <section class="summary-grid">
+
+    <div class="summary-card total-card">
+      <div class="summary-icon">
+        <mat-icon>groups</mat-icon>
+      </div>
+
+      <div>
+        <p>Total Enrollments</p>
+        <h2>{{ totalEnrollments }}</h2>
+      </div>
+    </div>
+
+
+    <div class="summary-card pending-card">
+      <div class="summary-icon">
+        <mat-icon>pending_actions</mat-icon>
+      </div>
+
+      <div>
+        <p>Pending</p>
+        <h2>{{ pendingCount }}</h2>
+      </div>
+    </div>
+
+
+    <div class="summary-card approved-card">
+      <div class="summary-icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+
+      <div>
+        <p>Approved</p>
+        <h2>{{ approvedCount }}</h2>
+      </div>
+    </div>
+
+
+    <div class="summary-card rejected-card">
+      <div class="summary-icon">
+        <mat-icon>cancel</mat-icon>
+      </div>
+
+      <div>
+        <p>Rejected</p>
+        <h2>{{ rejectedCount }}</h2>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ADD ENROLLMENT -->
+  <section class="content-card">
+
+    <div class="section-heading">
+
+      <div>
+        <h2>
+          <mat-icon>person_add</mat-icon>
+          Enroll Student
+        </h2>
+
+        <p>Register a student for a subject.</p>
+      </div>
+
+    </div>
+
+
+    <form class="enrollment-form" (ngSubmit)="addEnrollment()">
+
+      <div class="form-group">
+
+        <label>Select Student</label>
+
+        <select
+          name="student"
+          [(ngModel)]="newStudentId"
+          required>
+
+          <option [ngValue]="null">
+            Select Student
+          </option>
+
+          <option
+            *ngFor="let student of students"
+            [ngValue]="student.id">
+
+            {{ student.name }} ({{ student.email }})
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Select Subject</label>
+
+        <select
+          name="subject"
+          [(ngModel)]="newSubjectId"
+          required>
+
+          <option [ngValue]="null">
+            Select Subject
+          </option>
+
+          <option
+            *ngFor="let subject of subjects"
+            [ngValue]="subject.id">
+
+            {{ subject.subject_name }} - {{ subject.subject_code }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        type="submit"
+        class="primary-btn"
+        [disabled]="submitting">
+
+        <mat-icon>add</mat-icon>
+
+        {{ submitting ? 'Adding...' : 'Enroll Student' }}
+
+      </button>
+
+    </form>
+
+    <p class="form-note">
+      Admin-created enrollments will also start with Pending status.
+    </p>
+
+  </section>
+
+
+  <!-- FILTERS -->
+  <section class="content-card">
+
+    <div class="section-heading">
+
+      <div>
+        <h2>
+          <mat-icon>list_alt</mat-icon>
+          Enrollment Records
+        </h2>
+
+        <p>View and manage all student subject enrollments.</p>
+      </div>
+
+    </div>
+
+
+    <div class="filter-grid">
+
+      <div class="form-group search-group">
+
+        <label>Search</label>
+
+        <div class="search-input">
+
+          <mat-icon>search</mat-icon>
+
+          <input
+            type="text"
+            placeholder="Search student or subject..."
+            [(ngModel)]="searchText"
+            (input)="applyFilters()">
+
+        </div>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Enrollment Status</label>
+
+        <select
+          [(ngModel)]="selectedStatus"
+          (change)="applyFilters()">
+
+          <option value="All">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Subject</label>
+
+        <select
+          [(ngModel)]="selectedSubject"
+          (change)="applyFilters()">
+
+          <option value="">All Subjects</option>
+
+          <option
+            *ngFor="let subject of subjects"
+            [value]="subject.id">
+
+            {{ subject.subject_name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>Student</label>
+
+        <select
+          [(ngModel)]="selectedStudent"
+          (change)="applyFilters()">
+
+          <option value="">All Students</option>
+
+          <option
+            *ngFor="let student of students"
+            [value]="student.id">
+
+            {{ student.name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="filter-footer">
+
+      <span>
+        Showing {{ filteredEnrollments.length }} of
+        {{ totalEnrollments }} enrollments
+      </span>
+
+      <button class="clear-btn" (click)="clearFilters()">
+        <mat-icon>filter_alt_off</mat-icon>
+        Clear Filters
+      </button>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>#</th>
+            <th>Student</th>
+            <th>Subject</th>
+            <th>Course</th>
+            <th>Semester</th>
+            <th>Requested By</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let item of filteredEnrollments;
+              let i = index;
+              trackBy: trackByEnrollment
+            ">
+
+            <td>{{ i + 1 }}</td>
+
+
+            <td>
+              <div class="student-cell">
+
+                <strong>{{ item.student_name }}</strong>
+
+                <small>{{ item.student_email }}</small>
+
+              </div>
+            </td>
+
+
+            <td>
+              <strong>{{ item.subject_name }}</strong>
+              <small class="subject-code">
+                {{ item.subject_code }}
+              </small>
+            </td>
+
+
+            <td>{{ item.course }}</td>
+
+            <td>{{ item.semester }}</td>
+
+
+            <td>
+              <strong>{{ item.enrolled_by_name || 'Student' }}</strong>
+              <small>{{ item.enrolled_by_role }}</small>
+            </td>
+
+
+            <td>
+              {{ item.enrollment_date | date:'dd MMM yyyy' }}
+            </td>
+
+
+            <td>
+              <span
+                class="status-badge"
+                [ngClass]="item.status.toLowerCase()">
+
+                {{ item.status }}
+
+              </span>
+            </td>
+
+
+            <td>
+
+              <div class="action-buttons"
+                *ngIf="item.status === 'Pending'; else completedStatus">
+
+                <button
+                  class="approve-btn"
+                  title="Approve"
+                  [disabled]="isProcessing(item.enrollment_id)"
+                  (click)="approveEnrollment(item)">
+
+                  <mat-icon>check</mat-icon>
+
+                </button>
+
+
+                <button
+                  class="reject-btn"
+                  title="Reject"
+                  [disabled]="isProcessing(item.enrollment_id)"
+                  (click)="rejectEnrollment(item)">
+
+                  <mat-icon>close</mat-icon>
+
+                </button>
+
+              </div>
+
+
+              <ng-template #completedStatus>
+
+                <span class="completed-text">
+                  Reviewed
+                </span>
+
+              </ng-template>
+
+            </td>
+
+          </tr>
+
+
+          <tr *ngIf="filteredEnrollments.length === 0">
+
+            <td colspan="9" class="empty-state">
+
+              <mat-icon>inbox</mat-icon>
+
+              <h3>No Enrollment Records Found</h3>
+
+              <p>
+                There are no enrollments matching your filters.
+              </p>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</div>

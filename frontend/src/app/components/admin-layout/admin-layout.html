@@ -1,28 +1,20 @@
 <div class="dashboard-layout">
 
-  <!-- =====================================
-       TOP HEADER
-  ====================================== -->
-
+  <!-- TOP HEADER -->
   <header class="main-header">
 
-    <!-- BRAND -->
     <div class="header-brand">
-
       <div class="logo">SMS</div>
 
       <div class="brand-info">
         <h2>Student Management System</h2>
         <p>Administrator Portal</p>
       </div>
-
     </div>
 
-    <!-- PROFILE AND LOGOUT -->
     <div class="header-actions">
 
       <div class="header-profile">
-
         <div class="header-avatar">
           <mat-icon>admin_panel_settings</mat-icon>
         </div>
@@ -31,7 +23,6 @@
           <h3>{{ adminName || 'Administrator' }}</h3>
           <p>Administrator</p>
         </div>
-
       </div>
 
       <button class="header-logout-btn" (click)="logout()">
@@ -40,21 +31,14 @@
       </button>
 
     </div>
-
   </header>
 
 
-  <!-- =====================================
-       BODY LAYOUT
-  ====================================== -->
-
+  <!-- BODY LAYOUT -->
   <div class="dashboard-body">
 
     <!-- ADMIN SIDEBAR -->
-
     <aside class="sidebar">
-
-      <!-- SIDEBAR NAVIGATION -->
 
       <nav class="sidebar-nav">
 
@@ -62,51 +46,47 @@
           routerLink="/admin/dashboard"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }">
-
           <mat-icon>dashboard</mat-icon>
           <span>Dashboard</span>
-
         </a>
 
         <a
           routerLink="/admin/students"
           routerLinkActive="active">
-
           <mat-icon>school</mat-icon>
           <span>Students</span>
-
         </a>
 
         <a
           routerLink="/admin/teachers"
           routerLinkActive="active">
-
           <mat-icon>groups</mat-icon>
           <span>Teachers</span>
-
         </a>
 
         <a
           routerLink="/admin/subjects"
           routerLinkActive="active">
-
           <mat-icon>menu_book</mat-icon>
           <span>Subjects</span>
-
         </a>
 
         <a
           routerLink="/admin/assignments"
           routerLinkActive="active">
-
           <mat-icon>assignment</mat-icon>
           <span>Assignments</span>
+        </a>
 
+        <!-- SUBJECT ENROLLMENTS -->
+        <a
+          routerLink="/admin/enrollments"
+          routerLinkActive="active">
+          <mat-icon>how_to_reg</mat-icon>
+          <span>Subject Enrollments</span>
         </a>
 
       </nav>
-
-      <!-- SIDEBAR FOOTER -->
 
       <div class="sidebar-footer">
         <p>Student Management System</p>
@@ -117,13 +97,10 @@
 
 
     <!-- MAIN CONTENT -->
-
     <main class="dashboard-main">
 
       <section class="dashboard-content">
-
         <router-outlet></router-outlet>
-
       </section>
 
     </main>

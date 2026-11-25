@@ -25,11 +25,14 @@ import { TeacherProfile } from './components/teacher-profile/teacher-profile';
 import { StudentAttendance } from './components/student-attendance/student-attendance';
 import { StudentMarks } from './components/student-marks/student-marks';
 import { StudentProfile } from './components/student-profile/student-profile';
+import { StudentSubjects } from './components/student-subjects/student-subjects';
 
 // Student CRUD components
 import { Students } from './components/students/students';
 import { AddStudent } from './components/add-student/add-student';
 import { EditStudent } from './components/edit-student/edit-student';
+import { TeacherEnrollments } from './components/teacher-enrollments/teacher-enrollments';
+import { AdminEnrollments } from './components/admin-enrollments/admin-enrollments';
 
 // Authentication
 import { Login } from './components/login/login';
@@ -101,6 +104,12 @@ export const routes: Routes = [
         component: StudentMarks
       },
 
+      // Student Subject Enrollment
+      {
+        path: 'subjects',
+        component: StudentSubjects
+      },
+
       // Student Profile
       {
         path: 'profile',
@@ -129,11 +138,19 @@ export const routes: Routes = [
         pathMatch: 'full'
       },
 
+      // Admin Dashboard
       {
         path: 'dashboard',
         component: AdminDashboard
       },
 
+      //student enrollment
+      {
+        path: 'enrollments',
+        component: AdminEnrollments
+      },
+
+      // Student Management
       {
         path: 'students',
         component: Students
@@ -149,16 +166,19 @@ export const routes: Routes = [
         component: EditStudent
       },
 
+      // Teacher Management
       {
         path: 'teachers',
         component: AdminTeachers
       },
 
+      // Subject Management
       {
         path: 'subjects',
         component: AdminSubjects
       },
 
+      // Teacher Subject Assignments
       {
         path: 'assignments',
         component: AdminAssignments
@@ -186,11 +206,19 @@ export const routes: Routes = [
         pathMatch: 'full'
       },
 
+      // Teacher Dashboard
       {
         path: 'dashboard',
         component: TeacherDashboard
       },
 
+      // Teacher Subject Enrollment Management
+      {
+        path: 'enrollments',
+        component: TeacherEnrollments
+      },
+
+      // Student Management
       {
         path: 'students',
         component: Students
@@ -206,21 +234,25 @@ export const routes: Routes = [
         component: EditStudent
       },
 
+      // Pending Student Account Approvals
       {
         path: 'pending-students',
         component: TeacherPendingStudents
       },
 
+      // Attendance Management
       {
         path: 'attendance',
         component: TeacherAttendance
       },
 
+      // Marks Management
       {
         path: 'marks',
         component: TeacherMarks
       },
 
+      // Teacher Profile
       {
         path: 'profile',
         component: TeacherProfile
