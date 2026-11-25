@@ -327,98 +327,143 @@ td {
 
 }
 
-/* PAGINATION */
+/* ==========================================
+   PAGINATION
+   SAME STYLE AS TEACHER ATTENDANCE
+========================================== */
 
 .pagination-container {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 15px;
 
-  padding: 18px 0 0;
   margin-top: 10px;
+  padding: 18px 2px 0;
 
   border-top: 1px solid #eeeaf5;
-}
-
-.pagination-info {
-  color: #888198;
-  font-size: 12px;
-}
-
-.pagination-info strong {
-  color: #33234f;
 }
 
 .pagination-controls {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
+  justify-content: flex-end;
+
+  gap: 22px;
 }
 
-.page-size-select {
-  padding: 8px 10px;
-  border: 1px solid #e5e0ef;
-  border-radius: 7px;
 
-  color: #625b73;
-  background: white;
+/* ITEMS PER PAGE */
 
-  font-size: 11px;
+.page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-size label {
+  color: #777;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.page-size select {
+  height: 30px;
+  min-width: 45px;
+
+  padding: 0 5px;
+
+  border: none;
+  border-bottom: 1px solid #c9c6d3;
+  border-radius: 0;
+
   outline: none;
-  cursor: pointer;
+  box-shadow: none;
 
-  margin-right: 8px;
+  background: transparent;
+  color: #444;
+
+  font-family: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
 }
 
-.page-btn,
+.page-size select:focus {
+  border-bottom-color: #8051c8;
+  outline: none;
+  box-shadow: none;
+}
+
+
+/* PAGE INDICATOR */
+
 .page-number {
-  min-width: 34px;
-  height: 34px;
+  min-width: 32px;
 
-  padding: 0 10px;
+  color: #777;
+  font-size: 12px;
 
-  border: 1px solid #e5e0ef;
-  border-radius: 7px;
+  white-space: nowrap;
+  text-align: center;
+}
 
-  background: white;
-  color: #625b73;
 
-  font-size: 11px;
+/* PREVIOUS AND NEXT CHEVRONS */
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 25px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 0;
+
+  background: transparent;
+  color: #777;
+
+  font-size: 25px;
+  font-family: Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1;
+
   cursor: pointer;
 
-  transition: 0.2s;
+  transition: color 0.2s ease;
 }
 
-.page-btn:hover:not(:disabled),
-.page-number:hover {
-  background: #f0e8ff;
-  color: #5424a8;
-  border-color: #8051c8;
-}
-
-.page-number.active {
-  background: #5424a8;
-  color: white;
-  border-color: #5424a8;
+.page-btn:hover:not(:disabled) {
+  color: #25213a;
+  background: transparent;
 }
 
 .page-btn:disabled {
-  opacity: 0.4;
+  color: #c9c9c9;
+  background: transparent;
+  border: none;
+
   cursor: not-allowed;
+  opacity: 0.6;
 }
+
+
+/* RESPONSIVE PAGINATION */
 
 @media (max-width: 600px) {
 
   .pagination-container {
-    align-items: flex-start;
-    flex-direction: column;
+    justify-content: flex-start;
   }
 
   .pagination-controls {
-    width: 100%;
+    justify-content: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
   }
 
 }

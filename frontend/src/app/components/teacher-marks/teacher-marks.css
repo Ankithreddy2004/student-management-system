@@ -11,6 +11,10 @@
   box-sizing: border-box;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 
 /* ==========================================
    PAGE HEADER
@@ -334,72 +338,107 @@ td input {
 
 /* ==========================================
    TABLE PAGINATION
+   SAME STYLE AS TEACHER ATTENDANCE
 ========================================== */
 
 .pagination-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  gap: 15px;
-  margin-top: 20px;
-  padding: 15px 5px 0;
-  border-top: 1px solid #eeedf3;
-}
-
-.pagination-info {
-  color: #77748b;
-  font-size: 13px;
-}
-
-.pagination-info strong {
-  color: #6846ca;
-  font-weight: 700;
+  margin-top: 5px;
+  padding: 18px 2px;
+  border-top: 1px solid #f0eef6;
 }
 
 .pagination-controls {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  gap: 22px;
+}
+
+
+/* ITEMS PER PAGE */
+
+.page-size {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.pagination-btn {
-  min-width: 38px;
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid #dedbea;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #6846ca;
-  font-size: 13px;
-  font-weight: 600;
+.page-size label {
+  color: #777;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.page-size select {
+  height: 30px;
+  min-width: 45px;
+  padding: 0 5px;
+  border: none;
+  border-bottom: 1px solid #c9c6d3;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: #444;
+  font-family: inherit;
+  font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.pagination-btn:hover:not(:disabled) {
-  background: #eee8fc;
-  border-color: #7655d9;
+.page-size select:focus {
+  border-bottom-color: #7655d9;
+  outline: none;
+  box-shadow: none;
 }
 
-.pagination-btn:disabled {
-  background: #f5f4f8;
-  color: #aaa6b8;
-  border-color: #e9e7ef;
-  cursor: not-allowed;
+
+/* PAGE INDICATOR */
+
+.page-number {
+  color: #777;
+  font-size: 12px;
+  white-space: nowrap;
+  min-width: 32px;
+  text-align: center;
 }
 
-.pagination-current {
-  min-width: 36px;
-  height: 36px;
-  display: flex;
-  justify-content: center;
+
+/* PREVIOUS AND NEXT CHEVRONS */
+
+.page-btn {
+  display: inline-flex;
   align-items: center;
-  padding: 0 10px;
-  border-radius: 8px;
-  background: #7655d9;
-  color: white;
-  font-size: 13px;
-  font-weight: 700;
+  justify-content: center;
+  width: 20px;
+  height: 25px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #777;
+  font-size: 25px;
+  font-family: Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  color: #25213a;
+  background: transparent;
+}
+
+.page-btn:disabled {
+  color: #c9c9c9;
+  background: transparent;
+  border: none;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 
@@ -495,13 +534,13 @@ td input {
   }
 
   .pagination-container {
-    flex-direction: column;
-    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .pagination-controls {
-    width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
   }
 
 }
@@ -536,12 +575,8 @@ td input {
     width: 100%;
   }
 
-  .pagination-info {
-    font-size: 12px;
-  }
-
   .pagination-controls {
-    justify-content: center;
+    gap: 12px;
   }
 
 }

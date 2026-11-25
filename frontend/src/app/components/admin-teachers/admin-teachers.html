@@ -9,20 +9,17 @@
     </div>
   </div>
 
-
   <!-- SUCCESS MESSAGE -->
 
   <p *ngIf="successMessage" class="success-message">
     {{ successMessage }}
   </p>
 
-
   <!-- ERROR MESSAGE -->
 
   <p *ngIf="errorMessage" class="error-message">
     {{ errorMessage }}
   </p>
-
 
   <!-- CREATE TEACHER FORM -->
 
@@ -46,7 +43,6 @@
 
       </div>
 
-
       <div class="form-group">
 
         <label>Email Address</label>
@@ -60,7 +56,6 @@
         />
 
       </div>
-
 
       <div class="form-group">
 
@@ -76,7 +71,6 @@
         />
 
       </div>
-
 
       <!-- TEACHER PROFILE IMAGE -->
 
@@ -113,17 +107,13 @@
 
       </div>
 
-
       <button type="submit" [disabled]="isCreating">
-
         {{ isCreating ? 'Creating...' : 'Create Teacher' }}
-
       </button>
 
     </form>
 
   </div>
-
 
   <!-- EDIT TEACHER FORM -->
 
@@ -147,7 +137,6 @@
 
       </div>
 
-
       <div class="form-group">
 
         <label>Email Address</label>
@@ -162,24 +151,18 @@
 
       </div>
 
-
       <div class="form-actions">
 
         <button type="submit" [disabled]="isUpdating">
-
           {{ isUpdating ? 'Updating...' : 'Update Teacher' }}
-
         </button>
-
 
         <button
           type="button"
           class="cancel-btn"
           (click)="cancelEdit()"
         >
-
           Cancel
-
         </button>
 
       </div>
@@ -188,59 +171,42 @@
 
   </div>
 
-
   <!-- REGISTERED TEACHERS -->
 
   <div class="teachers-section">
 
     <h3>Registered Teachers</h3>
 
-
     <p *ngIf="isLoading">
       Loading teachers...
     </p>
 
+    <div class="table-wrapper" *ngIf="!isLoading">
 
-    <div
-      class="table-wrapper"
-      *ngIf="!isLoading && teachers.length > 0"
-    >
-
-      <table>
+      <table *ngIf="teachers.length > 0">
 
         <thead>
 
           <tr>
-
             <th>S.No</th>
-
             <th>Photo</th>
-
             <th>Teacher Name</th>
-
             <th>Email</th>
-
             <th>Role</th>
-
             <th>Actions</th>
-
           </tr>
 
         </thead>
 
-
         <tbody>
 
-          <tr
-            *ngFor="let teacher of paginatedTeachers; let i = index"
-          >
+          <tr *ngFor="let teacher of paginatedTeachers; let i = index">
 
             <!-- CONTINUOUS SERIAL NUMBER -->
 
             <td>
               {{ (currentPage - 1) * pageSize + i + 1 }}
             </td>
-
 
             <!-- TEACHER PHOTO -->
 
@@ -265,21 +231,15 @@
 
             </td>
 
-
             <td>{{ teacher.name }}</td>
-
 
             <td>{{ teacher.email }}</td>
 
-
             <td>
-
               <span class="role-badge">
                 {{ teacher.role }}
               </span>
-
             </td>
-
 
             <!-- ACTION ICONS -->
 
@@ -296,11 +256,8 @@
                   title="Edit Teacher"
                   aria-label="Edit Teacher"
                 >
-
                   <mat-icon>edit</mat-icon>
-
                 </button>
-
 
                 <!-- DELETE ICON -->
 
@@ -312,15 +269,12 @@
                   title="Delete Teacher"
                   aria-label="Delete Teacher"
                 >
-
                   <mat-icon>
                     {{ isDeletingId === teacher.id ? 'hourglass_empty' : 'delete' }}
                   </mat-icon>
-
                 </button>
 
               </div>
-
 
               <!-- UPDATE PHOTO -->
 
@@ -341,7 +295,6 @@
                   Choose Photo
                 </label>
 
-
                 <button
                   *ngIf="selectedTeacherImages[teacher.id]"
                   type="button"
@@ -349,15 +302,12 @@
                   (click)="updateTeacherImage(teacher.id)"
                   [disabled]="isUpdatingImageId === teacher.id"
                 >
-
                   {{
                     isUpdatingImageId === teacher.id
                       ? 'Uploading...'
                       : 'Update Photo'
                   }}
-
                 </button>
-
 
                 <button
                   *ngIf="selectedTeacherImages[teacher.id]"
@@ -378,89 +328,78 @@
 
       </table>
 
+      <!-- EMPTY STATE -->
 
-      <!-- =====================================
-           TABLE PAGINATION
-      ====================================== -->
+      <p *ngIf="teachers.length === 0" class="empty-message">
+        No teachers registered yet.
+      </p>
 
-      <div class="pagination-container">
+      <!-- SIMPLE PAGINATION -->
+
+      <div class="pagination-container" *ngIf="teachers.length > 0">
 
         <!-- LEFT SIDE: RECORD INFORMATION -->
 
         <div class="pagination-info">
 
-          Showing
-          <strong>{{ startItem }}</strong>
-          to
-          <strong>{{ endItem }}</strong>
-          of
-          <strong>{{ teachers.length }}</strong>
-          teachers
+          <!-- <span>
+            Showing
+            <strong>{{ startItem }}</strong>–<strong>{{ endItem }}</strong>
+            of
+            <strong>{{ teachers.length }}</strong>
+            teachers
+          </span> -->
 
         </div>
 
-
-        <!-- RIGHT SIDE: PAGINATION BUTTONS -->
+        <!-- RIGHT SIDE: PAGE SIZE AND ARROWS -->
 
         <div class="pagination-controls">
 
-          <!-- PREVIOUS BUTTON -->
+          <label for="teacherPageSize">Rows per page:</label>
+
+          <select
+            id="teacherPageSize"
+            [value]="pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+
+            <option
+              *ngFor="let size of pageSizeOptions"
+              [value]="size"
+            >
+              {{ size }}
+            </option>
+
+          </select>
 
           <button
             type="button"
-            class="pagination-btn previous-btn"
+            class="pagination-arrow"
             (click)="previousPage()"
-            [disabled]="currentPage === 1"
+            [disabled]="currentPage <= 1"
+            aria-label="Previous page"
+            title="Previous page"
           >
-
             <mat-icon>chevron_left</mat-icon>
-
-            <span>Previous</span>
-
           </button>
-
-
-          <!-- PAGE NUMBERS -->
 
           <button
             type="button"
-            *ngFor="let page of pageNumbers"
-            class="pagination-btn page-number"
-            [class.active]="currentPage === page"
-            (click)="goToPage(page)"
-          >
-
-            {{ page }}
-
-          </button>
-
-
-          <!-- NEXT BUTTON -->
-
-          <button
-            type="button"
-            class="pagination-btn next-btn"
+            class="pagination-arrow"
             (click)="nextPage()"
-            [disabled]="currentPage === totalPages"
+            [disabled]="currentPage >= totalPages"
+            aria-label="Next page"
+            title="Next page"
           >
-
-            <span>Next</span>
-
             <mat-icon>chevron_right</mat-icon>
-
           </button>
 
         </div>
 
       </div>
 
-
     </div>
-
-
-    <p *ngIf="!isLoading && teachers.length === 0">
-      No teachers registered yet.
-    </p>
 
   </div>
 

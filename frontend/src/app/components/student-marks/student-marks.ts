@@ -37,10 +37,11 @@ export class StudentMarks implements OnInit {
   errorMessage = '';
 
   // PAGINATION
+
   pageSize = 5;
   currentPage = 1;
 
-  pageSizeOptions = [5, 10, 25, 50];
+  pageSizeOptions = [5, 10, 20, 50];
 
   constructor(
     private marksService: Marks,
@@ -90,7 +91,10 @@ export class StudentMarks implements OnInit {
   // PAGINATION GETTERS
 
   get totalPages(): number {
-    return Math.ceil(this.marksRecords.length / this.pageSize);
+    return Math.max(
+      1,
+      Math.ceil(this.marksRecords.length / this.pageSize)
+    );
   }
 
   get paginatedMarks(): MarkRecord[] {
@@ -137,6 +141,10 @@ export class StudentMarks implements OnInit {
     const value = Number(
       (event.target as HTMLSelectElement).value
     );
+
+    if (![5, 10, 20, 50].includes(value)) {
+      return;
+    }
 
     this.pageSize = value;
     this.currentPage = 1;

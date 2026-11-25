@@ -14,7 +14,6 @@
 
   </div>
 
-
   <!-- Messages -->
   <div class="success-message" *ngIf="successMessage">
     {{ successMessage }}
@@ -23,7 +22,6 @@
   <div class="error-message" *ngIf="errorMessage">
     {{ errorMessage }}
   </div>
-
 
   <!-- Assignment Form -->
   <div class="form-card">
@@ -50,7 +48,6 @@
       </select>
 
     </div>
-
 
     <h4>Select Subjects</h4>
 
@@ -83,14 +80,12 @@
 
     </div>
 
-
     <div class="selection-info">
 
       Selected Subjects:
       <strong>{{ selectedSubjectIds.length }}</strong>
 
     </div>
-
 
     <button
       type="button"
@@ -104,7 +99,6 @@
     </button>
 
   </div>
-
 
   <!-- Existing Assignments -->
   <div class="assignments-card">
@@ -126,11 +120,9 @@
 
     </div>
 
-
     <div class="loading" *ngIf="isLoading">
       Loading assignments...
     </div>
-
 
     <!-- Assignments Table -->
     <div
@@ -154,7 +146,6 @@
           </tr>
 
         </thead>
-
 
         <tbody>
 
@@ -192,62 +183,46 @@
 
       </table>
 
-
       <!-- PAGINATION -->
       <div class="pagination-container">
 
-        <div class="pagination-info">
-
-          Showing
-          <strong>{{ startItem }}</strong>
-          to
-          <strong>{{ endItem }}</strong>
-          of
-          <strong>{{ assignments.length }}</strong>
-          assignments
-
-        </div>
-
-
         <div class="pagination-controls">
 
-          <!-- Previous -->
+          <label for="assignmentPageSize">Rows per page:</label>
+
+          <select
+            id="assignmentPageSize"
+            [value]="pageSize"
+            (change)="onPageSizeChange($event)"
+          >
+
+            <option
+              *ngFor="let size of pageSizeOptions"
+              [value]="size"
+            >
+              {{ size }}
+            </option>
+
+          </select>
+
           <button
             type="button"
-            class="pagination-btn previous-btn"
+            class="pagination-arrow"
             (click)="previousPage()"
-            [disabled]="currentPage === 1"
+            [disabled]="currentPage <= 1"
+            aria-label="Previous page"
           >
-
             <mat-icon>chevron_left</mat-icon>
-            Previous
-
           </button>
 
-
-          <!-- Page Numbers -->
           <button
             type="button"
-            class="pagination-btn page-number"
-            *ngFor="let page of pageNumbers"
-            [class.active]="currentPage === page"
-            (click)="goToPage(page)"
-          >
-            {{ page }}
-          </button>
-
-
-          <!-- Next -->
-          <button
-            type="button"
-            class="pagination-btn next-btn"
+            class="pagination-arrow"
             (click)="nextPage()"
-            [disabled]="currentPage === totalPages"
+            [disabled]="currentPage >= totalPages"
+            aria-label="Next page"
           >
-
-            Next
             <mat-icon>chevron_right</mat-icon>
-
           </button>
 
         </div>
@@ -255,7 +230,6 @@
       </div>
 
     </div>
-
 
     <!-- Empty Message -->
     <div

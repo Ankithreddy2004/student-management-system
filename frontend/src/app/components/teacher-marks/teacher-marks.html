@@ -16,6 +16,7 @@
 
   </header>
 
+
   <!-- MESSAGES -->
 
   <div class="message success-message" *ngIf="successMessage">
@@ -25,6 +26,7 @@
   <div class="message error-message" *ngIf="errorMessage">
     ⚠ {{ errorMessage }}
   </div>
+
 
   <!-- SUBJECT SELECTION -->
 
@@ -38,7 +40,8 @@
 
       <select
         [(ngModel)]="selectedSubjectId"
-        (change)="onSubjectChange()">
+        (change)="onSubjectChange()"
+        [disabled]="isLoadingSubjects">
 
         <option [ngValue]="null">Select a subject</option>
 
@@ -65,6 +68,7 @@
 
   </section>
 
+
   <!-- EXAM MANAGEMENT -->
 
   <section class="exam-section" *ngIf="selectedSubjectId">
@@ -77,6 +81,7 @@
       </div>
 
       <button
+        type="button"
         class="primary-btn"
         (click)="openExamForm()">
 
@@ -85,6 +90,7 @@
       </button>
 
     </div>
+
 
     <!-- EXAM FORM -->
 
@@ -107,6 +113,7 @@
 
         </div>
 
+
         <div class="form-group">
 
           <label>Exam Type</label>
@@ -123,6 +130,7 @@
 
         </div>
 
+
         <div class="form-group">
 
           <label>Exam Date</label>
@@ -132,6 +140,7 @@
             [(ngModel)]="examForm.exam_date">
 
         </div>
+
 
         <div class="form-group">
 
@@ -148,9 +157,11 @@
 
       </div>
 
+
       <div class="form-actions">
 
         <button
+          type="button"
           class="primary-btn"
           (click)="isEditingExam ? updateExam() : saveExam()"
           [disabled]="isSaving">
@@ -160,6 +171,7 @@
         </button>
 
         <button
+          type="button"
           class="cancel-btn"
           (click)="showExamForm = false">
 
@@ -171,6 +183,7 @@
 
     </div>
 
+
     <!-- EXAM LIST -->
 
     <div class="exam-list-card">
@@ -181,11 +194,18 @@
         Loading examinations...
       </div>
 
-      <div *ngIf="!isLoadingExams && exams.length === 0" class="empty-state">
+      <div
+        *ngIf="!isLoadingExams && exams.length === 0"
+        class="empty-state">
+
         No examinations available. Create your first examination.
+
       </div>
 
-      <div class="table-wrapper" *ngIf="!isLoadingExams && exams.length > 0">
+
+      <div
+        class="table-wrapper"
+        *ngIf="!isLoadingExams && exams.length > 0">
 
         <table>
 
@@ -214,6 +234,7 @@
               <td class="action-buttons">
 
                 <button
+                  type="button"
                   class="edit-btn"
                   (click)="editExam(exam)">
 
@@ -222,6 +243,7 @@
                 </button>
 
                 <button
+                  type="button"
                   class="delete-btn"
                   (click)="deleteExam(exam.id)">
 
@@ -243,6 +265,7 @@
 
   </section>
 
+
   <!-- MARKS ENTRY -->
 
   <section
@@ -257,6 +280,9 @@
       </div>
 
     </div>
+
+
+    <!-- EXAM SELECTION -->
 
     <div class="selection-card">
 
@@ -283,9 +309,11 @@
 
       </div>
 
+
       <div class="form-actions">
 
         <button
+          type="button"
           class="primary-btn"
           (click)="loadStudents()"
           [disabled]="!selectedExamId || isLoadingStudents">
@@ -295,6 +323,7 @@
         </button>
 
         <button
+          type="button"
           class="secondary-btn"
           (click)="viewMarks()"
           [disabled]="!selectedExamId || isLoadingRecords">
@@ -306,6 +335,7 @@
       </div>
 
     </div>
+
 
     <!-- STUDENT MARKS ENTRY TABLE -->
 
@@ -320,6 +350,7 @@
         <span>{{ students.length }} Students</span>
 
       </div>
+
 
       <div class="table-wrapper">
 
@@ -338,8 +369,6 @@
           </thead>
 
           <tbody>
-
-            <!-- PAGINATED STUDENTS -->
 
             <tr *ngFor="let student of paginatedStudents">
 
@@ -378,44 +407,65 @@
 
       </div>
 
+
       <!-- STUDENT PAGINATION -->
 
       <div
         class="pagination-container"
-        *ngIf="students.length > pageSize">
-
-        <span class="pagination-info">
-
-          Showing {{ studentStart }} - {{ studentEnd }}
-          of {{ students.length }} students
-
-        </span>
+        *ngIf="students.length > 0">
 
         <div class="pagination-controls">
+
+          <div class="page-size">
+
+            <label for="studentPageSize">
+              Items per page:
+            </label>
+
+            <select
+              id="studentPageSize"
+              [value]="pageSize"
+              (change)="onPageSizeChange($event)"
+              [disabled]="isSaving">
+
+              <option
+                *ngFor="let size of pageSizeOptions"
+                [value]="size">
+
+                {{ size }}
+
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <span class="page-number">
+            {{ studentPage }} of {{ totalStudentPages }}
+          </span>
+
 
           <button
             type="button"
             class="page-btn"
             (click)="previousStudentPage()"
-            [disabled]="studentPage <= 1">
+            [disabled]="studentPage <= 1 || isSaving"
+            aria-label="Previous page">
 
-            Previous
+            ‹
 
           </button>
 
-          <span class="page-number">
-
-            Page {{ studentPage }} of {{ totalStudentPages }}
-
-          </span>
 
           <button
             type="button"
             class="page-btn"
             (click)="nextStudentPage()"
-            [disabled]="studentPage >= totalStudentPages">
+            [disabled]="studentPage >= totalStudentPages || isSaving"
+            aria-label="Next page">
 
-            Next
+            ›
 
           </button>
 
@@ -423,11 +473,13 @@
 
       </div>
 
+
       <!-- SAVE MARKS -->
 
       <div class="save-section">
 
         <button
+          type="button"
           class="primary-btn save-btn"
           (click)="saveMarks()"
           [disabled]="isSaving">
@@ -439,6 +491,7 @@
       </div>
 
     </div>
+
 
     <!-- SAVED MARKS RECORDS -->
 
@@ -452,9 +505,11 @@
 
       </div>
 
+
       <div *ngIf="isLoadingRecords" class="loading">
         Loading marks records...
       </div>
+
 
       <div
         *ngIf="!isLoadingRecords && marksRecords.length === 0"
@@ -463,6 +518,7 @@
         No marks records found for this examination.
 
       </div>
+
 
       <div
         class="table-wrapper"
@@ -486,8 +542,6 @@
 
           <tbody>
 
-            <!-- PAGINATED MARKS RECORDS -->
-
             <tr *ngFor="let record of paginatedMarksRecords">
 
               <td>{{ record.student_id }}</td>
@@ -505,6 +559,7 @@
               <td class="action-buttons">
 
                 <button
+                  type="button"
                   class="edit-btn"
                   (click)="editMarks(record)">
 
@@ -513,6 +568,7 @@
                 </button>
 
                 <button
+                  type="button"
                   class="delete-btn"
                   (click)="deleteMarks(record.mark_id)">
 
@@ -530,44 +586,65 @@
 
       </div>
 
+
       <!-- SAVED RECORDS PAGINATION -->
 
       <div
         class="pagination-container"
-        *ngIf="!isLoadingRecords && marksRecords.length > pageSize">
-
-        <span class="pagination-info">
-
-          Showing {{ recordsStart }} - {{ recordsEnd }}
-          of {{ marksRecords.length }} records
-
-        </span>
+        *ngIf="!isLoadingRecords && marksRecords.length > 0">
 
         <div class="pagination-controls">
+
+          <div class="page-size">
+
+            <label for="recordsPageSize">
+              Items per page:
+            </label>
+
+            <select
+              id="recordsPageSize"
+              [value]="pageSize"
+              (change)="onPageSizeChange($event)"
+              [disabled]="isLoadingRecords">
+
+              <option
+                *ngFor="let size of pageSizeOptions"
+                [value]="size">
+
+                {{ size }}
+
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <span class="page-number">
+            {{ recordsPage }} of {{ totalRecordsPages }}
+          </span>
+
 
           <button
             type="button"
             class="page-btn"
             (click)="previousRecordsPage()"
-            [disabled]="recordsPage <= 1">
+            [disabled]="recordsPage <= 1"
+            aria-label="Previous page">
 
-            Previous
+            ‹
 
           </button>
 
-          <span class="page-number">
-
-            Page {{ recordsPage }} of {{ totalRecordsPages }}
-
-          </span>
 
           <button
             type="button"
             class="page-btn"
             (click)="nextRecordsPage()"
-            [disabled]="recordsPage >= totalRecordsPages">
+            [disabled]="recordsPage >= totalRecordsPages"
+            aria-label="Next page">
 
-            Next
+            ›
 
           </button>
 

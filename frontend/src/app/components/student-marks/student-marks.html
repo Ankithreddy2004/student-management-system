@@ -237,64 +237,55 @@
 
       <!-- PAGINATION -->
 
-      <div class="pagination-container" *ngIf="totalExams > 0">
-
-        <div class="pagination-info">
-
-          Showing
-
-          <strong>{{ startRecord }}–{{ endRecord }}</strong>
-
-          of
-
-          <strong>{{ totalExams }}</strong>
-
-          records
-
-        </div>
-
+      <div
+        class="pagination-container"
+        *ngIf="totalExams > 0">
 
         <div class="pagination-controls">
 
-          <!-- PAGE SIZE -->
+          <!-- ITEMS PER PAGE -->
 
-          <select
-            class="page-size-select"
-            [value]="pageSize"
-            (change)="changePageSize($event)">
+          <div class="page-size">
 
-            <option
-              *ngFor="let size of pageSizeOptions"
-              [value]="size">
+            <label for="studentMarksPageSize">
+              Items per page:
+            </label>
 
-              {{ size }} per page
+            <select
+              id="studentMarksPageSize"
+              [value]="pageSize"
+              (change)="changePageSize($event)">
 
-            </option>
+              <option
+                *ngFor="let size of pageSizeOptions"
+                [value]="size">
 
-          </select>
+                {{ size }}
+
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- PAGE INDICATOR -->
+
+          <span class="page-number">
+            {{ currentPage }} of {{ totalPages }}
+          </span>
 
 
           <!-- PREVIOUS -->
 
           <button
+            type="button"
             class="page-btn"
-            [disabled]="currentPage === 1"
-            (click)="changePage(currentPage - 1)">
+            [disabled]="currentPage <= 1"
+            (click)="changePage(currentPage - 1)"
+            aria-label="Previous page">
 
-            Previous
-
-          </button>
-
-
-          <!-- PAGE NUMBERS -->
-
-          <button
-            *ngFor="let page of pages"
-            class="page-number"
-            [class.active]="currentPage === page"
-            (click)="changePage(page)">
-
-            {{ page }}
+            ‹
 
           </button>
 
@@ -302,11 +293,13 @@
           <!-- NEXT -->
 
           <button
+            type="button"
             class="page-btn"
-            [disabled]="currentPage === totalPages"
-            (click)="changePage(currentPage + 1)">
+            [disabled]="currentPage >= totalPages"
+            (click)="changePage(currentPage + 1)"
+            aria-label="Next page">
 
-            Next
+            ›
 
           </button>
 

@@ -79,6 +79,8 @@ export class TeacherMarks implements OnInit {
 
   pageSize = 5;
 
+  pageSizeOptions = [5, 10, 20, 50];
+
   studentPage = 1;
   recordsPage = 1;
 
@@ -94,10 +96,12 @@ export class TeacherMarks implements OnInit {
   // ==========================================
 
   get selectedExam(): any {
+
     return this.exams.find(
       exam =>
         Number(exam.id) === Number(this.selectedExamId)
     );
+
   }
 
 
@@ -113,28 +117,16 @@ export class TeacherMarks implements OnInit {
       start,
       start + this.pageSize
     );
+
   }
 
   get totalStudentPages(): number {
 
-    return Math.ceil(
-      this.students.length / this.pageSize
+    return Math.max(
+      1,
+      Math.ceil(this.students.length / this.pageSize)
     );
-  }
 
-  get studentStart(): number {
-
-    return this.students.length === 0
-      ? 0
-      : (this.studentPage - 1) * this.pageSize + 1;
-  }
-
-  get studentEnd(): number {
-
-    return Math.min(
-      this.studentPage * this.pageSize,
-      this.students.length
-    );
   }
 
   previousStudentPage(): void {
@@ -142,6 +134,7 @@ export class TeacherMarks implements OnInit {
     if (this.studentPage > 1) {
       this.studentPage--;
     }
+
   }
 
   nextStudentPage(): void {
@@ -149,6 +142,7 @@ export class TeacherMarks implements OnInit {
     if (this.studentPage < this.totalStudentPages) {
       this.studentPage++;
     }
+
   }
 
 
@@ -164,28 +158,16 @@ export class TeacherMarks implements OnInit {
       start,
       start + this.pageSize
     );
+
   }
 
   get totalRecordsPages(): number {
 
-    return Math.ceil(
-      this.marksRecords.length / this.pageSize
+    return Math.max(
+      1,
+      Math.ceil(this.marksRecords.length / this.pageSize)
     );
-  }
 
-  get recordsStart(): number {
-
-    return this.marksRecords.length === 0
-      ? 0
-      : (this.recordsPage - 1) * this.pageSize + 1;
-  }
-
-  get recordsEnd(): number {
-
-    return Math.min(
-      this.recordsPage * this.pageSize,
-      this.marksRecords.length
-    );
   }
 
   previousRecordsPage(): void {
@@ -193,6 +175,7 @@ export class TeacherMarks implements OnInit {
     if (this.recordsPage > 1) {
       this.recordsPage--;
     }
+
   }
 
   nextRecordsPage(): void {
@@ -200,6 +183,31 @@ export class TeacherMarks implements OnInit {
     if (this.recordsPage < this.totalRecordsPages) {
       this.recordsPage++;
     }
+
+  }
+
+
+  // ==========================================
+  // PAGE SIZE CHANGE
+  // ==========================================
+
+  onPageSizeChange(event: Event): void {
+
+    const value = Number(
+      (event.target as HTMLSelectElement).value
+    );
+
+    if (!this.pageSizeOptions.includes(value)) {
+      return;
+    }
+
+    this.pageSize = value;
+
+    this.studentPage = 1;
+    this.recordsPage = 1;
+
+    this.cdr.detectChanges();
+
   }
 
 
@@ -229,7 +237,7 @@ export class TeacherMarks implements OnInit {
 
       next: (response: any) => {
 
-        this.subjects = Array.isArray(response.data)
+        this.subjects = Array.isArray(response?.data)
           ? response.data
           : [];
 
@@ -313,7 +321,7 @@ export class TeacherMarks implements OnInit {
 
         next: (response: any) => {
 
-          this.exams = Array.isArray(response.data)
+          this.exams = Array.isArray(response?.data)
             ? response.data
             : [];
 
@@ -670,13 +678,15 @@ export class TeacherMarks implements OnInit {
 
     this.clearMessages();
 
+    this.cdr.detectChanges();
+
     this.marksService
       .getStudentsForMarks(this.selectedSubjectId)
       .subscribe({
 
         next: (response: any) => {
 
-          this.students = Array.isArray(response.data)
+          this.students = Array.isArray(response?.data)
             ? response.data.map((student: any) => ({
 
                 ...student,
@@ -865,7 +875,7 @@ export class TeacherMarks implements OnInit {
 
         next: (response: any) => {
 
-          this.marksRecords = Array.isArray(response.data)
+          this.marksRecords = Array.isArray(response?.data)
             ? response.data.map((record: any) => ({
 
                 ...record,
@@ -879,8 +889,6 @@ export class TeacherMarks implements OnInit {
 
           this.isLoadingRecords = false;
 
-          // Keep the current page where possible.
-          // If records were deleted, move to the last available page.
           const maxPage = Math.max(
             1,
             Math.ceil(this.marksRecords.length / this.pageSize)

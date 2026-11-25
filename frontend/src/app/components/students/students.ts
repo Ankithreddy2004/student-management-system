@@ -54,6 +54,8 @@ export class Students implements OnInit {
 
   pageSize = 5;
 
+  pageSizeOptions = [5, 10, 25, 50];
+
   currentPage = 1;
 
 
@@ -116,16 +118,7 @@ export class Students implements OnInit {
 
         this.isLoading = false;
 
-        // Ensure current page remains valid after deletion.
-        const maxPage = Math.max(
-          1,
-          Math.ceil(this.filteredStudents.length / this.pageSize)
-        );
-
-        this.currentPage = Math.min(
-          this.currentPage,
-          maxPage
-        );
+        this.validateCurrentPage();
 
         this.cdr.detectChanges();
 
@@ -172,7 +165,10 @@ export class Students implements OnInit {
   }
 
 
-  // Reset pagination whenever search changes.
+  // ==========================================
+  // SEARCH CHANGE
+  // ==========================================
+
   onSearchChange(): void {
 
     this.currentPage = 1;
@@ -210,20 +206,22 @@ export class Students implements OnInit {
 
 
   // ==========================================
-  // PAGINATION START INDEX
+  // START INDEX
   // ==========================================
 
   get startIndex(): number {
 
-    return this.filteredStudents.length === 0
-      ? 0
-      : (this.currentPage - 1) * this.pageSize + 1;
+    if (this.filteredStudents.length === 0) {
+      return 0;
+    }
+
+    return (this.currentPage - 1) * this.pageSize + 1;
 
   }
 
 
   // ==========================================
-  // PAGINATION END INDEX
+  // END INDEX
   // ==========================================
 
   get endIndex(): number {
@@ -232,6 +230,48 @@ export class Students implements OnInit {
       this.currentPage * this.pageSize,
       this.filteredStudents.length
     );
+
+  }
+
+
+  // ==========================================
+  // CHANGE ITEMS PER PAGE
+  // ==========================================
+
+  onPageSizeChange(event: Event): void {
+
+    const selectElement = event.target as HTMLSelectElement;
+
+    const selectedSize = Number(selectElement.value);
+
+    if (this.pageSizeOptions.includes(selectedSize)) {
+
+      this.pageSize = selectedSize;
+
+      this.currentPage = 1;
+
+      this.validateCurrentPage();
+
+      this.cdr.detectChanges();
+
+    }
+
+  }
+
+
+  // ==========================================
+  // VALIDATE CURRENT PAGE
+  // ==========================================
+
+  private validateCurrentPage(): void {
+
+    const maxPage = Math.max(1, this.totalPages);
+
+    if (this.currentPage > maxPage) {
+
+      this.currentPage = maxPage;
+
+    }
 
   }
 

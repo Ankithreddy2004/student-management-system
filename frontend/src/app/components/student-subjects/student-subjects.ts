@@ -1,5 +1,9 @@
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
 
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -26,6 +30,7 @@ import {
 export class StudentSubjects implements OnInit {
 
   availableSubjects: EnrollmentSubject[] = [];
+
   myEnrollments: EnrollmentRecord[] = [];
 
   searchText = '';
@@ -39,16 +44,18 @@ export class StudentSubjects implements OnInit {
   successMessage = '';
 
   constructor(
-    private enrollmentService: Enrollment
+    private enrollmentService: Enrollment,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    // Automatically load data when the page opens.
     this.loadData();
   }
 
-  // ==========================================
-  // LOAD SUBJECTS AND ENROLLMENTS SIMULTANEOUSLY
-  // ==========================================
+  // =========================================
+  // LOAD SUBJECTS AND ENROLLMENTS
+  // =========================================
 
   loadData(): void {
 
@@ -62,17 +69,40 @@ export class StudentSubjects implements OnInit {
 
       next: (response) => {
 
-        this.availableSubjects = response.subjects.subjects || [];
+        // Support both direct arrays and nested responses.
+        const subjectsResponse: any = response.subjects;
+        const enrollmentsResponse: any = response.enrollments;
 
-        this.myEnrollments = response.enrollments.enrollments || [];
+        this.availableSubjects = Array.isArray(subjectsResponse)
+          ? subjectsResponse
+          : subjectsResponse?.subjects || [];
+
+        this.myEnrollments = Array.isArray(enrollmentsResponse)
+          ? enrollmentsResponse
+          : enrollmentsResponse?.enrollments || [];
 
         this.loading = false;
+
+        console.log(
+          'Available Subjects:',
+          this.availableSubjects
+        );
+
+        console.log(
+          'My Enrollments:',
+          this.myEnrollments
+        );
+
+        this.cdr.detectChanges();
 
       },
 
       error: (error) => {
 
-        console.error('Enrollment loading error:', error);
+        console.error(
+          'Enrollment loading error:',
+          error
+        );
 
         this.loading = false;
 
@@ -80,45 +110,54 @@ export class StudentSubjects implements OnInit {
           error.error?.message ||
           'Unable to load subject enrollment details. Please try again.';
 
+        this.cdr.detectChanges();
+
       }
 
     });
 
   }
 
-  // ==========================================
-  // CHECK WHETHER SUBJECT IS ALREADY REQUESTED
-  // ==========================================
+  // =========================================
+  // CHECK EXISTING ENROLLMENT
+  // =========================================
 
   isAlreadyEnrolled(subjectId: number): boolean {
 
     return this.myEnrollments.some(
-      enrollment => Number(enrollment.subject_id) === Number(subjectId)
+      enrollment =>
+        Number(enrollment.subject_id) === Number(subjectId)
     );
 
   }
 
-  // ==========================================
+  // =========================================
   // GET ENROLLMENT STATUS
-  // ==========================================
+  // =========================================
 
-  getEnrollmentStatus(subjectId: number): EnrollmentStatus | null {
+  getEnrollmentStatus(
+    subjectId: number
+  ): EnrollmentStatus | null {
 
     const enrollment = this.myEnrollments.find(
-      item => Number(item.subject_id) === Number(subjectId)
+      item =>
+        Number(item.subject_id) === Number(subjectId)
     );
 
     return enrollment ? enrollment.status : null;
 
   }
 
-  // ==========================================
+  // =========================================
   // ENROLL IN SUBJECT
-  // ==========================================
+  // =========================================
 
   enrollSubject(subject: EnrollmentSubject): void {
 
-    if (this.submitting || this.isAlreadyEnrolled(subject.id)) {
+    if (
+      this.submitting ||
+      this.isAlreadyEnrolled(subject.id)
+    ) {
       return;
     }
 
@@ -127,53 +166,60 @@ export class StudentSubjects implements OnInit {
 
     this.submitting = true;
 
-    this.enrollmentService.enrollStudent({
-      subjectId: subject.id
-    }).subscribe({
+    this.enrollmentService
+      .enrollStudent({
+        subjectId: subject.id
+      })
+      .subscribe({
 
-      next: (response) => {
+        next: (response) => {
 
-        this.submitting = false;
+          this.submitting = false;
 
-        this.successMessage =
-          response.message || 'Enrollment request submitted successfully.';
+          this.successMessage =
+            response.message ||
+            'Enrollment request submitted successfully.';
 
-        this.loadData();
+          // Reload subjects and enrollment status.
+          this.loadData();
 
-      },
+        },
 
-      error: (error) => {
+        error: (error) => {
 
-        this.submitting = false;
+          this.submitting = false;
 
-        console.error('Enrollment error:', error);
+          console.error(
+            'Enrollment error:',
+            error
+          );
 
-        this.errorMessage =
-          error.error?.message ||
-          'Unable to submit enrollment request. Please try again.';
+          this.errorMessage =
+            error.error?.message ||
+            'Unable to submit enrollment request. Please try again.';
 
-        this.loadData();
+          this.loadData();
 
-      }
+        }
 
-    });
+      });
 
   }
 
-  // ==========================================
+  // =========================================
   // FILTER SUBJECTS
-  // ==========================================
+  // =========================================
 
   get filteredSubjects(): EnrollmentSubject[] {
 
     return this.availableSubjects.filter(subject => {
 
-      const search = this.searchText.toLowerCase();
+      const search = this.searchText.toLowerCase().trim();
 
       const matchesSearch =
-        subject.subject_name.toLowerCase().includes(search) ||
-        subject.subject_code.toLowerCase().includes(search) ||
-        subject.course.toLowerCase().includes(search);
+        (subject.subject_name || '').toLowerCase().includes(search) ||
+        (subject.subject_code || '').toLowerCase().includes(search) ||
+        (subject.course || '').toLowerCase().includes(search);
 
       const status = this.getEnrollmentStatus(subject.id);
 
@@ -187,19 +233,21 @@ export class StudentSubjects implements OnInit {
 
   }
 
-  // ==========================================
-  // FILTER SELECTION
-  // ==========================================
+  // =========================================
+  // SET FILTER
+  // =========================================
 
-  setFilter(filter: 'All' | EnrollmentStatus): void {
+  setFilter(
+    filter: 'All' | EnrollmentStatus
+  ): void {
 
     this.selectedFilter = filter;
 
   }
 
-  // ==========================================
-  // ENROLLMENT COUNTS
-  // ==========================================
+  // =========================================
+  // SUMMARY COUNTS
+  // =========================================
 
   get pendingCount(): number {
 
@@ -233,9 +281,9 @@ export class StudentSubjects implements OnInit {
 
   }
 
-  // ==========================================
+  // =========================================
   // REFRESH
-  // ==========================================
+  // =========================================
 
   refresh(): void {
 

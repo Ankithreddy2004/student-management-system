@@ -244,26 +244,17 @@ tbody tr:hover {
   transition: 0.3s;
 }
 
-
-/* ACTIVE */
-
 .active-status {
   background: #dcfce7;
   color: #15803d;
   border-color: #bbf7d0;
 }
 
-
-/* INACTIVE */
-
 .inactive-status {
   background: #fee2e2;
   color: #dc2626;
   border-color: #fecaca;
 }
-
-
-/* DROPDOWN FOCUS */
 
 .status-select:focus {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
@@ -296,74 +287,96 @@ tbody tr:hover {
 
 
 /* ==========================================
-   PAGINATION
+   SIMPLE PAGINATION
 ========================================== */
 
 .pagination-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  gap: 15px;
-  padding: 18px 20px;
+  gap: 42px;
+  min-height: 64px;
+  padding: 0 22px;
   background: #ffffff;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #eeeeee;
+  box-sizing: border-box;
+  color: #666;
+  font-size: 14px;
 }
+
+
+/* ITEMS PER PAGE */
+
+.pagination-size {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.pagination-size label {
+  color: #666;
+}
+
+.pagination-size select {
+  min-width: 65px;
+  padding: 7px 22px 7px 5px;
+  border: none;
+  border-bottom: 1px solid #999;
+  border-radius: 0;
+  background-color: #ffffff;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.pagination-size select:focus {
+  border-bottom: 2px solid #6d28d9;
+}
+
+
+/* RECORD COUNT */
 
 .pagination-info {
-  color: #777;
-  font-size: 13px;
+  min-width: 75px;
+  text-align: center;
+  white-space: nowrap;
+  color: #666;
 }
 
-.pagination-info strong {
-  color: #5b21b6;
-  font-weight: 700;
-}
+
+/* PREVIOUS AND NEXT ARROWS */
 
 .pagination-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 25px;
 }
 
-.pagination-btn {
-  padding: 9px 16px;
-  border: 1px solid #ddd6fe;
-  border-radius: 7px;
-  background: #ffffff;
-  color: #6d28d9;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background: #6d28d9;
-  color: #ffffff;
-}
-
-.pagination-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  background: #f5f3fa;
-}
-
-.pagination-current {
-  min-width: 32px;
-  height: 32px;
+.pagination-arrow {
+  width: 25px;
+  height: 35px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #6d28d9;
-  color: #ffffff;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #555;
+  font-size: 29px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 
-.pagination-total {
-  color: #777;
-  font-size: 13px;
+.pagination-arrow:hover:not(:disabled) {
+  color: #6d28d9;
+}
+
+.pagination-arrow:disabled {
+  color: #bdbdbd;
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 
@@ -402,13 +415,13 @@ tbody tr:hover {
   }
 
   .pagination-container {
-    flex-direction: column;
-    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
   }
 
   .pagination-controls {
-    width: 100%;
-    justify-content: flex-end;
+    gap: 12px;
   }
 
 }
@@ -434,16 +447,28 @@ tbody tr:hover {
   }
 
   .pagination-container {
-    padding: 15px 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 10px;
+    font-size: 12px;
+  }
+
+  .pagination-size {
+    gap: 5px;
+  }
+
+  .pagination-size select {
+    min-width: 55px;
+    font-size: 12px;
   }
 
   .pagination-info {
-    font-size: 12px;
+    min-width: auto;
   }
 
-  .pagination-btn {
-    padding: 8px 12px;
-    font-size: 12px;
+  .pagination-controls {
+    gap: 8px;
   }
 
 }

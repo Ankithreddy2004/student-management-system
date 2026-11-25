@@ -431,60 +431,79 @@ th {
   color: #777;
 }
 
-
 /* =====================================
-   RESPONSIVE DESIGN
+   PAGINATION
 ===================================== */
 
-@media (max-width: 768px) {
-
-  .pagination-container {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .pagination-controls {
-    flex-wrap: wrap;
-  }
-
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 18px 5px 5px;
+  margin-top: 10px;
+  border-top: 1px solid #eee;
 }
 
-
-@media (max-width: 700px) {
-
-  .container {
-    padding: 15px;
-  }
-
-  .form-grid,
-  .filter-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .page-header {
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .form-card,
-  .subjects-card {
-    padding: 17px;
-  }
-
+.pagination-info {
+  font-size: 13px;
+  color: #666;
+  font-weight: 400;
 }
 
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-@media (max-width: 600px) {
+.pagination-controls label {
+  color: #666;
+  font-size: 13px;
+  font-weight: 400;
+}
 
-  .pagination-controls .pagination-btn {
-    min-width: 32px;
-    height: 34px;
-    padding: 0 7px;
-  }
+.pagination-controls select {
+  height: 35px;
+  min-width: 60px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
 
-  .pagination-controls .previous-btn,
-  .pagination-controls .next-btn {
-    font-size: 11px;
-  }
+.pagination-arrow {
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
+.pagination-arrow:hover:not(:disabled) {
+  background: #f3f3f3;
+}
+
+.pagination-arrow:disabled {
+  color: #bbb;
+  background: #fafafa;
+  cursor: not-allowed;
+}
+
+.pagination-arrow mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
 }

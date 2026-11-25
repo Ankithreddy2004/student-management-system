@@ -41,13 +41,10 @@ export class AdminSubjects implements OnInit {
   isEditing = false;
   editingId: number | null = null;
 
-  // =====================================
   // PAGINATION
-  // =====================================
-
   currentPage = 1;
   pageSize = 5;
-
+  pageSizeOptions = [5, 10, 25, 50];
 
   subject = {
     subject_name: '',
@@ -56,22 +53,16 @@ export class AdminSubjects implements OnInit {
     semester: 1
   };
 
-
   constructor(
     private subjectService: Subject,
     private cdr: ChangeDetectorRef
   ) {}
 
-
   ngOnInit(): void {
     this.loadSubjects();
   }
 
-
-  // =====================================
   // LOAD SUBJECTS
-  // =====================================
-
   loadSubjects(): void {
 
     this.isLoading = true;
@@ -84,10 +75,7 @@ export class AdminSubjects implements OnInit {
         this.subjects = response.data || [];
         this.isLoading = false;
 
-        // Keep current page within valid range
-        if (this.currentPage > this.totalPages) {
-          this.currentPage = Math.max(1, this.totalPages);
-        }
+        this.validateCurrentPage();
 
         this.cdr.detectChanges();
 
@@ -110,11 +98,7 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
-  // =====================================
   // FILTERED SUBJECTS
-  // =====================================
-
   get filteredSubjects(): any[] {
 
     return this.subjects.filter(subject => {
@@ -140,7 +124,6 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
   get courses(): string[] {
 
     return [...new Set(
@@ -149,11 +132,7 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
-  // =====================================
   // PAGINATION GETTERS
-  // =====================================
-
   get totalPages(): number {
 
     return Math.ceil(
@@ -161,7 +140,6 @@ export class AdminSubjects implements OnInit {
     );
 
   }
-
 
   get paginatedSubjects(): any[] {
 
@@ -175,17 +153,6 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
-  get pageNumbers(): number[] {
-
-    return Array.from(
-      { length: this.totalPages },
-      (_, index) => index + 1
-    );
-
-  }
-
-
   get startItem(): number {
 
     if (this.filteredSubjects.length === 0) {
@@ -196,7 +163,6 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
   get endItem(): number {
 
     return Math.min(
@@ -206,22 +172,17 @@ export class AdminSubjects implements OnInit {
 
   }
 
+  // PAGE SIZE CHANGE
+  onPageSizeChange(event: Event): void {
 
-  // =====================================
-  // PAGINATION METHODS
-  // =====================================
+    const selectElement = event.target as HTMLSelectElement;
 
-  goToPage(page: number): void {
-
-    if (page < 1 || page > this.totalPages) {
-      return;
-    }
-
-    this.currentPage = page;
+    this.pageSize = Number(selectElement.value);
+    this.currentPage = 1;
 
   }
 
-
+  // PREVIOUS PAGE
   previousPage(): void {
 
     if (this.currentPage > 1) {
@@ -230,7 +191,7 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
+  // NEXT PAGE
   nextPage(): void {
 
     if (this.currentPage < this.totalPages) {
@@ -239,23 +200,25 @@ export class AdminSubjects implements OnInit {
 
   }
 
+  // VALIDATE CURRENT PAGE
+  validateCurrentPage(): void {
 
-  // =====================================
+    const maxPage = Math.max(1, this.totalPages);
+
+    if (this.currentPage > maxPage) {
+      this.currentPage = maxPage;
+    }
+
+  }
+
   // FILTER CHANGE
-  // =====================================
-
   onFilterChange(): void {
 
-    // Reset pagination whenever filters change
     this.currentPage = 1;
 
   }
 
-
-  // =====================================
   // SAVE SUBJECT
-  // =====================================
-
   saveSubject(): void {
 
     this.clearMessages();
@@ -296,7 +259,6 @@ export class AdminSubjects implements OnInit {
 
         this.isSaving = false;
 
-        // Return to first page after saving
         this.currentPage = 1;
 
         this.loadSubjects();
@@ -320,11 +282,7 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
-  // =====================================
   // EDIT SUBJECT
-  // =====================================
-
   editSubject(item: any): void {
 
     this.clearMessages();
@@ -346,11 +304,7 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
-  // =====================================
   // DELETE SUBJECT
-  // =====================================
-
   deleteSubject(id: number): void {
 
     this.clearMessages();
@@ -389,11 +343,7 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
-  // =====================================
   // RESET FORM
-  // =====================================
-
   resetForm(): void {
 
     this.subject = {
@@ -408,7 +358,6 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
   cancelEdit(): void {
 
     this.resetForm();
@@ -416,11 +365,7 @@ export class AdminSubjects implements OnInit {
 
   }
 
-
-  // =====================================
   // CLEAR MESSAGES
-  // =====================================
-
   clearMessages(): void {
 
     this.successMessage = '';

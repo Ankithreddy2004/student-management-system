@@ -40,14 +40,10 @@ export class AdminAssignments implements OnInit {
   successMessage = '';
   errorMessage = '';
 
-
-  // =====================================
   // PAGINATION
-  // =====================================
-
   currentPage = 1;
   pageSize = 5;
-
+  pageSizeOptions = [5, 10, 25, 50];
 
   constructor(
     private subjectService: Subject,
@@ -55,16 +51,11 @@ export class AdminAssignments implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-
   ngOnInit(): void {
     this.loadInitialData();
   }
 
-
-  // =====================================
   // LOAD INITIAL DATA
-  // =====================================
-
   loadInitialData(): void {
 
     this.isLoading = true;
@@ -86,7 +77,6 @@ export class AdminAssignments implements OnInit {
       }
 
     };
-
 
     this.adminService.getTeachers().subscribe({
 
@@ -110,7 +100,6 @@ export class AdminAssignments implements OnInit {
 
     });
 
-
     this.subjectService.getSubjects().subscribe({
 
       next: response => {
@@ -133,16 +122,11 @@ export class AdminAssignments implements OnInit {
 
     });
 
-
     this.loadAssignments(finish);
 
   }
 
-
-  // =====================================
   // LOAD ASSIGNMENTS
-  // =====================================
-
   loadAssignments(finish?: () => void): void {
 
     this.subjectService.getAssignments().subscribe({
@@ -179,11 +163,7 @@ export class AdminAssignments implements OnInit {
 
   }
 
-
-  // =====================================
   // PAGINATION GETTERS
-  // =====================================
-
   get totalPages(): number {
 
     return Math.ceil(
@@ -191,7 +171,6 @@ export class AdminAssignments implements OnInit {
     );
 
   }
-
 
   get paginatedAssignments(): any[] {
 
@@ -205,53 +184,17 @@ export class AdminAssignments implements OnInit {
 
   }
 
+  // PAGE SIZE CHANGE
+  onPageSizeChange(event: Event): void {
 
-  get pageNumbers(): number[] {
+    const selectElement = event.target as HTMLSelectElement;
 
-    return Array.from(
-      { length: this.totalPages },
-      (_, index) => index + 1
-    );
-
-  }
-
-
-  get startItem(): number {
-
-    if (this.assignments.length === 0) {
-      return 0;
-    }
-
-    return (this.currentPage - 1) * this.pageSize + 1;
+    this.pageSize = Number(selectElement.value);
+    this.currentPage = 1;
 
   }
 
-
-  get endItem(): number {
-
-    return Math.min(
-      this.currentPage * this.pageSize,
-      this.assignments.length
-    );
-
-  }
-
-
-  // =====================================
-  // PAGINATION METHODS
-  // =====================================
-
-  goToPage(page: number): void {
-
-    if (page < 1 || page > this.totalPages) {
-      return;
-    }
-
-    this.currentPage = page;
-
-  }
-
-
+  // PREVIOUS PAGE
   previousPage(): void {
 
     if (this.currentPage > 1) {
@@ -260,7 +203,7 @@ export class AdminAssignments implements OnInit {
 
   }
 
-
+  // NEXT PAGE
   nextPage(): void {
 
     if (this.currentPage < this.totalPages) {
@@ -269,29 +212,18 @@ export class AdminAssignments implements OnInit {
 
   }
 
-
-  // =====================================
   // ADJUST CURRENT PAGE
-  // =====================================
-
   adjustCurrentPage(): void {
 
-    if (this.currentPage > this.totalPages) {
+    const maxPage = Math.max(1, this.totalPages);
 
-      this.currentPage = Math.max(
-        1,
-        this.totalPages
-      );
-
+    if (this.currentPage > maxPage) {
+      this.currentPage = maxPage;
     }
 
   }
 
-
-  // =====================================
   // CHECK SUBJECT SELECTION
-  // =====================================
-
   toggleSubject(subjectId: number, event: Event): void {
 
     const checked =
@@ -312,18 +244,13 @@ export class AdminAssignments implements OnInit {
 
   }
 
-
   isSubjectSelected(subjectId: number): boolean {
 
     return this.selectedSubjectIds.includes(subjectId);
 
   }
 
-
-  // =====================================
   // ASSIGN SUBJECTS
-  // =====================================
-
   assignSubjects(): void {
 
     this.clearMessages();
@@ -363,7 +290,6 @@ export class AdminAssignments implements OnInit {
 
         this.isSaving = false;
 
-        // Return to first page after assigning
         this.currentPage = 1;
 
         this.loadAssignments();
@@ -387,11 +313,7 @@ export class AdminAssignments implements OnInit {
 
   }
 
-
-  // =====================================
   // REMOVE ASSIGNMENT
-  // =====================================
-
   removeAssignment(id: number): void {
 
     this.clearMessages();
@@ -430,11 +352,7 @@ export class AdminAssignments implements OnInit {
 
   }
 
-
-  // =====================================
-  // RESET / CLEAR MESSAGES
-  // =====================================
-
+  // CLEAR MESSAGES
   clearMessages(): void {
 
     this.successMessage = '';

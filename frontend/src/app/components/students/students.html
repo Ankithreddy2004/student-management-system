@@ -8,7 +8,6 @@
       <p>Manage and view all registered students.</p>
     </div>
 
-    <!-- Add Student - Admin and Teacher -->
     <a
       *ngIf="isAdmin || isTeacher"
       [routerLink]="isAdmin ? '/admin/add-student' : '/teacher/add-student'"
@@ -54,10 +53,10 @@
   <!-- Students Table -->
   <div
     class="table-wrapper"
-    *ngIf="!isLoading && filteredStudents.length > 0"
+    *ngIf="!isLoading"
   >
 
-    <table>
+    <table *ngIf="filteredStudents.length > 0">
 
       <thead>
         <tr>
@@ -89,7 +88,6 @@
 
           <td>{{ student.course }}</td>
 
-
           <!-- Student Status -->
           <td>
 
@@ -108,11 +106,9 @@
 
           </td>
 
-
           <!-- Actions -->
           <td class="action-buttons">
 
-            <!-- Edit - Admin and Teacher -->
             <button
               class="edit-btn"
               (click)="editStudent(student.id)"
@@ -120,8 +116,6 @@
               Edit
             </button>
 
-
-            <!-- Delete - Admin only -->
             <button
               *ngIf="isAdmin"
               class="delete-btn"
@@ -139,58 +133,72 @@
     </table>
 
 
-    <!-- PAGINATION -->
+    <!-- Empty Search Result -->
     <div
-      class="pagination-container"
-      *ngIf="filteredStudents.length > pageSize"
+      class="empty-state"
+      *ngIf="filteredStudents.length === 0"
     >
+      No students found.
+    </div>
 
-      <div class="pagination-info">
 
-        Showing
+    <!-- PAGINATION -->
+    <div class="pagination-container">
 
-        <strong>{{ startIndex }}</strong>
+      <!-- ITEMS PER PAGE -->
+      <div class="pagination-size">
 
-        to
+        <label for="studentPageSize">
+          Items per page:
+        </label>
 
-        <strong>{{ endIndex }}</strong>
+        <select
+          id="studentPageSize"
+          [value]="pageSize"
+          (change)="onPageSizeChange($event)"
+        >
 
-        of
+          <option
+            *ngFor="let size of pageSizeOptions"
+            [value]="size"
+          >
+            {{ size }}
+          </option>
 
-        <strong>{{ filteredStudents.length }}</strong>
-
-        students
+        </select>
 
       </div>
 
 
+      <!-- RECORD COUNT -->
+      <div class="pagination-info">
+        {{ startIndex }}–{{ endIndex }} of {{ filteredStudents.length }}
+      </div>
+
+
+      <!-- PAGE CONTROLS -->
       <div class="pagination-controls">
 
         <button
-          class="pagination-btn"
+          type="button"
+          class="pagination-arrow"
           (click)="previousPage()"
-          [disabled]="currentPage === 1"
+          [disabled]="currentPage <= 1 || totalPages === 0"
+          aria-label="Previous page"
+          title="Previous page"
         >
-          Previous
+          ‹
         </button>
 
-
-        <span class="pagination-current">
-          {{ currentPage }}
-        </span>
-
-
-        <span class="pagination-total">
-          of {{ totalPages }}
-        </span>
-
-
         <button
-          class="pagination-btn"
+          type="button"
+          class="pagination-arrow"
           (click)="nextPage()"
-          [disabled]="currentPage === totalPages"
+          [disabled]="currentPage >= totalPages || totalPages === 0"
+          aria-label="Next page"
+          title="Next page"
         >
-          Next
+          ›
         </button>
 
       </div>
@@ -198,14 +206,5 @@
     </div>
 
   </div>
-
-
-  <!-- No Students -->
-  <p
-    class="empty-state"
-    *ngIf="!isLoading && filteredStudents.length === 0"
-  >
-    No students found.
-  </p>
 
 </div>

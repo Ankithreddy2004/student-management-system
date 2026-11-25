@@ -23,9 +23,7 @@
 
   <!-- ERROR MESSAGE -->
 
-  <div
-    class="message error"
-    *ngIf="errorMessage">
+  <div class="message error" *ngIf="errorMessage">
 
     <span>⚠</span>
     {{ errorMessage }}
@@ -35,9 +33,7 @@
 
   <!-- SUCCESS MESSAGE -->
 
-  <div
-    class="message success"
-    *ngIf="successMessage">
+  <div class="message success" *ngIf="successMessage">
 
     <span>✓</span>
     {{ successMessage }}
@@ -180,9 +176,7 @@
 
   <!-- LOADING INDICATOR -->
 
-  <div
-    class="loading"
-    *ngIf="isLoading">
+  <div class="loading" *ngIf="isLoading">
 
     <div class="loader"></div>
 
@@ -248,9 +242,7 @@
 
 
       <span class="total-badge">
-
         {{ students.length }} Students
-
       </span>
 
     </div>
@@ -267,15 +259,10 @@
           <tr>
 
             <th>Student ID</th>
-
             <th>Student Name</th>
-
             <th>Email</th>
-
             <th>Attendance Status</th>
-
             <th>Remarks</th>
-
             <th>Record</th>
 
           </tr>
@@ -286,7 +273,6 @@
         <tbody>
 
           <tr *ngFor="let student of paginatedStudents">
-
 
             <!-- STUDENT ID -->
 
@@ -319,21 +305,13 @@
                 [name]="'status_' + student.id"
                 [disabled]="isSaving">
 
-                <option value="">
-                  Choose Status
-                </option>
+                <option value="">Choose Status</option>
 
-                <option value="Present">
-                  Present
-                </option>
+                <option value="Present">Present</option>
 
-                <option value="Absent">
-                  Absent
-                </option>
+                <option value="Absent">Absent</option>
 
-                <option value="Late">
-                  Late
-                </option>
+                <option value="Late">Late</option>
 
               </select>
 
@@ -388,41 +366,18 @@
     </div>
 
 
-    <!-- ================= PAGINATION ================= -->
+    <!-- PAGINATION -->
 
     <div class="pagination-section">
 
-      <!-- RECORD INFORMATION -->
-
-      <div class="pagination-info">
-
-        Showing
-
-        <strong>{{ startRecord }}</strong>
-
-        to
-
-        <strong>{{ endRecord }}</strong>
-
-        of
-
-        <strong>{{ students.length }}</strong>
-
-        students
-
-      </div>
-
-
-      <!-- PAGINATION CONTROLS -->
-
       <div class="pagination-controls">
 
-        <!-- PAGE SIZE -->
+        <!-- ITEMS PER PAGE -->
 
         <div class="page-size">
 
           <label for="pageSize">
-            Rows:
+            Items per page:
           </label>
 
           <select
@@ -444,35 +399,37 @@
         </div>
 
 
-        <!-- PREVIOUS -->
+        <!-- CURRENT PAGE -->
+
+        <span class="page-indicator">
+
+          {{ displayedPage }} of {{ totalPages }}
+
+        </span>
+
+
+        <!-- PREVIOUS PAGE -->
 
         <button
           type="button"
           class="pagination-btn"
           (click)="previousPage()"
-          [disabled]="currentPage === 1 || isSaving">
+          [disabled]="currentPage <= 1 || isSaving"
+          aria-label="Previous page">
 
           ‹
 
         </button>
 
 
-        <!-- CURRENT PAGE -->
-
-        <span class="page-indicator">
-
-          Page {{ currentPage }} of {{ totalPages }}
-
-        </span>
-
-
-        <!-- NEXT -->
+        <!-- NEXT PAGE -->
 
         <button
           type="button"
           class="pagination-btn"
           (click)="nextPage()"
-          [disabled]="currentPage === totalPages || isSaving">
+          [disabled]="currentPage >= totalPages || isSaving"
+          aria-label="Next page">
 
           ›
 

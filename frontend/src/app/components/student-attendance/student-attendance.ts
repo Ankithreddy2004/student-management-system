@@ -36,7 +36,7 @@ export class StudentAttendance implements OnInit {
   pageSize = 5;
   currentPage = 1;
 
-  pageSizeOptions = [5, 10, 25, 50];
+  pageSizeOptions = [5, 10, 20, 50];
 
   constructor(
     private attendanceService: Attendance,

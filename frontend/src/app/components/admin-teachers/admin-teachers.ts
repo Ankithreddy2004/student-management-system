@@ -56,7 +56,10 @@ export class AdminTeachers implements OnInit, OnDestroy {
   // =====================================
 
   currentPage = 1;
+
   pageSize = 5;
+
+  pageSizeOptions: number[] = [5, 10, 25, 50];
 
   get totalPages(): number {
     return Math.ceil(this.teachers.length / this.pageSize);
@@ -69,14 +72,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
     const endIndex = startIndex + this.pageSize;
 
     return this.teachers.slice(startIndex, endIndex);
-  }
-
-  get pageNumbers(): number[] {
-
-    return Array.from(
-      { length: this.totalPages },
-      (_, index) => index + 1
-    );
   }
 
   get startItem(): number {
@@ -96,47 +91,85 @@ export class AdminTeachers implements OnInit, OnDestroy {
     );
   }
 
-  // GO TO SPECIFIC PAGE
-  goToPage(page: number): void {
+  // PAGE SIZE CHANGE
 
-    if (page < 1 || page > this.totalPages) {
+  onPageSizeChange(event: Event): void {
+
+    const selectElement = event.target as HTMLSelectElement;
+
+    const selectedSize = Number(selectElement.value);
+
+    if (!this.pageSizeOptions.includes(selectedSize)) {
       return;
     }
 
-    this.currentPage = page;
+    this.pageSize = selectedSize;
+
+    this.currentPage = 1;
+
+    this.validateCurrentPage();
+
+    this.cdr.detectChanges();
+  }
+
+  // VALIDATE CURRENT PAGE
+
+  private validateCurrentPage(): void {
+
+    if (this.totalPages === 0) {
+      this.currentPage = 1;
+      return;
+    }
+
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+
+    if (this.currentPage < 1) {
+      this.currentPage = 1;
+    }
   }
 
   // PREVIOUS PAGE
+
   previousPage(): void {
 
     if (this.currentPage > 1) {
       this.currentPage--;
+
+      this.cdr.detectChanges();
     }
   }
 
   // NEXT PAGE
+
   nextPage(): void {
 
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
+
+      this.cdr.detectChanges();
     }
   }
-
 
   // =====================================
   // CREATE TEACHER IMAGE
   // =====================================
 
   selectedImage: File | null = null;
+
   imagePreviewUrl = '';
 
   // EXISTING TEACHER IMAGES
+
   teacherImageUrls: { [key: number]: string } = {};
 
   // SELECTED IMAGE FOR EACH TEACHER
+
   selectedTeacherImages: { [key: number]: File } = {};
 
   // IMAGE PREVIEWS FOR EACH TEACHER
+
   teacherImagePreviews: { [key: number]: string } = {};
 
   isUpdatingImageId: number | null = null;
@@ -151,7 +184,10 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.loadTeachers();
   }
 
+  // =====================================
   // AUTHORIZATION HEADER
+  // =====================================
+
   private getHeaders(): HttpHeaders {
 
     const token = this.authService.getToken();
@@ -161,7 +197,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
-
   // =====================================
   // LOAD ALL TEACHERS
   // =====================================
@@ -169,6 +204,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
   loadTeachers(): void {
 
     this.isLoading = true;
+
     this.errorMessage = '';
 
     this.http.get<any>(this.apiUrl, {
@@ -181,10 +217,9 @@ export class AdminTeachers implements OnInit, OnDestroy {
           ? response.data.filter((user: any) => user.role === 'Teacher')
           : [];
 
-        // Keep current page valid after loading or deleting teachers
-        if (this.currentPage > this.totalPages) {
-          this.currentPage = Math.max(1, this.totalPages);
-        }
+        // Keep current page valid after loading or deleting teachers.
+
+        this.validateCurrentPage();
 
         this.teachers.forEach((teacher: any) => {
 
@@ -195,6 +230,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
         });
 
         this.isLoading = false;
+
         this.cdr.detectChanges();
       },
 
@@ -206,12 +242,12 @@ export class AdminTeachers implements OnInit, OnDestroy {
           error.error?.message || 'Unable to load teachers.';
 
         this.isLoading = false;
+
         this.cdr.detectChanges();
       }
 
     });
   }
-
 
   // =====================================
   // LOAD INDIVIDUAL TEACHER IMAGE
@@ -252,7 +288,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
     });
   }
 
-
   // =====================================
   // IMAGE VALIDATION
   // =====================================
@@ -281,7 +316,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
 
     return true;
   }
-
 
   // =====================================
   // SELECT IMAGE WHILE CREATING TEACHER
@@ -313,18 +347,18 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-
   // REMOVE CREATE IMAGE PREVIEW
+
   clearCreateImage(): void {
 
     this.selectedImage = null;
 
     if (this.imagePreviewUrl) {
       URL.revokeObjectURL(this.imagePreviewUrl);
+
       this.imagePreviewUrl = '';
     }
   }
-
 
   // =====================================
   // CREATE TEACHER
@@ -333,6 +367,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
   createTeacher(): void {
 
     this.errorMessage = '';
+
     this.successMessage = '';
 
     if (
@@ -342,19 +377,23 @@ export class AdminTeachers implements OnInit, OnDestroy {
     ) {
 
       this.errorMessage = 'Please fill all required fields.';
+
       return;
     }
 
     if (this.teacher.password.length < 12) {
 
       this.errorMessage = 'Password must contain at least 12 characters.';
+
       return;
     }
 
     const formData = new FormData();
 
     formData.append('name', this.teacher.name.trim());
+
     formData.append('email', this.teacher.email.trim());
+
     formData.append('password', this.teacher.password);
 
     if (this.selectedImage) {
@@ -387,6 +426,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
         this.isCreating = false;
 
         this.loadTeachers();
+
         this.cdr.detectChanges();
       },
 
@@ -398,12 +438,12 @@ export class AdminTeachers implements OnInit, OnDestroy {
           error.error?.message || 'Unable to create teacher.';
 
         this.isCreating = false;
+
         this.cdr.detectChanges();
       }
 
     });
   }
-
 
   // =====================================
   // SELECT IMAGE FOR EXISTING TEACHER
@@ -435,7 +475,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
 
     this.cdr.detectChanges();
   }
-
 
   // =====================================
   // UPDATE EXISTING TEACHER IMAGE
@@ -485,14 +524,15 @@ export class AdminTeachers implements OnInit, OnDestroy {
           error.error?.message || 'Unable to update teacher photo.';
 
         this.isUpdatingImageId = null;
+
         this.cdr.detectChanges();
       }
 
     });
   }
 
-
   // CANCEL TEACHER IMAGE CHANGE
+
   cancelTeacherImage(teacherId: number): void {
 
     delete this.selectedTeacherImages[teacherId];
@@ -509,7 +549,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-
   // =====================================
   // EDIT TEACHER
   // =====================================
@@ -525,11 +564,12 @@ export class AdminTeachers implements OnInit, OnDestroy {
     };
 
     this.errorMessage = '';
+
     this.successMessage = '';
   }
 
-
   // UPDATE TEACHER DETAILS
+
   updateTeacher(): void {
 
     if (
@@ -538,6 +578,7 @@ export class AdminTeachers implements OnInit, OnDestroy {
     ) {
 
       this.errorMessage = 'Name and email are required.';
+
       return;
     }
 
@@ -560,9 +601,11 @@ export class AdminTeachers implements OnInit, OnDestroy {
           response.message || 'Teacher updated successfully.';
 
         this.isUpdating = false;
+
         this.isEditing = false;
 
         this.loadTeachers();
+
         this.cdr.detectChanges();
       },
 
@@ -574,14 +617,15 @@ export class AdminTeachers implements OnInit, OnDestroy {
           error.error?.message || 'Unable to update teacher.';
 
         this.isUpdating = false;
+
         this.cdr.detectChanges();
       }
 
     });
   }
 
-
   // CANCEL EDIT
+
   cancelEdit(): void {
 
     this.isEditing = false;
@@ -594,7 +638,6 @@ export class AdminTeachers implements OnInit, OnDestroy {
 
     this.errorMessage = '';
   }
-
 
   // =====================================
   // DELETE TEACHER
@@ -629,11 +672,14 @@ export class AdminTeachers implements OnInit, OnDestroy {
         this.cancelTeacherImage(teacherId);
 
         if (this.teacherImageUrls[teacherId]) {
+
           URL.revokeObjectURL(this.teacherImageUrls[teacherId]);
+
           delete this.teacherImageUrls[teacherId];
         }
 
         this.loadTeachers();
+
         this.cdr.detectChanges();
       },
 
@@ -645,12 +691,12 @@ export class AdminTeachers implements OnInit, OnDestroy {
           error.error?.message || 'Unable to delete teacher.';
 
         this.isDeletingId = null;
+
         this.cdr.detectChanges();
       }
 
     });
   }
-
 
   // =====================================
   // CLEAN UP IMAGE URLS
