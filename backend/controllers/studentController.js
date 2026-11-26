@@ -1,86 +1,90 @@
-const db = require('../config/db');
+const studentRepository =
+    require('../repositories/studentRepository');
+
 
 // ==========================================
-// GET ALL STUDENTS
+// 1. GET ALL STUDENTS
 // ==========================================
 
-const getAllStudents = (req, res) => {
+const getAllStudents = async (req, res) => {
 
-    const sql = 'SELECT * FROM students ORDER BY id ASC';
+    try {
 
-    db.query(sql, (err, results) => {
+        const results =
+            await studentRepository.getAllStudents();
 
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error fetching students.'
-            });
-        }
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Students fetched successfully.',
             data: results
         });
 
-    });
+    } catch (error) {
+
+        console.error(
+            'Get All Students Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching students.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// GET PENDING STUDENTS
+// 2. GET PENDING STUDENTS
 // ==========================================
 
-const getPendingStudents = (req, res) => {
+const getPendingStudents = async (req, res) => {
 
-    const sql = `
-        SELECT
-            id,
-            name,
-            email,
-            phone,
-            course,
-            status,
-            created_at
-        FROM students
-        WHERE status = 'Pending'
-        ORDER BY created_at ASC
-    `;
+    try {
 
-    db.query(sql, (err, results) => {
+        const results =
+            await studentRepository.getPendingStudents();
 
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error fetching pending registrations.'
-            });
-        }
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Pending registrations fetched successfully.',
             data: results
         });
 
-    });
+    } catch (error) {
+
+        console.error(
+            'Get Pending Students Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching pending registrations.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// ADD NEW STUDENT
+// 3. ADD NEW STUDENT
 // ==========================================
 
-const addStudent = (req, res) => {
+const addStudent = async (req, res) => {
 
     let { name, email, phone, course } = req.body;
 
     if (!name || !email || !phone || !course) {
+
         return res.status(400).json({
             success: false,
             message: 'All fields are required.'
         });
+
     }
 
     name = String(name).trim();
@@ -89,130 +93,157 @@ const addStudent = (req, res) => {
     course = String(course).trim();
 
     if (!name || !course) {
+
         return res.status(400).json({
             success: false,
             message: 'Name and course cannot be empty.'
         });
+
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
+
         return res.status(400).json({
             success: false,
             message: 'Please enter a valid email address.'
         });
+
     }
 
     if (!/^\d{10}$/.test(phone)) {
+
         return res.status(400).json({
             success: false,
             message: 'Phone number must contain exactly 10 digits.'
         });
+
     }
 
-    const sql = `
-        INSERT INTO students (name, email, phone, course)
-        VALUES (?, ?, ?, ?)
-    `;
+    try {
 
-    const values = [name, email, phone, course];
+        const result =
+            await studentRepository.addStudent(
+                name,
+                email,
+                phone,
+                course
+            );
 
-    db.query(sql, values, (err, result) => {
+        return res.status(201).json({
+            success: true,
+            message: 'Student added successfully.',
+            studentId: result.studentId
+        });
 
-        if (err) {
+    } catch (error) {
 
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(409).json({
-                    success: false,
-                    message: 'Email already exists.'
-                });
-            }
+        console.error(
+            'Add Student Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
 
-            return res.status(500).json({
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
                 success: false,
-                message: 'Error adding student.'
+                message: 'Email already exists.'
             });
 
         }
 
-        res.status(201).json({
-            success: true,
-            message: 'Student added successfully.',
-            studentId: result.insertId
+        return res.status(500).json({
+            success: false,
+            message: 'Error adding student.'
         });
 
-    });
+    }
 
 };
 
 
 // ==========================================
-// GET STUDENT BY ID
+// 4. GET STUDENT BY ID
 // ==========================================
 
-const getStudentById = (req, res) => {
+const getStudentById = async (req, res) => {
 
     const { id } = req.params;
 
     if (!/^[1-9]\d*$/.test(id)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid student ID.'
         });
+
     }
 
-    const sql = 'SELECT * FROM students WHERE id = ?';
+    try {
 
-    db.query(sql, [id], (err, results) => {
-
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Error fetching student.'
-            });
-        }
+        const results =
+            await studentRepository.getStudentById(id);
 
         if (results.length === 0) {
+
             return res.status(404).json({
                 success: false,
                 message: 'Student not found.'
             });
+
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Student fetched successfully.',
             data: results[0]
         });
 
-    });
+    } catch (error) {
+
+        console.error(
+            'Get Student Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Error fetching student.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// UPDATE STUDENT
+// 5. UPDATE STUDENT
 // ==========================================
 
-const updateStudent = (req, res) => {
+const updateStudent = async (req, res) => {
 
     const { id } = req.params;
 
     let { name, email, phone, course } = req.body;
 
     if (!/^[1-9]\d*$/.test(id)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid student ID.'
         });
+
     }
 
     if (!name || !email || !phone || !course) {
+
         return res.status(400).json({
             success: false,
             message: 'All fields are required.'
         });
+
     }
 
     name = String(name).trim();
@@ -221,223 +252,217 @@ const updateStudent = (req, res) => {
     course = String(course).trim();
 
     if (!name || !course) {
+
         return res.status(400).json({
             success: false,
             message: 'Name and course cannot be empty.'
         });
+
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid email address.'
         });
+
     }
 
     if (!/^\d{10}$/.test(phone)) {
+
         return res.status(400).json({
             success: false,
             message: 'Phone must contain exactly 10 digits.'
         });
+
     }
 
-    const sql = `
-        UPDATE students
-        SET name = ?, email = ?, phone = ?, course = ?
-        WHERE id = ?
-    `;
+    try {
 
-    const values = [name, email, phone, course, id];
-
-    db.query(sql, values, (err, result) => {
-
-        if (err) {
-
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(409).json({
-                    success: false,
-                    message: 'Email already exists.'
-                });
-            }
-
-            return res.status(500).json({
-                success: false,
-                message: 'Error updating student.'
-            });
-
-        }
-
-        if (result.affectedRows === 0) {
-
-            return db.query(
-                'SELECT id FROM students WHERE id = ?',
-                [id],
-                (checkErr, rows) => {
-
-                    if (checkErr) {
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Error checking student record.'
-                        });
-                    }
-
-                    if (rows.length === 0) {
-                        return res.status(404).json({
-                            success: false,
-                            message: 'Student not found.'
-                        });
-                    }
-
-                    res.status(200).json({
-                        success: true,
-                        message: 'Student information is already up to date.'
-                    });
-
-                }
+        const result =
+            await studentRepository.updateStudent(
+                id,
+                name,
+                email,
+                phone,
+                course
             );
 
-        }
+        if (!Number(result.student_exists)) {
 
-        res.status(200).json({
-            success: true,
-            message: 'Student updated successfully.'
-        });
-
-    });
-
-};
-
-
-// ==========================================
-// DELETE STUDENT
-// ADMIN ONLY
-// ==========================================
-
-const deleteStudent = (req, res) => {
-
-    const { id } = req.params;
-
-    if (!/^[1-9]\d*$/.test(id)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid student ID.'
-        });
-    }
-
-    const sql = 'DELETE FROM students WHERE id = ?';
-
-    db.query(sql, [id], (err, result) => {
-
-        if (err) {
-
-            if (err.code === 'ER_ROW_IS_REFERENCED_2') {
-                return res.status(409).json({
-                    success: false,
-                    message: 'Cannot delete this student because related records exist.'
-                });
-            }
-
-            return res.status(500).json({
-                success: false,
-                message: 'Error deleting student.'
-            });
-
-        }
-
-        if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Student not found.'
             });
+
         }
 
-        res.status(200).json({
+        if (Number(result.affectedRows) === 0) {
+
+            return res.status(200).json({
+                success: true,
+                message: 'Student information is already up to date.'
+            });
+
+        }
+
+        return res.status(200).json({
             success: true,
-            message: 'Student deleted successfully.'
+            message: 'Student updated successfully.'
         });
 
-    });
+    } catch (error) {
+
+        console.error(
+            'Update Student Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
+
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
+                success: false,
+                message: 'Email already exists.'
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: 'Error updating student.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// UPDATE STUDENT STATUS
+// 6. DELETE STUDENT
+// ADMIN ONLY
+// ==========================================
+
+const deleteStudent = async (req, res) => {
+
+    const { id } = req.params;
+
+    if (!/^[1-9]\d*$/.test(id)) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid student ID.'
+        });
+
+    }
+
+    try {
+
+        const result =
+            await studentRepository.deleteStudent(id);
+
+        if (Number(result.affectedRows) === 0) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Student not found.'
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Student deleted successfully.'
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Delete Student Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
+
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+
+            return res.status(409).json({
+                success: false,
+                message: 'Cannot delete this student because related records exist.'
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: 'Error deleting student.'
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 7. UPDATE STUDENT STATUS
 // ADMIN AND TEACHER
 // ==========================================
 
-const updateStudentStatus = (req, res) => {
+const updateStudentStatus = async (req, res) => {
 
     const { id } = req.params;
     const { status } = req.body;
 
     if (!/^[1-9]\d*$/.test(id)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid student ID.'
         });
+
     }
 
     if (!['Active', 'Inactive'].includes(status)) {
+
         return res.status(400).json({
             success: false,
             message: 'Status must be Active or Inactive.'
         });
+
     }
 
-    const sql = `
-        UPDATE students
-        SET status = ?
-        WHERE id = ?
-    `;
+    try {
 
-    db.query(sql, [status, id], (err, result) => {
-
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to update student status.'
-            });
-        }
-
-        if (result.affectedRows === 0) {
-
-            return db.query(
-                'SELECT id FROM students WHERE id = ?',
-                [id],
-                (checkErr, rows) => {
-
-                    if (checkErr) {
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Error checking student record.'
-                        });
-                    }
-
-                    if (rows.length === 0) {
-                        return res.status(404).json({
-                            success: false,
-                            message: 'Student not found.'
-                        });
-                    }
-
-                    res.status(200).json({
-                        success: true,
-                        message: 'Student already has this status.',
-                        data: {
-                            id: Number(id),
-                            status
-                        }
-                    });
-
-                }
+        const result =
+            await studentRepository.updateStudentStatus(
+                id,
+                status
             );
 
+        if (!Number(result.student_exists)) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Student not found.'
+            });
+
         }
 
-        res.status(200).json({
+        if (Number(result.affectedRows) === 0) {
+
+            return res.status(200).json({
+                success: true,
+                message: 'Student already has this status.',
+                data: {
+                    id: Number(id),
+                    status
+                }
+            });
+
+        }
+
+        return res.status(200).json({
             success: true,
             message: 'Student status updated successfully.',
             data: {
@@ -446,75 +471,66 @@ const updateStudentStatus = (req, res) => {
             }
         });
 
-    });
+    } catch (error) {
+
+        console.error(
+            'Update Student Status Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to update student status.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// APPROVE PENDING STUDENT
+// 8. APPROVE PENDING STUDENT
 // ADMIN AND TEACHER
 // ==========================================
 
-const approveStudent = (req, res) => {
+const approveStudent = async (req, res) => {
 
     const { id } = req.params;
 
     if (!/^[1-9]\d*$/.test(id)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid student ID.'
         });
+
     }
 
-    const sql = `
-        UPDATE students
-        SET status = 'Active'
-        WHERE id = ?
-        AND status = 'Pending'
-    `;
+    try {
 
-    db.query(sql, [id], (err, result) => {
+        const result =
+            await studentRepository.approveStudent(id);
 
-        if (err) {
-            return res.status(500).json({
+        if (!Number(result.student_exists)) {
+
+            return res.status(404).json({
                 success: false,
-                message: 'Unable to approve student.'
+                message: 'Student not found.'
             });
-        }
-
-        if (result.affectedRows === 0) {
-
-            return db.query(
-                'SELECT status FROM students WHERE id = ?',
-                [id],
-                (checkErr, rows) => {
-
-                    if (checkErr) {
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Error checking student record.'
-                        });
-                    }
-
-                    if (rows.length === 0) {
-                        return res.status(404).json({
-                            success: false,
-                            message: 'Student not found.'
-                        });
-                    }
-
-                    return res.status(409).json({
-                        success: false,
-                        message: `Student cannot be approved. Current status: ${rows[0].status}.`
-                    });
-
-                }
-            );
 
         }
 
-        res.status(200).json({
+        if (Number(result.affectedRows) === 0) {
+
+            return res.status(409).json({
+                success: false,
+                message:
+                    `Student cannot be approved. Current status: ${result.current_status}.`
+            });
+
+        }
+
+        return res.status(200).json({
             success: true,
             message: 'Student approved successfully. The account is now Active.',
             data: {
@@ -523,33 +539,50 @@ const approveStudent = (req, res) => {
             }
         });
 
-    });
+    } catch (error) {
+
+        console.error(
+            'Approve Student Error:',
+            error.code || 'UNKNOWN_ERROR'
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to approve student.'
+        });
+
+    }
 
 };
 
+
 // ==========================================
-// UPDATE OWN STUDENT PROFILE
+// 9. UPDATE OWN STUDENT PROFILE
 // ACTIVE STUDENTS ONLY
 // ==========================================
 
-const updateMyProfile = (req, res) => {
+const updateMyProfile = async (req, res) => {
 
     const studentId = req.user.student_id;
 
     let { name, phone, course } = req.body;
 
     if (!studentId) {
+
         return res.status(400).json({
             success: false,
             message: 'Student information not found.'
         });
+
     }
 
     if (!name || !phone || !course) {
+
         return res.status(400).json({
             success: false,
             message: 'Name, phone and course are required.'
         });
+
     }
 
     name = String(name).trim();
@@ -557,90 +590,94 @@ const updateMyProfile = (req, res) => {
     course = String(course).trim();
 
     if (!name || !course) {
+
         return res.status(400).json({
             success: false,
             message: 'Name and course cannot be empty.'
         });
+
     }
 
     if (!/^\d{10}$/.test(phone)) {
+
         return res.status(400).json({
             success: false,
             message: 'Phone number must contain exactly 10 digits.'
         });
+
     }
 
-    // Check the student's current account status
-    const checkSql = `
-        SELECT id, status
-        FROM students
-        WHERE id = ?
-    `;
+    try {
 
-    db.query(checkSql, [studentId], (err, results) => {
+        const result =
+            await studentRepository.updateMyProfile(
+                studentId,
+                name,
+                phone,
+                course
+            );
 
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to verify student account.'
-            });
-        }
+        if (result.outcome === 'not_found') {
 
-        if (results.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Student not found.'
             });
+
         }
 
-        if (results[0].status !== 'Active') {
+        if (result.outcome === 'inactive') {
+
             return res.status(403).json({
                 success: false,
                 message: 'Only Active students can update their profile.'
             });
+
         }
 
-        const updateSql = `
-            UPDATE students
-            SET name = ?, phone = ?, course = ?
-            WHERE id = ?
-            AND status = 'Active'
-        `;
+        if (result.outcome !== 'updated') {
 
-        db.query(
-            updateSql,
-            [name, phone, course, studentId],
-            (updateErr, result) => {
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to update profile.'
+            });
 
-                if (updateErr) {
-                    return res.status(500).json({
-                        success: false,
-                        message: 'Unable to update profile.'
-                    });
-                }
+        }
 
-                return res.status(200).json({
-                    success: true,
-                    message: 'Profile updated successfully.',
-                    data: {
-                        id: Number(studentId),
-                        name,
-                        phone,
-                        course
-                    }
-                });
-
+        return res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully.',
+            data: {
+                id: Number(studentId),
+                name,
+                phone,
+                course
             }
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Update Profile Error:',
+            error.code || 'UNKNOWN_ERROR'
         );
 
-    });
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to update profile.'
+        });
+
+    }
 
 };
+
+
 // ==========================================
 // EXPORT CONTROLLERS
 // ==========================================
 
 module.exports = {
+
     getAllStudents,
     getPendingStudents,
     addStudent,
@@ -650,4 +687,5 @@ module.exports = {
     updateStudentStatus,
     approveStudent,
     updateMyProfile
+
 };
