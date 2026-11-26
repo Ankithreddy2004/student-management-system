@@ -1,100 +1,85 @@
-const db = require('../config/db');
+const adminRepository =
+    require('../repositories/adminRepository');
+
 
 // ==========================================
-// GET ALL TEACHERS
+// 1. GET ALL TEACHERS
 // ==========================================
 
-exports.getAllTeachers = (req, res) => {
+exports.getAllTeachers = async (req, res) => {
 
-    const sql = `
-        SELECT
-            id,
-            name,
-            email,
-            role,
-            created_at
-        FROM users
-        WHERE role = 'Teacher'
-        ORDER BY name ASC
-    `;
+    try {
 
-    db.query(sql, (err, results) => {
-
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch teachers.'
-            });
-        }
+        const results =
+            await adminRepository.getAllTeachers();
 
         return res.status(200).json({
+
             success: true,
+
             message: 'Teachers fetched successfully.',
+
             data: results
+
         });
 
-    });
+    } catch (error) {
+
+        console.error('Get All Teachers Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: 'Unable to fetch teachers.'
+
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// ADMIN DASHBOARD STATISTICS
+// 2. ADMIN DASHBOARD STATISTICS
 // ==========================================
 
-exports.getDashboardStats = (req, res) => {
+exports.getDashboardStats = async (req, res) => {
 
-    const sql = `
-        SELECT
-            (SELECT COUNT(*) FROM students)
-                AS total_students,
+    try {
 
-            (SELECT COUNT(*)
-             FROM students
-             WHERE status = 'Active')
-                AS active_students,
-
-            (SELECT COUNT(*)
-             FROM students
-             WHERE status = 'Inactive')
-                AS inactive_students,
-
-            (SELECT COUNT(*)
-             FROM students
-             WHERE status = 'Pending')
-                AS pending_students,
-
-            (SELECT COUNT(*)
-             FROM users
-             WHERE role = 'Teacher')
-                AS total_teachers,
-
-            (SELECT COUNT(*)
-             FROM subjects)
-                AS total_subjects,
-
-            (SELECT COUNT(*)
-             FROM teacher_subjects)
-                AS total_assignments
-    `;
-
-    db.query(sql, (err, results) => {
-
-        if (err) {
-            console.error(err);
-
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch dashboard statistics.'
-            });
-        }
+        const results =
+            await adminRepository.getDashboardStats();
 
         return res.status(200).json({
+
             success: true,
-            message: 'Dashboard statistics fetched successfully.',
-            data: results[0]
+
+            message:
+                'Dashboard statistics fetched successfully.',
+
+            data: results
+
         });
 
-    });
+    } catch (error) {
+
+        console.error('Admin Dashboard Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: 'Unable to fetch dashboard statistics.'
+
+        });
+
+    }
 
 };
