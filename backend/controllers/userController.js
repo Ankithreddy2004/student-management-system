@@ -1,20 +1,21 @@
 const bcrypt = require('bcryptjs');
-const db = require('../config/db');
-
 const fs = require('fs');
 const path = require('path');
+const { randomUUID } = require('crypto');
+
+const userRepository =
+    require('../repositories/userRepository');
 
 const uploadDirectory = path.join(
     __dirname,
     '../uploads/teachers'
 );
 
-// Create upload directory if it doesn't exist.
 fs.mkdirSync(uploadDirectory, { recursive: true });
 
 
 // ==========================================
-// IMAGE HELPERS
+// IMAGE HELPER - DETECT IMAGE TYPE
 // ==========================================
 
 const detectImageExtension = (buffer) => {
@@ -49,9 +50,12 @@ const detectImageExtension = (buffer) => {
     }
 
     return null;
-
 };
 
+
+// ==========================================
+// IMAGE HELPER - SAVE IMAGE
+// ==========================================
 
 const saveTeacherImage = async (teacherId, file) => {
 
@@ -59,58 +63,36 @@ const saveTeacherImage = async (teacherId, file) => {
         return null;
     }
 
-    const extension = detectImageExtension(file.buffer);
+    const extension =
+        detectImageExtension(file.buffer);
 
     if (!extension) {
-        throw new Error('Invalid image file. Upload a genuine JPG, PNG or WebP image.');
+        throw new Error('Invalid image file.');
     }
 
-    const filename = `${teacherId}.${extension}`;
+    const filename =
+        `${teacherId}-${randomUUID()}.${extension}`;
 
     const absolutePath = path.join(
         uploadDirectory,
         filename
     );
 
-    const relativePath = `uploads/teachers/${filename}`;
+    const relativePath =
+        `uploads/teachers/${filename}`;
 
-    await fs.promises.writeFile(absolutePath, file.buffer);
+    await fs.promises.writeFile(
+        absolutePath,
+        file.buffer
+    );
 
     return relativePath;
-
 };
 
 
-const deleteTeacherImage = async (imagePath) => {
-
-    if (!imagePath) {
-        return;
-    }
-
-    // Only delete files from the teacher upload directory.
-    const normalizedPath = imagePath.replace(/\\/g, '/');
-
-    if (!normalizedPath.startsWith('uploads/teachers/')) {
-        return;
-    }
-
-    const filename = path.basename(normalizedPath);
-
-    const absolutePath = path.join(
-        uploadDirectory,
-        filename
-    );
-
-    try {
-        await fs.promises.unlink(absolutePath);
-    } catch (error) {
-        if (error.code !== 'ENOENT') {
-            console.error('Image deletion error:', error);
-        }
-    }
-
-};
-
+// ==========================================
+// IMAGE HELPER - GET IMAGE PATH
+// ==========================================
 
 const getTeacherImagePath = (imagePath) => {
 
@@ -118,48 +100,66 @@ const getTeacherImagePath = (imagePath) => {
         return null;
     }
 
-    const normalizedPath = imagePath.replace(/\\/g, '/');
+    const normalizedPath =
+        imagePath.replace(/\\/g, '/');
 
-    if (!normalizedPath.startsWith('uploads/teachers/')) {
+    if (
+        !normalizedPath.startsWith(
+            'uploads/teachers/'
+        )
+    ) {
         return null;
     }
 
     const filename = path.basename(normalizedPath);
 
-    return path.join(uploadDirectory, filename);
-
+    return path.join(
+        uploadDirectory,
+        filename
+    );
 };
 
 
 // ==========================================
-// GET ALL USERS
+// IMAGE HELPER - DELETE IMAGE
 // ==========================================
 
-exports.getAllUsers = (req, res) => {
+const deleteTeacherImage = async (imagePath) => {
 
-    const sql = `
-        SELECT
-            id,
-            name,
-            email,
-            role,
-            student_id,
-            profile_image,
-            created_at
-        FROM users
-        ORDER BY id ASC
-    `;
+    const absolutePath =
+        getTeacherImagePath(imagePath);
 
-    db.query(sql, (error, results) => {
+    if (!absolutePath) {
+        return;
+    }
 
-        if (error) {
-            console.error(error);
+    try {
 
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch users.'
-            });
+        await fs.promises.unlink(absolutePath);
+
+    } catch (error) {
+
+        if (error.code !== 'ENOENT') {
+            console.error(
+                'Image deletion error:',
+                error.code
+            );
         }
+
+    }
+};
+
+
+// ==========================================
+// 1. GET ALL USERS
+// ==========================================
+
+exports.getAllUsers = async (req, res) => {
+
+    try {
+
+        const results =
+            await userRepository.getAllUsers();
 
         return res.status(200).json({
             success: true,
@@ -167,26 +167,41 @@ exports.getAllUsers = (req, res) => {
             data: results
         });
 
-    });
+    } catch (error) {
 
+        console.error(
+            'Get Users Error:',
+            error.code
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to fetch users.'
+        });
+
+    }
 };
 
 
 // ==========================================
-// CREATE TEACHER ACCOUNT
+// 2. CREATE TEACHER ACCOUNT
 // ==========================================
 
 exports.createTeacher = async (req, res) => {
+
+    let stage = 'validation';
 
     try {
 
         const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
+
             return res.status(400).json({
                 success: false,
                 message: 'Name, email and password are required.'
             });
+
         }
 
         if (
@@ -194,172 +209,619 @@ exports.createTeacher = async (req, res) => {
             typeof email !== 'string' ||
             typeof password !== 'string'
         ) {
+
             return res.status(400).json({
                 success: false,
                 message: 'Invalid input.'
             });
+
         }
 
         const cleanName = name.trim();
-        const cleanEmail = email.trim().toLowerCase();
+
+        const cleanEmail =
+            email.trim().toLowerCase();
 
         if (
             !cleanName ||
             !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
         ) {
+
             return res.status(400).json({
                 success: false,
                 message: 'Please enter a valid name and email.'
             });
+
         }
 
         if (password.length < 12) {
+
             return res.status(400).json({
                 success: false,
                 message: 'Password must contain at least 12 characters.'
             });
+
         }
 
         if (
             req.file &&
             !detectImageExtension(req.file.buffer)
         ) {
+
             return res.status(400).json({
                 success: false,
                 message: 'Invalid image file.'
             });
+
         }
 
-        db.query(
-            'SELECT id FROM users WHERE email = ?',
-            [cleanEmail],
-            async (error, results) => {
 
-                if (error) {
-                    console.error(error);
+        // Check duplicate email
 
-                    return res.status(500).json({
-                        success: false,
-                        message: 'Database error.'
-                    });
-                }
+        stage = 'email';
 
-                if (results.length > 0) {
-                    return res.status(409).json({
-                        success: false,
-                        message: 'An account with this email already exists.'
-                    });
-                }
+        const existingUsers =
+            await userRepository.checkEmail(
+                cleanEmail
+            );
+
+        if (existingUsers.length > 0) {
+
+            return res.status(409).json({
+                success: false,
+                message: 'An account with this email already exists.'
+            });
+
+        }
+
+
+        // Hash password
+
+        stage = 'hash';
+
+        const hashedPassword =
+            await bcrypt.hash(password, 12);
+
+
+        // Create teacher through stored procedure
+
+        stage = 'create';
+
+        const result =
+            await userRepository.createTeacher(
+                cleanName,
+                cleanEmail,
+                hashedPassword
+            );
+
+        const teacherId = result.teacher_id;
+
+        let imagePath = null;
+
+
+        // Save teacher profile image
+
+        if (req.file) {
+
+            try {
+
+                imagePath = await saveTeacherImage(
+                    teacherId,
+                    req.file
+                );
+
+            } catch (imageError) {
+
+                console.error(
+                    'Image Save Error:',
+                    imageError.code
+                );
+
+                // Attempt to remove the incomplete
+                // teacher account if saving fails.
 
                 try {
 
-                    const hashedPassword = await bcrypt.hash(password, 12);
-
-                    db.query(
-                        `INSERT INTO users
-                        (name, email, password, role, student_id)
-                        VALUES (?, ?, ?, 'Teacher', NULL)`,
-                        [cleanName, cleanEmail, hashedPassword],
-
-                        async (insertError, result) => {
-
-                            if (insertError) {
-                                console.error(insertError);
-
-                                return res.status(500).json({
-                                    success: false,
-                                    message: 'Unable to create teacher account.'
-                                });
-                            }
-
-                            const teacherId = result.insertId;
-
-                            let imagePath = null;
-
-                            try {
-
-                                if (req.file) {
-
-                                    imagePath = await saveTeacherImage(
-                                        teacherId,
-                                        req.file
-                                    );
-
-                                    db.query(
-                                        `UPDATE users
-                                         SET profile_image = ?
-                                         WHERE id = ? AND role = 'Teacher'`,
-                                        [imagePath, teacherId],
-                                        (updateError) => {
-
-                                            if (updateError) {
-                                                console.error(updateError);
-
-                                                deleteTeacherImage(imagePath);
-
-                                                return res.status(500).json({
-                                                    success: false,
-                                                    message: 'Teacher created, but image path could not be saved.'
-                                                });
-                                            }
-
-                                            return res.status(201).json({
-                                                success: true,
-                                                message: 'Teacher created successfully.',
-                                                data: {
-                                                    id: teacherId,
-                                                    name: cleanName,
-                                                    email: cleanEmail,
-                                                    role: 'Teacher',
-                                                    profile_image: imagePath
-                                                }
-                                            });
-
-                                        }
-                                    );
-
-                                } else {
-
-                                    return res.status(201).json({
-                                        success: true,
-                                        message: 'Teacher account created successfully.',
-                                        data: {
-                                            id: teacherId,
-                                            name: cleanName,
-                                            email: cleanEmail,
-                                            role: 'Teacher',
-                                            profile_image: null
-                                        }
-                                    });
-
-                                }
-
-                            } catch (imageError) {
-
-                                console.error(imageError);
-
-                                db.query(
-                                    'DELETE FROM users WHERE id = ? AND role = ?',
-                                    [teacherId, 'Teacher']
-                                );
-
-                                return res.status(500).json({
-                                    success: false,
-                                    message: 'Unable to save teacher image.'
-                                });
-
-                            }
-
-                        }
+                    await userRepository.deleteTeacher(
+                        teacherId
                     );
 
-                } catch (hashError) {
+                } catch (cleanupError) {
 
-                    console.error(hashError);
+                    console.error(
+                        'Teacher Cleanup Error:',
+                        cleanupError.code
+                    );
 
-                    return res.status(500).json({
+                }
+
+                return res.status(500).json({
+                    success: false,
+                    message: 'Unable to save teacher image.'
+                });
+
+            }
+
+
+            // Save image path in database
+
+            try {
+
+                const updated =
+                    await userRepository.updateTeacherImage(
+                        teacherId,
+                        imagePath
+                    );
+
+                if (!Number(updated.affectedRows)) {
+                    throw new Error('Teacher not found.');
+                }
+
+            } catch (imageError) {
+
+                console.error(
+                    'Image Path Error:',
+                    imageError.code
+                );
+
+                await deleteTeacherImage(imagePath);
+
+                return res.status(500).json({
+                    success: false,
+                    message: 'Teacher created, but image path could not be saved.'
+                });
+
+            }
+
+        }
+
+
+        // Return successful response
+
+        return res.status(201).json({
+
+            success: true,
+
+            message: req.file
+                ? 'Teacher created successfully.'
+                : 'Teacher account created successfully.',
+
+            data: {
+                id: teacherId,
+                name: cleanName,
+                email: cleanEmail,
+                role: 'Teacher',
+                profile_image: imagePath
+            }
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Create Teacher Error:',
+            error.code
+        );
+
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
+                success: false,
+                message: 'An account with this email already exists.'
+            });
+
+        }
+
+        const messages = {
+            email: 'Database error.',
+            hash: 'Password hashing failed.',
+            create: 'Unable to create teacher account.'
+        };
+
+        return res.status(500).json({
+            success: false,
+            message: messages[stage] ||
+                'Internal server error.'
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 3. UPDATE TEACHER
+// ==========================================
+
+exports.updateTeacher = async (req, res) => {
+
+    const teacherId = Number(req.params.id);
+
+    const { name, email } = req.body;
+
+    if (
+        !Number.isInteger(teacherId) ||
+        teacherId <= 0
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid teacher ID.'
+        });
+
+    }
+
+    if (
+        typeof name !== 'string' ||
+        typeof email !== 'string' ||
+        !name.trim() ||
+        !email.trim()
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Name and email are required.'
+        });
+
+    }
+
+    const cleanName = name.trim();
+
+    const cleanEmail =
+        email.trim().toLowerCase();
+
+    if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Please enter a valid email.'
+        });
+
+    }
+
+    let stage = 'find';
+
+    try {
+
+        // Check teacher exists
+
+        const teacher =
+            await userRepository.getTeacherById(
+                teacherId
+            );
+
+        if (!teacher) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Teacher not found.'
+            });
+
+        }
+
+
+        // Check duplicate email
+
+        stage = 'email';
+
+        const existingUsers =
+            await userRepository.checkEmail(
+                cleanEmail,
+                teacherId
+            );
+
+        if (existingUsers.length > 0) {
+
+            return res.status(409).json({
+                success: false,
+                message: 'This email is already used by another account.'
+            });
+
+        }
+
+
+        // Update teacher
+
+        stage = 'update';
+
+        await userRepository.updateTeacher(
+            teacherId,
+            cleanName,
+            cleanEmail
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Teacher updated successfully.'
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Update Teacher Error:',
+            error.code
+        );
+
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
+                success: false,
+                message: 'This email is already used by another account.'
+            });
+
+        }
+
+        const messages = {
+            find: 'Database error.',
+            email: 'Unable to verify email.',
+            update: 'Unable to update teacher.'
+        };
+
+        return res.status(500).json({
+            success: false,
+            message: messages[stage]
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 4. DELETE TEACHER
+// ==========================================
+
+exports.deleteTeacher = async (req, res) => {
+
+    const teacherId = Number(req.params.id);
+
+    if (
+        !Number.isInteger(teacherId) ||
+        teacherId <= 0
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid teacher ID.'
+        });
+
+    }
+
+    let stage = 'find';
+
+    try {
+
+        // Check teacher exists
+
+        const teacher =
+            await userRepository.getTeacherById(
+                teacherId
+            );
+
+        if (!teacher) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Teacher not found.'
+            });
+
+        }
+
+
+        // Check subject assignments
+
+        stage = 'assignments';
+
+        const assignments =
+            await userRepository.checkAssignments(
+                teacherId
+            );
+
+        if (assignments.length > 0) {
+
+            return res.status(409).json({
+                success: false,
+                message: 'This teacher has subject assignments. Remove the assignments before deleting the teacher.'
+            });
+
+        }
+
+
+        // Delete teacher
+
+        stage = 'delete';
+
+        const result =
+            await userRepository.deleteTeacher(
+                teacherId
+            );
+
+        if (!Number(result.affectedRows)) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Teacher not found.'
+            });
+
+        }
+
+
+        // Delete profile image after successful DB deletion
+
+        await deleteTeacherImage(
+            teacher.profile_image
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Teacher deleted successfully.'
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Delete Teacher Error:',
+            error.code
+        );
+
+        if (
+            error.code === 'ER_ROW_IS_REFERENCED_2' ||
+            error.errno === 1451
+        ) {
+
+            return res.status(409).json({
+                success: false,
+                message: 'This teacher is linked to existing academic records and cannot be deleted.'
+            });
+
+        }
+
+        const messages = {
+            find: 'Database error.',
+            assignments: 'Unable to check teacher assignments.',
+            delete: 'Unable to delete teacher.'
+        };
+
+        return res.status(500).json({
+            success: false,
+            message: messages[stage]
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 5. GET LOGGED-IN TEACHER PROFILE
+// ==========================================
+
+exports.getMyProfile = async (req, res) => {
+
+    try {
+
+        const teacher =
+            await userRepository.getTeacherById(
+                req.user.id
+            );
+
+        if (!teacher) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Teacher profile not found.'
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: teacher
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Get Teacher Profile Error:',
+            error.code
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to fetch profile.'
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 6. GET TEACHER PROFILE IMAGE
+// ==========================================
+
+exports.getTeacherImage = async (req, res) => {
+
+    const teacherId = Number(req.params.id);
+
+
+    // Admin can access all teacher images.
+    // Teacher can access only their own image.
+
+    if (
+        req.user.role !== 'Admin' &&
+        (
+            req.user.role !== 'Teacher' ||
+            Number(req.user.id) !== teacherId
+        )
+    ) {
+
+        return res.status(403).json({
+            success: false,
+            message: 'You can only access your own profile image.'
+        });
+
+    }
+
+    if (
+        !Number.isInteger(teacherId) ||
+        teacherId <= 0
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid teacher ID.'
+        });
+
+    }
+
+    try {
+
+        const teacher =
+            await userRepository.getTeacherImage(
+                teacherId
+            );
+
+        if (
+            !teacher ||
+            !teacher.profile_image
+        ) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Profile image not found.'
+            });
+
+        }
+
+        const imagePath =
+            getTeacherImagePath(
+                teacher.profile_image
+            );
+
+        if (!imagePath) {
+
+            return res.status(404).json({
+                success: false,
+                message: 'Invalid image path.'
+            });
+
+        }
+
+        return res.sendFile(
+            imagePath,
+            (sendError) => {
+
+                if (
+                    sendError &&
+                    !res.headersSent
+                ) {
+
+                    res.status(404).json({
                         success: false,
-                        message: 'Password hashing failed.'
+                        message: 'Profile image not found.'
                     });
 
                 }
@@ -369,11 +831,14 @@ exports.createTeacher = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            'Get Teacher Image Error:',
+            error.code
+        );
 
         return res.status(500).json({
             success: false,
-            message: 'Internal server error.'
+            message: 'Unable to fetch image.'
         });
 
     }
@@ -382,556 +847,202 @@ exports.createTeacher = async (req, res) => {
 
 
 // ==========================================
-// UPDATE TEACHER
+// SHARED IMAGE UPDATE HELPER
 // ==========================================
 
-exports.updateTeacher = (req, res) => {
+const replaceTeacherImage = async (
+    req,
+    res,
+    teacherId,
+    successMessage,
+    updateErrorMessage
+) => {
 
-    const teacherId = Number(req.params.id);
-    const { name, email } = req.body;
+    if (!req.file) {
 
-    if (!Number.isInteger(teacherId) || teacherId <= 0) {
         return res.status(400).json({
             success: false,
-            message: 'Invalid teacher ID.'
+            message: 'Please select an image.'
         });
+
     }
 
-    if (
-        typeof name !== 'string' ||
-        typeof email !== 'string' ||
-        !name.trim() ||
-        !email.trim()
-    ) {
+    if (!detectImageExtension(req.file.buffer)) {
+
         return res.status(400).json({
             success: false,
-            message: 'Name and email are required.'
+            message: 'Invalid image file.'
         });
+
     }
 
-    const cleanName = name.trim();
-    const cleanEmail = email.trim().toLowerCase();
+    let teacher;
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Please enter a valid email.'
-        });
-    }
+    try {
 
-    db.query(
-        `SELECT id FROM users
-         WHERE id = ? AND role = 'Teacher'`,
-        [teacherId],
-        (error, results) => {
-
-            if (error) {
-                console.error(error);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Database error.'
-                });
-            }
-
-            if (results.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Teacher not found.'
-                });
-            }
-
-            db.query(
-                'SELECT id FROM users WHERE email = ? AND id != ?',
-                [cleanEmail, teacherId],
-                (emailError, emailResults) => {
-
-                    if (emailError) {
-                        console.error(emailError);
-
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Unable to verify email.'
-                        });
-                    }
-
-                    if (emailResults.length > 0) {
-                        return res.status(409).json({
-                            success: false,
-                            message: 'This email is already used by another account.'
-                        });
-                    }
-
-                    db.query(
-                        `UPDATE users
-                         SET name = ?, email = ?
-                         WHERE id = ? AND role = 'Teacher'`,
-                        [cleanName, cleanEmail, teacherId],
-                        (updateError) => {
-
-                            if (updateError) {
-                                console.error(updateError);
-
-                                return res.status(500).json({
-                                    success: false,
-                                    message: 'Unable to update teacher.'
-                                });
-                            }
-
-                            return res.status(200).json({
-                                success: true,
-                                message: 'Teacher updated successfully.'
-                            });
-
-                        }
-                    );
-
-                }
+        teacher =
+            await userRepository.getTeacherImage(
+                teacherId
             );
 
-        }
-    );
+    } catch (error) {
 
-};
+        console.error(
+            'Find Teacher Image Error:',
+            error.code
+        );
 
-
-// ==========================================
-// DELETE TEACHER
-// ==========================================
-
-exports.deleteTeacher = (req, res) => {
-
-    const teacherId = Number(req.params.id);
-
-    if (!Number.isInteger(teacherId) || teacherId <= 0) {
-        return res.status(400).json({
+        return res.status(500).json({
             success: false,
-            message: 'Invalid teacher ID.'
+            message: 'Database error.'
         });
+
     }
 
-    db.query(
-        `SELECT id, profile_image FROM users
-         WHERE id = ? AND role = 'Teacher'`,
-        [teacherId],
-        (error, results) => {
+    if (!teacher) {
 
-            if (error) {
-                console.error(error);
+        return res.status(404).json({
+            success: false,
+            message: 'Teacher not found.'
+        });
 
-                return res.status(500).json({
-                    success: false,
-                    message: 'Database error.'
-                });
-            }
+    }
 
-            if (results.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Teacher not found.'
-                });
-            }
+    const oldImagePath = teacher.profile_image;
 
-            const imagePath = results[0].profile_image;
+    let newImagePath;
 
-            db.query(
-                'SELECT id FROM teacher_subjects WHERE teacher_id = ? LIMIT 1',
-                [teacherId],
-                (assignmentError, assignments) => {
+    try {
 
-                    if (assignmentError) {
-                        console.error(assignmentError);
+        newImagePath = await saveTeacherImage(
+            teacherId,
+            req.file
+        );
 
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Unable to check teacher assignments.'
-                        });
-                    }
+    } catch (error) {
 
-                    if (assignments.length > 0) {
-                        return res.status(409).json({
-                            success: false,
-                            message: 'This teacher has subject assignments. Remove the assignments before deleting the teacher.'
-                        });
-                    }
+        console.error(
+            'Save Image Error:',
+            error.code
+        );
 
-                    db.query(
-                        `DELETE FROM users
-                         WHERE id = ? AND role = 'Teacher'`,
-                        [teacherId],
-                        async (deleteError, result) => {
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to save teacher image.'
+        });
 
-                            if (deleteError) {
-                                console.error(deleteError);
+    }
 
-                                if (deleteError.code === 'ER_ROW_IS_REFERENCED_2') {
-                                    return res.status(409).json({
-                                        success: false,
-                                        message: 'This teacher is linked to existing academic records and cannot be deleted.'
-                                    });
-                                }
+    try {
 
-                                return res.status(500).json({
-                                    success: false,
-                                    message: 'Unable to delete teacher.'
-                                });
-                            }
-
-                            if (result.affectedRows === 0) {
-                                return res.status(404).json({
-                                    success: false,
-                                    message: 'Teacher not found.'
-                                });
-                            }
-
-                            await deleteTeacherImage(imagePath);
-
-                            return res.status(200).json({
-                                success: true,
-                                message: 'Teacher deleted successfully.'
-                            });
-
-                        }
-                    );
-
-                }
+        const result =
+            await userRepository.updateTeacherImage(
+                teacherId,
+                newImagePath
             );
 
-        }
-    );
+        if (!Number(result.affectedRows)) {
 
-};
+            await deleteTeacherImage(newImagePath);
 
-
-// ==========================================
-// GET LOGGED-IN TEACHER PROFILE
-// ==========================================
-
-exports.getMyProfile = (req, res) => {
-
-    db.query(
-        `SELECT id, name, email, role, profile_image
-         FROM users
-         WHERE id = ? AND role = 'Teacher'`,
-        [req.user.id],
-        (error, results) => {
-
-            if (error) {
-                console.error(error);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to fetch profile.'
-                });
-            }
-
-            if (results.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Teacher profile not found.'
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                data: results[0]
+            return res.status(404).json({
+                success: false,
+                message: 'Teacher not found.'
             });
 
         }
-    );
 
-};
+    } catch (error) {
+
+        console.error(
+            'Update Image Error:',
+            error.code
+        );
+
+        await deleteTeacherImage(newImagePath);
+
+        return res.status(500).json({
+            success: false,
+            message: updateErrorMessage
+        });
+
+    }
 
 
-// ==========================================
-// GET TEACHER IMAGE
-// ==========================================
-
-exports.getTeacherImage = (req, res) => {
-
-    const teacherId = Number(req.params.id);
+    // Remove old image only after successful DB update
 
     if (
-        req.user.role !== 'Admin' &&
-        (
-            req.user.role !== 'Teacher' ||
-            Number(req.user.id) !== teacherId
-        )
+        oldImagePath &&
+        oldImagePath !== newImagePath
     ) {
-        return res.status(403).json({
-            success: false,
-            message: 'You can only access your own profile image.'
-        });
+
+        await deleteTeacherImage(oldImagePath);
+
     }
 
-    if (!Number.isInteger(teacherId) || teacherId <= 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid teacher ID.'
-        });
-    }
-
-    db.query(
-        `SELECT profile_image
-         FROM users
-         WHERE id = ? AND role = 'Teacher'`,
-        [teacherId],
-        (error, results) => {
-
-            if (error) {
-                console.error(error);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to fetch image.'
-                });
-            }
-
-            if (
-                results.length === 0 ||
-                !results[0].profile_image
-            ) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Profile image not found.'
-                });
-            }
-
-            const imagePath = getTeacherImagePath(
-                results[0].profile_image
-            );
-
-            if (!imagePath) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Invalid image path.'
-                });
-            }
-
-            return res.sendFile(imagePath, (sendError) => {
-
-                if (sendError && !res.headersSent) {
-                    res.status(404).json({
-                        success: false,
-                        message: 'Profile image not found.'
-                    });
-                }
-
-            });
-
-        }
-    );
+    return res.status(200).json({
+        success: true,
+        message: successMessage,
+        profile_image: newImagePath
+    });
 
 };
 
 
 // ==========================================
-// UPDATE TEACHER IMAGE
+// 7. TEACHER UPDATE OWN PROFILE IMAGE
 // ==========================================
 
-exports.updateMyProfileImage = (req, res) => {
+exports.updateMyProfileImage = async (req, res) => {
 
     if (req.user.role !== 'Teacher') {
+
         return res.status(403).json({
             success: false,
             message: 'Only teachers can update their profile image.'
         });
-    }
 
-    if (!req.file) {
-        return res.status(400).json({
-            success: false,
-            message: 'Please select an image.'
-        });
-    }
-
-    const extension = detectImageExtension(req.file.buffer);
-
-    if (!extension) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid image file.'
-        });
     }
 
     const teacherId = Number(req.user.id);
 
-    db.query(
-        `SELECT profile_image
-         FROM users
-         WHERE id = ? AND role = 'Teacher'`,
-        [teacherId],
-        async (error, results) => {
-
-            if (error) {
-                console.error(error);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Database error.'
-                });
-            }
-
-            if (results.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Teacher not found.'
-                });
-            }
-
-            const oldImagePath = results[0].profile_image;
-
-            try {
-
-                const newImagePath = await saveTeacherImage(
-                    teacherId,
-                    req.file
-                );
-
-                db.query(
-                    `UPDATE users
-                     SET profile_image = ?
-                     WHERE id = ? AND role = 'Teacher'`,
-                    [newImagePath, teacherId],
-                    async (updateError) => {
-
-                        if (updateError) {
-                            console.error(updateError);
-
-                            await deleteTeacherImage(newImagePath);
-
-                            return res.status(500).json({
-                                success: false,
-                                message: 'Unable to update profile image.'
-                            });
-                        }
-
-                        // The new file replaces the old image.
-                        // It is saved with the same teacher ID.
-                        return res.status(200).json({
-                            success: true,
-                            message: 'Profile image updated successfully.',
-                            profile_image: newImagePath
-                        });
-
-                    }
-                );
-
-            } catch (imageError) {
-
-                console.error(imageError);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to save profile image.'
-                });
-
-            }
-
-        }
+    return replaceTeacherImage(
+        req,
+        res,
+        teacherId,
+        'Profile image updated successfully.',
+        'Unable to update profile image.'
     );
 
 };
 
 
 // ==========================================
-// ADMIN UPDATE TEACHER IMAGE
+// 8. ADMIN UPDATE TEACHER IMAGE
 // ==========================================
 
-exports.updateTeacherImage = (req, res) => {
+exports.updateTeacherImage = async (req, res) => {
 
     const teacherId = Number(req.params.id);
 
-    if (!Number.isInteger(teacherId) || teacherId <= 0) {
+    if (
+        !Number.isInteger(teacherId) ||
+        teacherId <= 0
+    ) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid teacher ID.'
         });
+
     }
 
-    if (!req.file) {
-        return res.status(400).json({
-            success: false,
-            message: 'Please select an image.'
-        });
-    }
-
-    if (!detectImageExtension(req.file.buffer)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid image file.'
-        });
-    }
-
-    db.query(
-        `SELECT id
-         FROM users
-         WHERE id = ? AND role = 'Teacher'`,
-        [teacherId],
-        async (error, results) => {
-
-            if (error) {
-                console.error(error);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Database error.'
-                });
-            }
-
-            if (results.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Teacher not found.'
-                });
-            }
-
-            try {
-
-                const newImagePath = await saveTeacherImage(
-                    teacherId,
-                    req.file
-                );
-
-                db.query(
-                    `UPDATE users
-                     SET profile_image = ?
-                     WHERE id = ? AND role = 'Teacher'`,
-                    [newImagePath, teacherId],
-                    (updateError) => {
-
-                        if (updateError) {
-                            console.error(updateError);
-
-                            deleteTeacherImage(newImagePath);
-
-                            return res.status(500).json({
-                                success: false,
-                                message: 'Unable to update teacher image.'
-                            });
-                        }
-
-                        return res.status(200).json({
-                            success: true,
-                            message: 'Teacher image updated successfully.',
-                            profile_image: newImagePath
-                        });
-
-                    }
-                );
-
-            } catch (imageError) {
-
-                console.error(imageError);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to save teacher image.'
-                });
-
-            }
-
-        }
+    return replaceTeacherImage(
+        req,
+        res,
+        teacherId,
+        'Teacher image updated successfully.',
+        'Unable to update teacher image.'
     );
 
 };
