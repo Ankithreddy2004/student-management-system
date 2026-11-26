@@ -1,789 +1,762 @@
-const db = require('../config/db');
+const enrollmentRepository =
+    require('../repositories/enrollmentRepository');
 
-// ============================================
+
+// ==========================================
 // HELPER: VALIDATE POSITIVE INTEGER
-// ============================================
+// ==========================================
 
 const isValidId = (id) => {
-  return Number.isInteger(Number(id)) && Number(id) > 0;
+
+    return (
+        Number.isSafeInteger(Number(id)) &&
+        Number(id) > 0 &&
+        Number(id) <= 2147483647
+    );
+
 };
 
 
-// ============================================
-// 1. GET AVAILABLE SUBJECTS
-// ============================================
+// ==========================================
+// HELPER: GET TEACHER SCOPE
+// ==========================================
 
-const getAvailableSubjects = (req, res) => {
+const getTeacherScope = (user) => {
 
-  let sql = `
-    SELECT
-      s.id,
-      s.subject_name,
-      s.subject_code,
-      s.course,
-      s.semester
-    FROM subjects s
-  `;
+    if (user.role === 'Teacher') {
 
-  const params = [];
+        if (!isValidId(user.id)) {
 
-  // Teachers can only see their assigned subjects.
-  if (req.user.role === 'Teacher') {
+            throw new Error('Invalid teacher identity.');
 
-    sql += `
-      INNER JOIN teacher_subjects ts
-        ON ts.subject_id = s.id
-       AND ts.teacher_id = ?
-    `;
+        }
 
-    params.push(req.user.id);
-  }
+        return Number(user.id);
 
-  sql += `
-    ORDER BY s.course, s.semester, s.subject_name
-  `;
-
-  db.query(sql, params, (error, results) => {
-
-    if (error) {
-      console.error('Get available subjects error:', error);
-
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to fetch available subjects.'
-      });
     }
 
-    return res.status(200).json({
-      success: true,
-      subjects: results
-    });
-
-  });
+    return null;
 
 };
 
 
-// ============================================
-// 2. ENROLL STUDENT INTO SUBJECT
-// ============================================
+// ==========================================
+// 1. GET AVAILABLE SUBJECTS
+// ==========================================
 
-const enrollStudent = (req, res) => {
+const getAvailableSubjects = async (req, res) => {
 
-  const { subjectId } = req.body;
+    try {
 
-  let studentId;
+        // Teachers see only assigned subjects.
+        // Admin and Student can see all subjects.
 
-  // Student can enroll only themselves.
-  if (req.user.role === 'Student') {
+        const teacherId = getTeacherScope(req.user);
 
-    studentId = req.user.student_id;
 
-  } else {
+        const results =
+            await enrollmentRepository
+                .getAvailableSubjects(teacherId);
 
-    studentId = req.body.studentId;
 
-  }
+        return res.status(200).json({
 
-  if (!isValidId(studentId)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Valid student ID is required.'
-    });
-  }
+            success: true,
 
-  if (!isValidId(subjectId)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Valid subject ID is required.'
-    });
-  }
+            subjects: results
 
-  studentId = Number(studentId);
-  const subjectIdNumber = Number(subjectId);
+        });
 
-  // Check whether student exists.
-  db.query(
-    'SELECT id FROM students WHERE id = ?',
-    [studentId],
-    (studentError, studentResults) => {
+    } catch (error) {
 
-      if (studentError) {
-        console.error('Student validation error:', studentError);
+        console.error(
+            'Get Available Subjects Error:',
+            error.code,
+            error.message
+        );
 
         return res.status(500).json({
-          success: false,
-          message: 'Failed to validate student.'
+
+            success: false,
+
+            message: 'Failed to fetch available subjects.'
+
         });
-      }
 
-      if (studentResults.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Student not found.'
+    }
+
+};
+
+
+// ==========================================
+// 2. ENROLL STUDENT INTO SUBJECT
+// ==========================================
+
+const enrollStudent = async (req, res) => {
+
+    const { subjectId } = req.body;
+
+    let studentId;
+
+
+    // Students can enroll only themselves.
+
+    if (req.user.role === 'Student') {
+
+        studentId = req.user.student_id;
+
+    } else {
+
+        studentId = req.body.studentId;
+
+    }
+
+
+    // Validate student ID
+
+    if (!isValidId(studentId)) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message: 'Valid student ID is required.'
+
         });
-      }
 
-      // Check whether subject exists.
-      db.query(
-        'SELECT id FROM subjects WHERE id = ?',
-        [subjectIdNumber],
-        (subjectError, subjectResults) => {
+    }
 
-          if (subjectError) {
-            console.error('Subject validation error:', subjectError);
+
+    // Validate subject ID
+
+    if (!isValidId(subjectId)) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message: 'Valid subject ID is required.'
+
+        });
+
+    }
+
+
+    // Validate authenticated user ID
+
+    if (!isValidId(req.user.id)) {
+
+        return res.status(403).json({
+
+            success: false,
+
+            message: 'Invalid user account.'
+
+        });
+
+    }
+
+    try {
+
+        const result =
+            await enrollmentRepository.enrollStudent(
+
+                Number(studentId),
+
+                Number(subjectId),
+
+                Number(req.user.id),
+
+                req.user.role
+
+            );
+
+
+        // Student does not exist
+
+        if (result.outcome === 'student_not_found') {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: 'Student not found.'
+
+            });
+
+        }
+
+
+        // Subject does not exist
+
+        if (result.outcome === 'subject_not_found') {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: 'Subject not found.'
+
+            });
+
+        }
+
+
+        // Teacher does not have subject permission
+
+        if (result.outcome === 'forbidden') {
+
+            return res.status(403).json({
+
+                success: false,
+
+                message: 'You can enroll students only in your assigned subjects.'
+
+            });
+
+        }
+
+
+        // Verify procedure response
+
+        if (result.outcome !== 'success') {
 
             return res.status(500).json({
-              success: false,
-              message: 'Failed to validate subject.'
-            });
-          }
 
-          if (subjectResults.length === 0) {
+                success: false,
+
+                message: 'Failed to create enrollment request.'
+
+            });
+
+        }
+
+
+        // Enrollment request submitted successfully
+
+        return res.status(201).json({
+
+            success: true,
+
+            message: 'Enrollment request submitted successfully. Waiting for approval.',
+
+            enrollmentId: result.enrollmentId,
+
+            status: 'Pending'
+
+        });
+
+    } catch (error) {
+
+
+        // Duplicate enrollment
+
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
+
+                success: false,
+
+                message: 'This student has already requested or enrolled in this subject.'
+
+            });
+
+        }
+
+
+        console.error(
+            'Create Enrollment Error:',
+            error.code,
+            error.message
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: 'Failed to create enrollment request.'
+
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 3. GET MY ENROLLMENTS
+// STUDENT ONLY
+// ==========================================
+
+const getMyEnrollments = async (req, res) => {
+
+    const studentId = req.user.student_id;
+
+
+    // Validate linked student account
+
+    if (!isValidId(studentId)) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message: 'Student account is not linked to a valid student record.'
+
+        });
+
+    }
+
+    try {
+
+        const results =
+            await enrollmentRepository.getMyEnrollments(
+                Number(studentId)
+            );
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            enrollments: results
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Get My Enrollments Error:',
+            error.code,
+            error.message
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: 'Failed to fetch your enrollments.'
+
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 4. GET ALL ENROLLMENTS
+// ADMIN AND TEACHER
+// ==========================================
+
+const getAllEnrollments = async (req, res) => {
+
+    let status = null;
+
+    let subjectId = null;
+
+    let studentId = null;
+
+
+    // Validate optional status filter
+
+    if (req.query.status) {
+
+        const allowedStatuses = [
+            'Pending',
+            'Approved',
+            'Rejected'
+        ];
+
+        if (!allowedStatuses.includes(req.query.status)) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: 'Invalid enrollment status.'
+
+            });
+
+        }
+
+        status = req.query.status;
+
+    }
+
+
+    // Validate optional subject filter
+
+    if (req.query.subjectId) {
+
+        if (!isValidId(req.query.subjectId)) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: 'Invalid subject ID.'
+
+            });
+
+        }
+
+        subjectId = Number(req.query.subjectId);
+
+    }
+
+
+    // Validate optional student filter
+
+    if (req.query.studentId) {
+
+        if (!isValidId(req.query.studentId)) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: 'Invalid student ID.'
+
+            });
+
+        }
+
+        studentId = Number(req.query.studentId);
+
+    }
+
+    try {
+
+
+        // Teacher sees assigned subject enrollments only.
+
+        const teacherId = getTeacherScope(req.user);
+
+
+        const results =
+            await enrollmentRepository.getAllEnrollments(
+
+                teacherId,
+
+                status,
+
+                subjectId,
+
+                studentId
+
+            );
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            enrollments: results
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Get All Enrollments Error:',
+            error.code,
+            error.message
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: 'Failed to fetch enrollment requests.'
+
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 5. SHARED APPROVE / REJECT HELPER
+// ==========================================
+
+const reviewEnrollment = async (
+    req,
+    res,
+    newStatus
+) => {
+
+    const enrollmentId = req.params.id;
+
+
+    // Validate enrollment ID
+
+    if (!isValidId(enrollmentId)) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message: 'Invalid enrollment ID.'
+
+        });
+
+    }
+
+
+    // Verify reviewer identity
+
+    if (!isValidId(req.user.id)) {
+
+        return res.status(403).json({
+
+            success: false,
+
+            message: 'Invalid reviewer account.'
+
+        });
+
+    }
+
+    try {
+
+        const result =
+            await enrollmentRepository.reviewEnrollment(
+
+                Number(enrollmentId),
+
+                Number(req.user.id),
+
+                req.user.role,
+
+                newStatus
+
+            );
+
+
+        // Enrollment does not exist
+
+        if (result.outcome === 'not_found') {
+
             return res.status(404).json({
-              success: false,
-              message: 'Subject not found.'
+
+                success: false,
+
+                message: 'Enrollment request not found.'
+
             });
-          }
 
-          // Teachers can enroll students only into their assigned subjects.
-          if (req.user.role === 'Teacher') {
+        }
 
-            db.query(
-              `
-                SELECT id
-                FROM teacher_subjects
-                WHERE teacher_id = ?
-                  AND subject_id = ?
-              `,
-              [req.user.id, subjectIdNumber],
-              (assignmentError, assignmentResults) => {
 
-                if (assignmentError) {
-                  console.error(
-                    'Teacher assignment validation error:',
-                    assignmentError
-                  );
+        // Teacher cannot review unassigned subjects
 
-                  return res.status(500).json({
-                    success: false,
-                    message: 'Failed to verify teacher assignment.'
-                  });
-                }
+        if (result.outcome === 'forbidden') {
 
-                if (assignmentResults.length === 0) {
-                  return res.status(403).json({
-                    success: false,
-                    message: 'You can enroll students only in your assigned subjects.'
-                  });
-                }
+            return res.status(403).json({
 
-                insertEnrollment(
-                  req,
-                  res,
-                  studentId,
-                  subjectIdNumber
+                success: false,
+
+                message: 'You can review enrollments only for your assigned subjects.'
+
+            });
+
+        }
+
+
+        // Enrollment is already approved or rejected
+
+        if (result.outcome === 'already_reviewed') {
+
+            const currentStatus = result.current_status;
+
+            return res.status(409).json({
+
+                success: false,
+
+                message: currentStatus &&
+                         currentStatus !== 'Pending'
+
+                    ? `This enrollment has already been ${currentStatus.toLowerCase()}.`
+
+                    : 'This enrollment request has already been reviewed.'
+
+            });
+
+        }
+
+
+        // Verify procedure outcome
+
+        if (result.outcome !== 'success') {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message: 'Failed to update enrollment status.'
+
+            });
+
+        }
+
+
+        // Enrollment reviewed successfully
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                `Enrollment ${newStatus.toLowerCase()} successfully.`,
+
+            status: newStatus
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            'Review Enrollment Error:',
+            error.code,
+            error.message
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: 'Failed to update enrollment status.'
+
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// 6. APPROVE ENROLLMENT
+// ==========================================
+
+const approveEnrollment = async (req, res) => {
+
+    return reviewEnrollment(
+        req,
+        res,
+        'Approved'
+    );
+
+};
+
+
+// ==========================================
+// 7. REJECT ENROLLMENT
+// ==========================================
+
+const rejectEnrollment = async (req, res) => {
+
+    return reviewEnrollment(
+        req,
+        res,
+        'Rejected'
+    );
+
+};
+
+
+// ==========================================
+// 8. GET ENROLLMENTS FOR ONE STUDENT
+// ADMIN AND TEACHER
+// ==========================================
+
+const getStudentEnrollments = async (req, res) => {
+
+    const studentId = req.params.studentId;
+
+
+    // Validate student ID
+
+    if (!isValidId(studentId)) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message: 'Invalid student ID.'
+
+        });
+
+    }
+
+    try {
+
+
+        // Restrict teacher access to assigned subjects.
+
+        const teacherId = getTeacherScope(req.user);
+
+
+        const results =
+            await enrollmentRepository
+                .getStudentEnrollments(
+
+                    Number(studentId),
+
+                    teacherId
+
                 );
 
-              }
-            );
 
-          } else {
+        return res.status(200).json({
 
-            insertEnrollment(
-              req,
-              res,
-              studentId,
-              subjectIdNumber
-            );
+            success: true,
 
-          }
+            enrollments: results
 
-        }
-      );
+        });
 
-    }
-  );
+    } catch (error) {
 
-};
+        console.error(
+            'Get Student Enrollments Error:',
+            error.code,
+            error.message
+        );
 
+        return res.status(500).json({
 
-// ============================================
-// HELPER: INSERT ENROLLMENT
-// ============================================
-
-const insertEnrollment = (
-  req,
-  res,
-  studentId,
-  subjectId
-) => {
-
-  const enrolledBy = req.user.id;
-  const enrolledByRole = req.user.role;
-
-  const sql = `
-    INSERT INTO student_subjects (
-      student_id,
-      subject_id,
-      status,
-      enrolled_by,
-      enrolled_by_role
-    )
-    VALUES (?, ?, 'Pending', ?, ?)
-  `;
-
-  db.query(
-    sql,
-    [
-      studentId,
-      subjectId,
-      enrolledBy,
-      enrolledByRole
-    ],
-    (error, result) => {
-
-      if (error) {
-
-        // The unique index prevents duplicate enrollment.
-        if (error.code === 'ER_DUP_ENTRY') {
-          return res.status(409).json({
             success: false,
-            message: 'This student has already requested or enrolled in this subject.'
-          });
-        }
 
-        console.error('Insert enrollment error:', error);
+            message: 'Failed to fetch student enrollments.'
 
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to create enrollment request.'
         });
 
-      }
-
-      return res.status(201).json({
-        success: true,
-        message: 'Enrollment request submitted successfully. Waiting for approval.',
-        enrollmentId: result.insertId,
-        status: 'Pending'
-      });
-
     }
-  );
 
 };
 
 
-// ============================================
-// 3. GET MY ENROLLMENTS (STUDENT)
-// ============================================
-
-const getMyEnrollments = (req, res) => {
-
-  const studentId = req.user.student_id;
-
-  if (!isValidId(studentId)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Student account is not linked to a valid student record.'
-    });
-  }
-
-  const sql = `
-    SELECT
-      ss.id AS enrollment_id,
-      ss.student_id,
-      ss.subject_id,
-      ss.status,
-      ss.enrolled_by,
-      ss.enrolled_by_role,
-      ss.approved_by,
-      ss.enrollment_date,
-      ss.updated_at,
-
-      s.subject_name,
-      s.subject_code,
-      s.course,
-      s.semester,
-
-      reviewer.name AS reviewer_name
-
-    FROM student_subjects ss
-
-    INNER JOIN subjects s
-      ON s.id = ss.subject_id
-
-    LEFT JOIN users reviewer
-      ON reviewer.id = ss.approved_by
-
-    WHERE ss.student_id = ?
-
-    ORDER BY ss.enrollment_date DESC
-  `;
-
-  db.query(sql, [studentId], (error, results) => {
-
-    if (error) {
-      console.error('Get my enrollments error:', error);
-
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to fetch your enrollments.'
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      enrollments: results
-    });
-
-  });
-
-};
-
-
-// ============================================
-// 4. GET ALL ENROLLMENTS
-// ADMIN: ALL ENROLLMENTS
-// TEACHER: ASSIGNED SUBJECTS ONLY
-// ============================================
-
-const getAllEnrollments = (req, res) => {
-
-  let sql = `
-    SELECT
-      ss.id AS enrollment_id,
-      ss.student_id,
-      ss.subject_id,
-      ss.status,
-      ss.enrolled_by,
-      ss.enrolled_by_role,
-      ss.approved_by,
-      ss.enrollment_date,
-      ss.updated_at,
-
-      st.name AS student_name,
-      st.email AS student_email,
-      st.phone AS student_phone,
-      st.course AS student_course,
-
-      s.subject_name,
-      s.subject_code,
-      s.course AS subject_course,
-      s.semester,
-
-      enroller.name AS enrolled_by_name,
-      reviewer.name AS reviewer_name
-
-    FROM student_subjects ss
-
-    INNER JOIN students st
-      ON st.id = ss.student_id
-
-    INNER JOIN subjects s
-      ON s.id = ss.subject_id
-
-    LEFT JOIN users enroller
-      ON enroller.id = ss.enrolled_by
-
-    LEFT JOIN users reviewer
-      ON reviewer.id = ss.approved_by
-
-    WHERE 1 = 1
-  `;
-
-  const params = [];
-
-  // Teacher sees only enrollments for assigned subjects.
-  if (req.user.role === 'Teacher') {
-
-    sql += `
-      AND EXISTS (
-        SELECT 1
-        FROM teacher_subjects ts
-        WHERE ts.subject_id = ss.subject_id
-          AND ts.teacher_id = ?
-      )
-    `;
-
-    params.push(req.user.id);
-
-  }
-
-  // Optional status filter.
-  if (req.query.status) {
-
-    const allowedStatuses = [
-      'Pending',
-      'Approved',
-      'Rejected'
-    ];
-
-    if (!allowedStatuses.includes(req.query.status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid enrollment status.'
-      });
-    }
-
-    sql += ` AND ss.status = ? `;
-    params.push(req.query.status);
-
-  }
-
-  // Optional subject filter.
-  if (req.query.subjectId) {
-
-    if (!isValidId(req.query.subjectId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid subject ID.'
-      });
-    }
-
-    sql += ` AND ss.subject_id = ? `;
-    params.push(Number(req.query.subjectId));
-
-  }
-
-  // Optional student filter.
-  if (req.query.studentId) {
-
-    if (!isValidId(req.query.studentId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid student ID.'
-      });
-    }
-
-    sql += ` AND ss.student_id = ? `;
-    params.push(Number(req.query.studentId));
-
-  }
-
-  sql += ` ORDER BY ss.enrollment_date DESC `;
-
-  db.query(sql, params, (error, results) => {
-
-    if (error) {
-      console.error('Get all enrollments error:', error);
-
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to fetch enrollment requests.'
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      enrollments: results
-    });
-
-  });
-
-};
-
-
-// ============================================
-// 5. APPROVE / REJECT ENROLLMENT
-// ============================================
-
-const reviewEnrollment = (req, res, newStatus) => {
-
-  const enrollmentId = req.params.id;
-
-  if (!isValidId(enrollmentId)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid enrollment ID.'
-    });
-  }
-
-  // Find enrollment.
-  db.query(
-    `
-      SELECT
-        id,
-        student_id,
-        subject_id,
-        status
-      FROM student_subjects
-      WHERE id = ?
-    `,
-    [Number(enrollmentId)],
-    (error, results) => {
-
-      if (error) {
-        console.error('Find enrollment error:', error);
-
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to find enrollment.'
-        });
-      }
-
-      if (results.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Enrollment request not found.'
-        });
-      }
-
-      const enrollment = results[0];
-
-      // Only pending requests can be reviewed.
-      if (enrollment.status !== 'Pending') {
-        return res.status(409).json({
-          success: false,
-          message: `This enrollment has already been ${enrollment.status.toLowerCase()}.`
-        });
-      }
-
-      // Teacher can review only assigned subjects.
-      if (req.user.role === 'Teacher') {
-
-        db.query(
-          `
-            SELECT id
-            FROM teacher_subjects
-            WHERE teacher_id = ?
-              AND subject_id = ?
-          `,
-          [
-            req.user.id,
-            enrollment.subject_id
-          ],
-          (assignmentError, assignmentResults) => {
-
-            if (assignmentError) {
-              console.error(
-                'Review assignment validation error:',
-                assignmentError
-              );
-
-              return res.status(500).json({
-                success: false,
-                message: 'Failed to verify teacher assignment.'
-              });
-            }
-
-            if (assignmentResults.length === 0) {
-              return res.status(403).json({
-                success: false,
-                message: 'You can review enrollments only for your assigned subjects.'
-              });
-            }
-
-            updateEnrollmentStatus(
-              req,
-              res,
-              enrollmentId,
-              newStatus
-            );
-
-          }
-        );
-
-      } else {
-
-        updateEnrollmentStatus(
-          req,
-          res,
-          enrollmentId,
-          newStatus
-        );
-
-      }
-
-    }
-  );
-
-};
-
-
-// ============================================
-// HELPER: UPDATE ENROLLMENT STATUS
-// ============================================
-
-const updateEnrollmentStatus = (
-  req,
-  res,
-  enrollmentId,
-  newStatus
-) => {
-
-  const sql = `
-    UPDATE student_subjects
-    SET
-      status = ?,
-      approved_by = ?
-    WHERE id = ?
-      AND status = 'Pending'
-  `;
-
-  db.query(
-    sql,
-    [
-      newStatus,
-      req.user.id,
-      Number(enrollmentId)
-    ],
-    (error, result) => {
-
-      if (error) {
-        console.error('Update enrollment status error:', error);
-
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to update enrollment status.'
-        });
-      }
-
-      // Protect against simultaneous review requests.
-      if (result.affectedRows === 0) {
-        return res.status(409).json({
-          success: false,
-          message: 'This enrollment request has already been reviewed.'
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: `Enrollment ${newStatus.toLowerCase()} successfully.`,
-        status: newStatus
-      });
-
-    }
-  );
-
-};
-
-
-// ============================================
-// 6. APPROVE ENROLLMENT
-// ============================================
-
-const approveEnrollment = (req, res) => {
-
-  reviewEnrollment(req, res, 'Approved');
-
-};
-
-
-// ============================================
-// 7. REJECT ENROLLMENT
-// ============================================
-
-const rejectEnrollment = (req, res) => {
-
-  reviewEnrollment(req, res, 'Rejected');
-
-};
-
-
-// ============================================
-// 8. GET ENROLLMENTS FOR ONE STUDENT
-// ADMIN: ALL SUBJECTS
-// TEACHER: ASSIGNED SUBJECTS ONLY
-// ============================================
-
-const getStudentEnrollments = (req, res) => {
-
-  const studentId = req.params.studentId;
-
-  if (!isValidId(studentId)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid student ID.'
-    });
-  }
-
-  let sql = `
-    SELECT
-      ss.id AS enrollment_id,
-      ss.student_id,
-      ss.subject_id,
-      ss.status,
-      ss.enrolled_by,
-      ss.enrolled_by_role,
-      ss.approved_by,
-      ss.enrollment_date,
-      ss.updated_at,
-
-      st.name AS student_name,
-
-      s.subject_name,
-      s.subject_code,
-      s.course,
-      s.semester,
-
-      reviewer.name AS reviewer_name
-
-    FROM student_subjects ss
-
-    INNER JOIN students st
-      ON st.id = ss.student_id
-
-    INNER JOIN subjects s
-      ON s.id = ss.subject_id
-
-    LEFT JOIN users reviewer
-      ON reviewer.id = ss.approved_by
-
-    WHERE ss.student_id = ?
-  `;
-
-  const params = [Number(studentId)];
-
-  if (req.user.role === 'Teacher') {
-
-    sql += `
-      AND EXISTS (
-        SELECT 1
-        FROM teacher_subjects ts
-        WHERE ts.subject_id = ss.subject_id
-          AND ts.teacher_id = ?
-      )
-    `;
-
-    params.push(req.user.id);
-
-  }
-
-  sql += ` ORDER BY ss.enrollment_date DESC `;
-
-  db.query(sql, params, (error, results) => {
-
-    if (error) {
-      console.error('Get student enrollments error:', error);
-
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to fetch student enrollments.'
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      enrollments: results
-    });
-
-  });
-
-};
-
-
-// ============================================
+// ==========================================
 // EXPORT CONTROLLERS
-// ============================================
+// ==========================================
 
 module.exports = {
-  getAvailableSubjects,
-  enrollStudent,
-  getMyEnrollments,
-  getAllEnrollments,
-  approveEnrollment,
-  rejectEnrollment,
-  getStudentEnrollments
+
+    getAvailableSubjects,
+
+    enrollStudent,
+
+    getMyEnrollments,
+
+    getAllEnrollments,
+
+    approveEnrollment,
+
+    rejectEnrollment,
+
+    getStudentEnrollments
+
 };
