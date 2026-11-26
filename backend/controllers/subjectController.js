@@ -1,33 +1,18 @@
-const db = require('../config/db');
+
+const subjectRepository =
+    require('../repositories/subjectRepository');
+
 
 // ==========================================
-// GET ALL SUBJECTS
+// 1. GET ALL SUBJECTS
 // ==========================================
 
-exports.getAllSubjects = (req, res) => {
+exports.getAllSubjects = async (req, res) => {
 
-    const sql = `
-        SELECT
-            id,
-            subject_name,
-            subject_code,
-            course,
-            semester,
-            created_at
-        FROM subjects
-        ORDER BY course, semester, subject_name
-    `;
+    try {
 
-    db.query(sql, (err, results) => {
-
-        if (err) {
-            console.error(err);
-
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch subjects.'
-            });
-        }
+        const results =
+            await subjectRepository.getAllSubjects();
 
         return res.status(200).json({
             success: true,
@@ -35,46 +20,57 @@ exports.getAllSubjects = (req, res) => {
             data: results
         });
 
-    });
+    } catch (error) {
+
+        console.error('Get Subjects Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to fetch subjects.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// GET SUBJECT BY ID
+// 2. GET SUBJECT BY ID
 // ==========================================
 
-exports.getSubjectById = (req, res) => {
+exports.getSubjectById = async (req, res) => {
 
     const subjectId = Number(req.params.id);
 
-    if (!Number.isInteger(subjectId) || subjectId <= 0) {
+    if (
+        !Number.isInteger(subjectId) ||
+        subjectId <= 0
+    ) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid subject ID.'
         });
+
     }
 
-    const sql = `
-        SELECT *
-        FROM subjects
-        WHERE id = ?
-    `;
+    try {
 
-    db.query(sql, [subjectId], (err, results) => {
-
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch subject.'
-            });
-        }
+        const results =
+            await subjectRepository.getSubjectById(
+                subjectId
+            );
 
         if (results.length === 0) {
+
             return res.status(404).json({
                 success: false,
                 message: 'Subject not found.'
             });
+
         }
 
         return res.status(200).json({
@@ -82,16 +78,28 @@ exports.getSubjectById = (req, res) => {
             data: results[0]
         });
 
-    });
+    } catch (error) {
+
+        console.error('Get Subject Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to fetch subject.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// CREATE SUBJECT
+// 3. CREATE SUBJECT
 // ==========================================
 
-exports.createSubject = (req, res) => {
+exports.createSubject = async (req, res) => {
 
     let {
         subject_name,
@@ -99,6 +107,9 @@ exports.createSubject = (req, res) => {
         course,
         semester
     } = req.body;
+
+
+    // Validate required fields
 
     if (
         !subject_name ||
@@ -108,87 +119,122 @@ exports.createSubject = (req, res) => {
         semester === null ||
         semester === ''
     ) {
+
         return res.status(400).json({
             success: false,
             message: 'All subject fields are required.'
         });
+
     }
 
-    subject_name = String(subject_name).trim();
-    subject_code = String(subject_code).trim().toUpperCase();
-    course = String(course).trim().toUpperCase();
+
+    // Clean input values
+
+    subject_name =
+        String(subject_name).trim();
+
+    subject_code =
+        String(subject_code).trim().toUpperCase();
+
+    course =
+        String(course).trim().toUpperCase();
+
     semester = Number(semester);
 
-    if (!subject_name || !subject_code || !course) {
+
+    // Validate subject details
+
+    if (
+        !subject_name ||
+        !subject_code ||
+        !course
+    ) {
+
         return res.status(400).json({
             success: false,
             message: 'Subject details cannot be empty.'
         });
+
     }
+
+
+    // Validate semester
 
     if (
         !Number.isInteger(semester) ||
         semester < 1 ||
         semester > 12
     ) {
+
         return res.status(400).json({
             success: false,
             message: 'Semester must be between 1 and 12.'
         });
+
     }
 
-    const sql = `
-        INSERT INTO subjects
-        (subject_name, subject_code, course, semester)
-        VALUES (?, ?, ?, ?)
-    `;
+    try {
 
-    db.query(
-        sql,
-        [subject_name, subject_code, course, semester],
-        (err, result) => {
+        // Create subject using stored procedure
 
-            if (err) {
+        const result =
+            await subjectRepository.createSubject(
+                subject_name,
+                subject_code,
+                course,
+                semester
+            );
 
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.status(409).json({
-                        success: false,
-                        message: 'This subject code already exists for this course and semester.'
-                    });
-                }
+        return res.status(201).json({
 
-                console.error(err);
+            success: true,
 
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to create subject.'
-                });
+            message: 'Subject created successfully.',
 
+            data: {
+                id: result.subject_id,
+                subject_name,
+                subject_code,
+                course,
+                semester
             }
 
-            return res.status(201).json({
-                success: true,
-                message: 'Subject created successfully.',
-                data: {
-                    id: result.insertId,
-                    subject_name,
-                    subject_code,
-                    course,
-                    semester
-                }
+        });
+
+    } catch (error) {
+
+        console.error('Create Subject Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+
+        // Duplicate subject code
+
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
+                success: false,
+                message: 'This subject code already exists for this course and semester.'
             });
 
         }
-    );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to create subject.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// UPDATE SUBJECT
+// 4. UPDATE SUBJECT
 // ==========================================
 
-exports.updateSubject = (req, res) => {
+exports.updateSubject = async (req, res) => {
 
     const subjectId = Number(req.params.id);
 
@@ -199,12 +245,23 @@ exports.updateSubject = (req, res) => {
         semester
     } = req.body;
 
-    if (!Number.isInteger(subjectId) || subjectId <= 0) {
+
+    // Validate subject ID
+
+    if (
+        !Number.isInteger(subjectId) ||
+        subjectId <= 0
+    ) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid subject ID.'
         });
+
     }
+
+
+    // Validate required fields
 
     if (
         !subject_name ||
@@ -214,261 +271,254 @@ exports.updateSubject = (req, res) => {
         semester === null ||
         semester === ''
     ) {
+
         return res.status(400).json({
             success: false,
             message: 'All subject fields are required.'
         });
+
     }
 
-    subject_name = String(subject_name).trim();
-    subject_code = String(subject_code).trim().toUpperCase();
-    course = String(course).trim().toUpperCase();
+
+    // Clean input values
+
+    subject_name =
+        String(subject_name).trim();
+
+    subject_code =
+        String(subject_code).trim().toUpperCase();
+
+    course =
+        String(course).trim().toUpperCase();
+
     semester = Number(semester);
 
-    if (!subject_name || !subject_code || !course) {
+
+    // Validate subject details
+
+    if (
+        !subject_name ||
+        !subject_code ||
+        !course
+    ) {
+
         return res.status(400).json({
             success: false,
             message: 'Subject details cannot be empty.'
         });
+
     }
+
+
+    // Validate semester
 
     if (
         !Number.isInteger(semester) ||
         semester < 1 ||
         semester > 12
     ) {
+
         return res.status(400).json({
             success: false,
             message: 'Semester must be between 1 and 12.'
         });
+
     }
 
-    const sql = `
-        UPDATE subjects
-        SET
-            subject_name = ?,
-            subject_code = ?,
-            course = ?,
-            semester = ?
-        WHERE id = ?
-    `;
+    try {
 
-    db.query(
-        sql,
-        [
-            subject_name,
-            subject_code,
-            course,
-            semester,
-            subjectId
-        ],
-        (err, result) => {
+        const result =
+            await subjectRepository.updateSubject(
+                subjectId,
+                subject_name,
+                subject_code,
+                course,
+                semester
+            );
 
-            if (err) {
 
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.status(409).json({
-                        success: false,
-                        message: 'Another subject already uses this code for the selected course and semester.'
-                    });
-                }
+        // Subject does not exist
 
-                console.error(err);
+        if (!Number(result.subject_exists)) {
 
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to update subject.'
-                });
+            return res.status(404).json({
+                success: false,
+                message: 'Subject not found.'
+            });
 
-            }
+        }
 
-            if (result.affectedRows === 0) {
 
-                return db.query(
-                    'SELECT id FROM subjects WHERE id = ?',
-                    [subjectId],
-                    (checkErr, rows) => {
+        // No changes made
 
-                        if (checkErr) {
-                            return res.status(500).json({
-                                success: false,
-                                message: 'Unable to verify subject.'
-                            });
-                        }
-
-                        if (rows.length === 0) {
-                            return res.status(404).json({
-                                success: false,
-                                message: 'Subject not found.'
-                            });
-                        }
-
-                        return res.status(200).json({
-                            success: true,
-                            message: 'Subject information is already up to date.'
-                        });
-
-                    }
-                );
-
-            }
+        if (Number(result.affectedRows) === 0) {
 
             return res.status(200).json({
                 success: true,
-                message: 'Subject updated successfully.'
+                message: 'Subject information is already up to date.'
             });
 
         }
-    );
+
+
+        // Subject updated successfully
+
+        return res.status(200).json({
+            success: true,
+            message: 'Subject updated successfully.'
+        });
+
+    } catch (error) {
+
+        console.error('Update Subject Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+
+        // Duplicate subject code
+
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
+                success: false,
+                message: 'Another subject already uses this code for the selected course and semester.'
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to update subject.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// DELETE SUBJECT
+// 5. DELETE SUBJECT
 // ==========================================
 
-exports.deleteSubject = (req, res) => {
+exports.deleteSubject = async (req, res) => {
 
     const subjectId = Number(req.params.id);
 
-    if (!Number.isInteger(subjectId) || subjectId <= 0) {
+    if (
+        !Number.isInteger(subjectId) ||
+        subjectId <= 0
+    ) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid subject ID.'
         });
+
     }
 
-    // Check whether subject has teacher assignments
-    const assignmentSql = `
-        SELECT id
-        FROM teacher_subjects
-        WHERE subject_id = ?
-        LIMIT 1
-    `;
+    try {
 
-    db.query(assignmentSql, [subjectId], (err, assignments) => {
+        const result =
+            await subjectRepository.deleteSubject(
+                subjectId
+            );
 
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to check subject assignments.'
-            });
-        }
 
-        if (assignments.length > 0) {
+        // Subject has teacher assignments
+
+        if (result.outcome === 'has_assignments') {
+
             return res.status(409).json({
                 success: false,
                 message: 'Remove teacher assignments before deleting this subject.'
             });
+
         }
 
-        // Check whether subject has examinations
-        const examSql = `
-            SELECT id
-            FROM exams
-            WHERE subject_id = ?
-            LIMIT 1
-        `;
 
-        db.query(examSql, [subjectId], (examErr, exams) => {
+        // Subject has examinations
 
-            if (examErr) {
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to check subject examinations.'
-                });
-            }
+        if (result.outcome === 'has_exams') {
 
-            if (exams.length > 0) {
-                return res.status(409).json({
-                    success: false,
-                    message: 'This subject has examinations and cannot be deleted.'
-                });
-            }
+            return res.status(409).json({
+                success: false,
+                message: 'This subject has examinations and cannot be deleted.'
+            });
 
-            db.query(
-                'DELETE FROM subjects WHERE id = ?',
-                [subjectId],
-                (deleteErr, result) => {
+        }
 
-                    if (deleteErr) {
 
-                        if (
-                            deleteErr.code === 'ER_ROW_IS_REFERENCED_2'
-                        ) {
-                            return res.status(409).json({
-                                success: false,
-                                message: 'This subject has related records and cannot be deleted.'
-                            });
-                        }
+        // Subject not found
 
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Unable to delete subject.'
-                        });
+        if (result.outcome === 'not_found') {
 
-                    }
+            return res.status(404).json({
+                success: false,
+                message: 'Subject not found.'
+            });
 
-                    if (result.affectedRows === 0) {
-                        return res.status(404).json({
-                            success: false,
-                            message: 'Subject not found.'
-                        });
-                    }
+        }
 
-                    return res.status(200).json({
-                        success: true,
-                        message: 'Subject deleted successfully.'
-                    });
 
-                }
-            );
+        // Verify deletion result
 
+        if (result.outcome !== 'deleted') {
+
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to delete subject.'
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Subject deleted successfully.'
         });
 
-    });
+    } catch (error) {
+
+        console.error('Delete Subject Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+
+        // Prevent deletion of related records
+
+        if (
+            error.code === 'ER_ROW_IS_REFERENCED_2' ||
+            error.errno === 1451
+        ) {
+
+            return res.status(409).json({
+                success: false,
+                message: 'This subject has related records and cannot be deleted.'
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to delete subject.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// GET ALL TEACHER-SUBJECT ASSIGNMENTS
+// 6. GET ALL TEACHER-SUBJECT ASSIGNMENTS
 // ==========================================
 
-exports.getAllAssignments = (req, res) => {
+exports.getAllAssignments = async (req, res) => {
 
-    const sql = `
-        SELECT
-            ts.id AS assignment_id,
-            ts.teacher_id,
-            u.name AS teacher_name,
-            u.email AS teacher_email,
-            ts.subject_id,
-            s.subject_name,
-            s.subject_code,
-            s.course,
-            s.semester,
-            ts.assigned_at
-        FROM teacher_subjects ts
-        INNER JOIN users u
-            ON ts.teacher_id = u.id
-        INNER JOIN subjects s
-            ON ts.subject_id = s.id
-        WHERE u.role = 'Teacher'
-        ORDER BY u.name, s.course, s.semester
-    `;
+    try {
 
-    db.query(sql, (err, results) => {
-
-        if (err) {
-            console.error(err);
-
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch assignments.'
-            });
-        }
+        const results =
+            await subjectRepository.getAllAssignments();
 
         return res.status(200).json({
             success: true,
@@ -476,263 +526,236 @@ exports.getAllAssignments = (req, res) => {
             data: results
         });
 
-    });
+    } catch (error) {
+
+        console.error('Get Assignments Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to fetch assignments.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// ASSIGN MULTIPLE SUBJECTS TO TEACHER
+// 7. ASSIGN MULTIPLE SUBJECTS TO TEACHER
 // ==========================================
 
-exports.assignSubjects = (req, res) => {
+exports.assignSubjects = async (req, res) => {
 
     const teacherId = Number(req.body.teacher_id);
+
     const subjectIds = req.body.subject_ids;
 
-    if (!Number.isInteger(teacherId) || teacherId <= 0) {
+
+    // Validate teacher ID
+
+    if (
+        !Number.isInteger(teacherId) ||
+        teacherId <= 0
+    ) {
+
         return res.status(400).json({
             success: false,
             message: 'Valid teacher ID is required.'
         });
+
     }
+
+
+    // Validate subject array
 
     if (
         !Array.isArray(subjectIds) ||
         subjectIds.length === 0
     ) {
+
         return res.status(400).json({
             success: false,
             message: 'Select at least one subject.'
         });
+
     }
 
-    const normalizedIds = subjectIds.map(Number);
+
+    // Convert subject IDs into numbers
+
+    const normalizedIds =
+        subjectIds.map(Number);
+
+
+    // Validate all subject IDs
 
     if (
         normalizedIds.some(
             id => !Number.isInteger(id) || id <= 0
         )
     ) {
+
         return res.status(400).json({
             success: false,
             message: 'One or more subject IDs are invalid.'
         });
+
     }
 
-    const uniqueSubjectIds = [...new Set(normalizedIds)];
 
-    db.getConnection((connectionErr, connection) => {
+    // Remove duplicate IDs
 
-        if (connectionErr) {
-            return res.status(500).json({
+    const uniqueSubjectIds =
+        [...new Set(normalizedIds)];
+
+    try {
+
+        const result =
+            await subjectRepository.assignSubjects(
+                teacherId,
+                uniqueSubjectIds
+            );
+
+
+        // Teacher does not exist
+
+        if (result.outcome === 'teacher_not_found') {
+
+            return res.status(404).json({
                 success: false,
-                message: 'Unable to connect to database.'
+                message: 'Teacher not found.'
             });
+
         }
 
-        const rollback = (status, message) => {
 
-            connection.rollback(() => {
-                connection.release();
+        // One or more subjects do not exist
 
-                return res.status(status).json({
-                    success: false,
-                    message
-                });
+        if (result.outcome === 'subjects_not_found') {
+
+            return res.status(404).json({
+                success: false,
+                message: 'One or more selected subjects do not exist.'
             });
 
-        };
+        }
 
-        connection.beginTransaction(transactionErr => {
 
-            if (transactionErr) {
-                connection.release();
+        // Verify procedure result
 
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to start assignment transaction.'
-                });
+        if (result.outcome !== 'success') {
+
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to assign subjects.'
+            });
+
+        }
+
+
+        // Assignment successful
+
+        return res.status(200).json({
+
+            success: true,
+
+            message: 'Subject assignment processed successfully.',
+
+            data: {
+                teacher_id: result.teacher_id,
+                total_requested: result.total_requested,
+                newly_assigned: result.newly_assigned,
+                already_assigned: result.already_assigned
             }
-
-            // Verify teacher account
-            connection.query(
-                `
-                SELECT id
-                FROM users
-                WHERE id = ?
-                AND role = 'Teacher'
-                `,
-                [teacherId],
-                (teacherErr, teachers) => {
-
-                    if (teacherErr) {
-                        return rollback(
-                            500,
-                            'Unable to verify teacher.'
-                        );
-                    }
-
-                    if (teachers.length === 0) {
-                        return rollback(
-                            404,
-                            'Teacher not found.'
-                        );
-                    }
-
-                    // Verify all subjects exist
-                    const placeholders = uniqueSubjectIds
-                        .map(() => '?')
-                        .join(',');
-
-                    connection.query(
-                        `
-                        SELECT id
-                        FROM subjects
-                        WHERE id IN (${placeholders})
-                        `,
-                        uniqueSubjectIds,
-                        (subjectErr, subjects) => {
-
-                            if (subjectErr) {
-                                return rollback(
-                                    500,
-                                    'Unable to verify subjects.'
-                                );
-                            }
-
-                            if (
-                                subjects.length !== uniqueSubjectIds.length
-                            ) {
-                                return rollback(
-                                    404,
-                                    'One or more selected subjects do not exist.'
-                                );
-                            }
-
-                            // Insert assignments
-                            const values = uniqueSubjectIds.map(
-                                subjectId => [teacherId, subjectId]
-                            );
-
-                            connection.query(
-                                `
-                                INSERT IGNORE INTO teacher_subjects
-                                (teacher_id, subject_id)
-                                VALUES ?
-                                `,
-                                [values],
-                                (insertErr, result) => {
-
-                                    if (insertErr) {
-                                        return rollback(
-                                            500,
-                                            'Unable to assign subjects.'
-                                        );
-                                    }
-
-                                    const newlyAssigned =
-                                        result.affectedRows;
-
-                                    const duplicates =
-                                        uniqueSubjectIds.length -
-                                        newlyAssigned;
-
-                                    connection.commit(commitErr => {
-
-                                        if (commitErr) {
-                                            return rollback(
-                                                500,
-                                                'Unable to complete assignment.'
-                                            );
-                                        }
-
-                                        connection.release();
-
-                                        return res.status(200).json({
-                                            success: true,
-                                            message: 'Subject assignment processed successfully.',
-                                            data: {
-                                                teacher_id: teacherId,
-                                                total_requested: uniqueSubjectIds.length,
-                                                newly_assigned: newlyAssigned,
-                                                already_assigned: duplicates
-                                            }
-                                        });
-
-                                    });
-
-                                }
-                            );
-
-                        }
-                    );
-
-                }
-            );
 
         });
 
-    });
+    } catch (error) {
+
+        console.error('Assign Subjects Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to assign subjects.'
+        });
+
+    }
 
 };
 
 
 // ==========================================
-// REMOVE TEACHER-SUBJECT ASSIGNMENT
+// 8. REMOVE TEACHER-SUBJECT ASSIGNMENT
 // ==========================================
 
-exports.removeAssignment = (req, res) => {
+exports.removeAssignment = async (req, res) => {
 
-    const assignmentId = Number(req.params.assignmentId);
+    const assignmentId =
+        Number(req.params.assignmentId);
 
     if (
         !Number.isInteger(assignmentId) ||
         assignmentId <= 0
     ) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid assignment ID.'
         });
+
     }
 
-    db.query(
-        `
-        DELETE FROM teacher_subjects
-        WHERE id = ?
-        `,
-        [assignmentId],
-        (err, result) => {
+    try {
 
-            if (err) {
+        const result =
+            await subjectRepository.removeAssignment(
+                assignmentId
+            );
 
-                if (err.code === 'ER_ROW_IS_REFERENCED_2') {
-                    return res.status(409).json({
-                        success: false,
-                        message: 'This assignment is referenced by existing records and cannot be removed.'
-                    });
-                }
+        if (Number(result.affectedRows) === 0) {
 
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to remove assignment.'
-                });
-
-            }
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Assignment not found.'
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                message: 'Subject assignment removed successfully.'
+            return res.status(404).json({
+                success: false,
+                message: 'Assignment not found.'
             });
 
         }
-    );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Subject assignment removed successfully.'
+        });
+
+    } catch (error) {
+
+        console.error('Remove Assignment Error:', {
+            code: error.code,
+            message: error.message
+        });
+
+        if (
+            error.code === 'ER_ROW_IS_REFERENCED_2' ||
+            error.errno === 1451
+        ) {
+
+            return res.status(409).json({
+                success: false,
+                message: 'This assignment is referenced by existing records and cannot be removed.'
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to remove assignment.'
+        });
+
+    }
 
 };
