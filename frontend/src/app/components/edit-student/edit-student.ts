@@ -1,4 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 
 import {
@@ -8,7 +13,7 @@ import {
   ReactiveFormsModule
 } from '@angular/forms';
 
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Student } from '../../services/student';
 import { Auth } from '../../services/auth';
@@ -16,7 +21,10 @@ import { Auth } from '../../services/auth';
 @Component({
   selector: 'app-edit-student',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './edit-student.html',
   styleUrl: './edit-student.css',
 })
@@ -24,7 +32,11 @@ export class EditStudent implements OnInit {
 
   studentForm: FormGroup;
 
+  readonly semesters = [1, 2, 3, 4, 5, 6, 7, 8];
+
   studentId!: number;
+
+  studentLoaded = false;
 
   isLoading = false;
   isSubmitting = false;
@@ -45,11 +57,15 @@ export class EditStudent implements OnInit {
 
     this.studentForm = this.fb.group({
 
-      name: ['', Validators.required],
+      name: ['', [
+        Validators.required,
+        Validators.maxLength(100)
+      ]],
 
       email: ['', [
         Validators.required,
-        Validators.email
+        Validators.email,
+        Validators.maxLength(150)
       ]],
 
       phone: ['', [
@@ -57,23 +73,68 @@ export class EditStudent implements OnInit {
         Validators.pattern(/^[0-9]{10}$/)
       ]],
 
-      course: ['', Validators.required]
+      course: ['', [
+        Validators.required,
+        Validators.maxLength(100)
+      ]],
+
+      semester: [null, [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(8),
+        Validators.pattern(/^[1-8]$/)
+      ]]
 
     });
 
   }
 
+
+  // ==========================================
+  // INITIALIZE COMPONENT
+  // ==========================================
+
   ngOnInit(): void {
 
-    this.userRole = this.authService.getRole() || '';
+    this.userRole =
+      this.authService.getRole() || '';
+
+
+    // Only Admin and Teacher can edit students
+
+    if (!['Admin', 'Teacher'].includes(this.userRole)) {
+
+      this.errorMessage = 'Access denied.';
+
+      return;
+
+    }
+
+
+    // Teachers cannot change academic information
+
+    if (this.userRole === 'Teacher') {
+
+      this.studentForm.get('course')?.disable();
+
+      this.studentForm.get('semester')?.disable();
+
+    }
+
+
+    // Retrieve student ID from route
 
     this.studentId = Number(
       this.route.snapshot.paramMap.get('id')
     );
 
-    if (!Number.isInteger(this.studentId) || this.studentId <= 0) {
+    if (
+      !Number.isInteger(this.studentId) ||
+      this.studentId <= 0
+    ) {
 
       this.errorMessage = 'Invalid student ID.';
+
       return;
 
     }
@@ -82,6 +143,7 @@ export class EditStudent implements OnInit {
 
   }
 
+
   // ==========================================
   // GET STUDENT BY ID
   // ==========================================
@@ -89,56 +151,128 @@ export class EditStudent implements OnInit {
   getStudent(): void {
 
     this.isLoading = true;
+
+    this.studentLoaded = false;
+
     this.errorMessage = '';
 
-    this.studentService.getStudentById(this.studentId).subscribe({
+    this.studentService
+      .getStudentById(this.studentId)
+      .subscribe({
 
-      next: (response) => {
+        next: (response) => {
 
-        this.studentForm.patchValue(response.data);
+          const student = response.data;
 
-        this.isLoading = false;
+          if (!student) {
 
-        this.cdr.detectChanges();
+            this.errorMessage = 'Student not found.';
 
-      },
+            this.isLoading = false;
 
-      error: (error) => {
+            this.cdr.detectChanges();
 
-        console.error('Fetch Student Error:', error);
+            return;
 
-        this.errorMessage =
-          error.error?.message || 'Unable to fetch student.';
+          }
 
-        this.isLoading = false;
 
-        this.cdr.detectChanges();
+          // Populate student information
 
-      }
+          this.studentForm.patchValue({
 
-    });
+            ...student,
+
+            semester:
+              student.semester === null ||
+              student.semester === undefined
+
+                ? null
+
+                : Number(student.semester)
+
+          });
+
+
+          this.studentLoaded = true;
+
+          this.isLoading = false;
+
+          this.cdr.detectChanges();
+
+        },
+
+        error: (error) => {
+
+          console.error(
+            'Fetch Student Error:',
+            error
+          );
+
+          this.errorMessage =
+            error.error?.message ||
+            'Unable to fetch student.';
+
+          this.isLoading = false;
+
+          this.studentLoaded = false;
+
+          this.cdr.detectChanges();
+
+        }
+
+      });
 
   }
-cancelEdit(): void {
 
-  const role = this.authService.getRole();
 
-  if (role === 'Admin') {
-    this.router.navigate(['/admin/students']);
-  }
-  else if (role === 'Teacher') {
-    this.router.navigate(['/teacher/students']);
-  }
-  else {
-    this.router.navigate(['/login']);
+  // ==========================================
+  // CANCEL EDIT
+  // ==========================================
+
+  cancelEdit(): void {
+
+    const role = this.authService.getRole();
+
+    if (role === 'Admin') {
+
+      this.router.navigate(['/admin/students']);
+
+    }
+
+    else if (role === 'Teacher') {
+
+      this.router.navigate(['/teacher/students']);
+
+    }
+
+    else {
+
+      this.router.navigate(['/login']);
+
+    }
+
   }
 
-}
+
   // ==========================================
   // UPDATE STUDENT
   // ==========================================
 
   updateStudent(): void {
+
+    if (
+      this.isSubmitting ||
+      !this.studentLoaded
+    ) {
+
+      return;
+
+    }
+
+    this.errorMessage = '';
+
+    this.successMessage = '';
 
     if (this.studentForm.invalid) {
 
@@ -150,42 +284,50 @@ cancelEdit(): void {
 
     this.isSubmitting = true;
 
-    this.errorMessage = '';
-    this.successMessage = '';
+
+    // Admin payload:
+    // name, email, phone, course, semester
+    //
+    // Teacher payload:
+    // name, email, phone
+    //
+    // Angular excludes disabled form controls.
+
+    const payload = this.studentForm.value;
+
 
     this.studentService.updateStudent(
       this.studentId,
-      this.studentForm.value
+      payload
     ).subscribe({
 
       next: (response) => {
 
+        if (response.success === false) {
+
+          this.errorMessage =
+            response.message ||
+            'Unable to update student.';
+
+          this.isSubmitting = false;
+
+          this.cdr.detectChanges();
+
+          return;
+
+        }
+
         console.log('Student Updated:', response);
 
         this.successMessage =
-          response.message || 'Student updated successfully!';
-
-        this.isSubmitting = false;
+          response.message ||
+          'Student updated successfully!';
 
         this.cdr.detectChanges();
 
         setTimeout(() => {
 
-          if (this.userRole === 'Admin') {
-
-            this.router.navigate(['/admin/students']);
-
-          }
-          else if (this.userRole === 'Teacher') {
-
-            this.router.navigate(['/teacher/students']);
-
-          }
-          else {
-
-            console.error('Unknown user role:', this.userRole);
-
-          }
+          this.cancelEdit();
 
         }, 1500);
 
@@ -193,10 +335,14 @@ cancelEdit(): void {
 
       error: (error) => {
 
-        console.error('Update Student Error:', error);
+        console.error(
+          'Update Student Error:',
+          error
+        );
 
         this.errorMessage =
-          error.error?.message || 'Unable to update student.';
+          error.error?.message ||
+          'Unable to update student.';
 
         this.isSubmitting = false;
 

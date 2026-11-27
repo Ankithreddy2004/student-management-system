@@ -1,4 +1,3 @@
-
 const subjectRepository =
     require('../repositories/subjectRepository');
 
@@ -106,7 +105,7 @@ exports.createSubject = async (req, res) => {
         subject_code,
         course,
         semester
-    } = req.body;
+    } = req.body || {};
 
 
     // Validate required fields
@@ -123,6 +122,21 @@ exports.createSubject = async (req, res) => {
         return res.status(400).json({
             success: false,
             message: 'All subject fields are required.'
+        });
+
+    }
+
+
+    // Validate semester: 1 to 8
+
+    if (
+        !['number', 'string'].includes(typeof semester) ||
+        !/^[1-8]$/.test(String(semester))
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Semester must be between 1 and 8.'
         });
 
     }
@@ -153,22 +167,6 @@ exports.createSubject = async (req, res) => {
         return res.status(400).json({
             success: false,
             message: 'Subject details cannot be empty.'
-        });
-
-    }
-
-
-    // Validate semester
-
-    if (
-        !Number.isInteger(semester) ||
-        semester < 1 ||
-        semester > 12
-    ) {
-
-        return res.status(400).json({
-            success: false,
-            message: 'Semester must be between 1 and 12.'
         });
 
     }
@@ -243,7 +241,7 @@ exports.updateSubject = async (req, res) => {
         subject_code,
         course,
         semester
-    } = req.body;
+    } = req.body || {};
 
 
     // Validate subject ID
@@ -280,6 +278,21 @@ exports.updateSubject = async (req, res) => {
     }
 
 
+    // Validate semester: 1 to 8
+
+    if (
+        !['number', 'string'].includes(typeof semester) ||
+        !/^[1-8]$/.test(String(semester))
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Semester must be between 1 and 8.'
+        });
+
+    }
+
+
     // Clean input values
 
     subject_name =
@@ -305,22 +318,6 @@ exports.updateSubject = async (req, res) => {
         return res.status(400).json({
             success: false,
             message: 'Subject details cannot be empty.'
-        });
-
-    }
-
-
-    // Validate semester
-
-    if (
-        !Number.isInteger(semester) ||
-        semester < 1 ||
-        semester > 12
-    ) {
-
-        return res.status(400).json({
-            success: false,
-            message: 'Semester must be between 1 and 12.'
         });
 
     }
@@ -549,9 +546,9 @@ exports.getAllAssignments = async (req, res) => {
 
 exports.assignSubjects = async (req, res) => {
 
-    const teacherId = Number(req.body.teacher_id);
+    const teacherId = Number(req.body?.teacher_id);
 
-    const subjectIds = req.body.subject_ids;
+    const subjectIds = req.body?.subject_ids;
 
 
     // Validate teacher ID

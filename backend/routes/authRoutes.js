@@ -3,14 +3,24 @@ const express = require('express');
 const router = express.Router();
 
 const {
+
     signup,
+
     login,
-    checkEmail
+
+    checkEmail,
+
+    getAcademicOptions
+
 } = require('../controllers/authController');
 
+
 const {
+
     verifyToken
+
 } = require('../middleware/authMiddleware');
+
 
 // ==========================================
 // CHECK EMAIL AVAILABILITY
@@ -18,11 +28,20 @@ const {
 
 router.get('/check-email', checkEmail);
 
+
+// ==========================================
+// GET AVAILABLE COURSES AND SEMESTERS
+// ==========================================
+
+router.get('/academic-options', getAcademicOptions);
+
+
 // ==========================================
 // STUDENT SIGNUP
 // ==========================================
 
 router.post('/signup', signup);
+
 
 // ==========================================
 // USER LOGIN
@@ -30,13 +49,14 @@ router.post('/signup', signup);
 
 router.post('/login', login);
 
+
 // ==========================================
 // PROTECTED ROUTE - GET LOGGED-IN USER
 // ==========================================
 
 router.get('/me', verifyToken, (req, res) => {
 
-    res.status(200).json({
+    return res.status(200).json({
 
         success: true,
 
@@ -47,5 +67,6 @@ router.get('/me', verifyToken, (req, res) => {
     });
 
 });
+
 
 module.exports = router;

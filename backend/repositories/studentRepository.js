@@ -34,19 +34,26 @@ exports.getPendingStudents = async () => {
 
 
 // ==========================================
-// 3. ADD STUDENT
+// 3. ADD STUDENT WITH SEMESTER
 // ==========================================
 
 exports.addStudent = async (
     name,
     email,
     phone,
-    course
+    course,
+    semester
 ) => {
 
     const [results] = await pool.query(
-        'CALL sp_student_add(?, ?, ?, ?)',
-        [name, email, phone, course]
+        'CALL sp_student_add_v2(?, ?, ?, ?, ?)',
+        [
+            name,
+            email,
+            phone,
+            course,
+            semester
+        ]
     );
 
     return results[0][0];
@@ -71,7 +78,7 @@ exports.getStudentById = async (id) => {
 
 
 // ==========================================
-// 5. UPDATE STUDENT
+// 5. UPDATE STUDENT WITH SEMESTER
 // ==========================================
 
 exports.updateStudent = async (
@@ -79,12 +86,22 @@ exports.updateStudent = async (
     name,
     email,
     phone,
-    course
+    course,
+    semester,
+    isAdmin
 ) => {
 
     const [results] = await pool.query(
-        'CALL sp_student_update(?, ?, ?, ?, ?)',
-        [id, name, email, phone, course]
+        'CALL sp_student_update_v2(?, ?, ?, ?, ?, ?, ?)',
+        [
+            id,
+            name,
+            email,
+            phone,
+            course,
+            semester,
+            isAdmin ? 1 : 0
+        ]
     );
 
     return results[0][0];
@@ -142,18 +159,22 @@ exports.approveStudent = async (id) => {
 
 // ==========================================
 // 9. UPDATE OWN PROFILE
+// NAME AND PHONE ONLY
 // ==========================================
 
 exports.updateMyProfile = async (
     id,
     name,
-    phone,
-    course
+    phone
 ) => {
 
     const [results] = await pool.query(
-        'CALL sp_student_update_profile(?, ?, ?, ?)',
-        [id, name, phone, course]
+        'CALL sp_student_update_profile_v2(?, ?, ?)',
+        [
+            id,
+            name,
+            phone
+        ]
     );
 
     return results[0][0];

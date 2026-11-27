@@ -2,54 +2,101 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
+
 // ==========================================
 // STUDENT STATUS TYPE
 // ==========================================
 
-export type StudentStatus = 'Pending' | 'Active' | 'Inactive';
+export type StudentStatus =
+  'Pending' | 'Active' | 'Inactive';
+
 
 // ==========================================
 // AUTH USER INTERFACE
 // ==========================================
 
 export interface AuthUser {
+
   id: number;
   name: string;
   email: string;
+
   role: 'Admin' | 'Teacher' | 'Student';
+
   student_id: number | null;
+
   status?: StudentStatus | null;
+
 }
+
 
 // ==========================================
 // AUTH RESPONSE INTERFACE
 // ==========================================
 
 export interface AuthResponse {
+
   success: boolean;
   message: string;
+
   token?: string;
   user?: AuthUser;
 
   data?: {
+
     student_id: number;
     user_id: number;
+
     name: string;
     email: string;
+
+    course?: string;
+    semester?: number;
+
     role: 'Student';
     status: StudentStatus;
+
   };
+
 }
+
 
 // ==========================================
 // EMAIL CHECK RESPONSE
 // ==========================================
 
 export interface EmailCheckResponse {
+
   success: boolean;
   available: boolean;
   message: string;
+
 }
+
+
+// ==========================================
+// ACADEMIC OPTION INTERFACE
+// ==========================================
+
+export interface AcademicOption {
+
+  course: string;
+  semester: number;
+
+}
+
+
+// ==========================================
+// ACADEMIC OPTIONS RESPONSE
+// ==========================================
+
+export interface AcademicOptionsResponse {
+
+  success: boolean;
+  data: AcademicOption[];
+
+}
+
 
 // ==========================================
 // AUTH SERVICE
@@ -58,62 +105,105 @@ export interface EmailCheckResponse {
 @Injectable({
   providedIn: 'root'
 })
+
 export class Auth {
 
-  private apiUrl = 'http://localhost:5000/api/auth';
+  private apiUrl =
+    'http://localhost:5000/api/auth';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  // ==========================================
-  // CHECK EMAIL AVAILABILITY
-  // ==========================================
 
-  checkEmailAvailability(email: string): Observable<EmailCheckResponse> {
+// ==========================================
+// CHECK EMAIL AVAILABILITY
+// ==========================================
+
+  checkEmailAvailability(
+    email: string
+  ): Observable<EmailCheckResponse> {
 
     return this.http.get<EmailCheckResponse>(
+
       `${this.apiUrl}/check-email?email=${encodeURIComponent(email)}`
+
     );
 
   }
 
-  // ==========================================
-  // STUDENT SIGNUP
-  // ==========================================
+
+// ==========================================
+// GET AVAILABLE COURSES AND SEMESTERS
+// ==========================================
+
+  getAcademicOptions():
+    Observable<AcademicOptionsResponse> {
+
+    return this.http.get<AcademicOptionsResponse>(
+
+      `${this.apiUrl}/academic-options`
+
+    );
+
+  }
+
+
+// ==========================================
+// STUDENT SIGNUP WITH SEMESTER
+// ==========================================
 
   signup(user: {
+
     name: string;
     email: string;
     phone: string;
     course: string;
+    semester: number;
     password: string;
+
   }): Observable<AuthResponse> {
 
     return this.http.post<AuthResponse>(
+
       `${this.apiUrl}/signup`,
+
       user
+
     );
 
   }
 
-  // ==========================================
-  // USER LOGIN
-  // ==========================================
+
+// ==========================================
+// USER LOGIN
+// ==========================================
 
   login(credentials: {
+
     email: string;
     password: string;
+
   }): Observable<AuthResponse> {
 
     return this.http.post<AuthResponse>(
+
       `${this.apiUrl}/login`,
+
       credentials
+
     ).pipe(
 
       tap(response => {
 
-        if (response.success && response.token && response.user) {
+        if (
+          response.success &&
+          response.token &&
+          response.user
+        ) {
 
-          localStorage.setItem('token', response.token);
+          localStorage.setItem(
+            'token',
+            response.token
+          );
 
           this.setUser(response.user);
 
@@ -125,22 +215,27 @@ export class Auth {
 
   }
 
-  // ==========================================
-  // STORE USER DETAILS
-  // ==========================================
+
+// ==========================================
+// STORE USER DETAILS
+// ==========================================
 
   setUser(user: AuthUser): void {
 
     localStorage.setItem(
+
       'user',
+
       JSON.stringify(user)
+
     );
 
   }
 
-  // ==========================================
-  // GET JWT TOKEN
-  // ==========================================
+
+// ==========================================
+// GET JWT TOKEN
+// ==========================================
 
   getToken(): string | null {
 
@@ -148,16 +243,19 @@ export class Auth {
 
   }
 
-  // ==========================================
-  // GET CURRENT USER
-  // ==========================================
+
+// ==========================================
+// GET CURRENT USER
+// ==========================================
 
   getUser(): AuthUser | null {
 
     const user = localStorage.getItem('user');
 
     if (!user) {
+
       return null;
+
     }
 
     try {
@@ -172,9 +270,10 @@ export class Auth {
 
   }
 
-  // ==========================================
-  // GET USER ROLE
-  // ==========================================
+
+// ==========================================
+// GET USER ROLE
+// ==========================================
 
   getRole(): string | null {
 
@@ -184,25 +283,29 @@ export class Auth {
 
   }
 
-  // ==========================================
-  // GET STUDENT STATUS
-  // ==========================================
+
+// ==========================================
+// GET STUDENT STATUS
+// ==========================================
 
   getStudentStatus(): StudentStatus | null {
 
     const user = this.getUser();
 
     if (!user || user.role !== 'Student') {
+
       return null;
+
     }
 
     return user.status ?? null;
 
   }
 
-  // ==========================================
-  // CHECK STUDENT STATUS
-  // ==========================================
+
+// ==========================================
+// CHECK STUDENT STATUS
+// ==========================================
 
   isStudentPending(): boolean {
 
@@ -222,25 +325,29 @@ export class Auth {
 
   }
 
-  // ==========================================
-  // CHECK READ-ONLY ACCESS
-  // ==========================================
+
+// ==========================================
+// CHECK READ-ONLY ACCESS
+// ==========================================
 
   isStudentReadOnly(): boolean {
 
     const user = this.getUser();
 
     if (!user || user.role !== 'Student') {
+
       return false;
+
     }
 
     return user.status !== 'Active';
 
   }
 
-  // ==========================================
-  // CHECK LOGIN STATUS
-  // ==========================================
+
+// ==========================================
+// CHECK LOGIN STATUS
+// ==========================================
 
   isLoggedIn(): boolean {
 
@@ -248,9 +355,10 @@ export class Auth {
 
   }
 
-  // ==========================================
-  // LOGOUT
-  // ==========================================
+
+// ==========================================
+// LOGOUT
+// ==========================================
 
   logout(): void {
 

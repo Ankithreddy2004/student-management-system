@@ -9,8 +9,9 @@ const enrollmentRepository =
 const isValidId = (id) => {
 
     return (
+        (typeof id === 'number' || typeof id === 'string') &&
+        /^[1-9]\d*$/.test(String(id)) &&
         Number.isSafeInteger(Number(id)) &&
-        Number(id) > 0 &&
         Number(id) <= 2147483647
     );
 
@@ -35,28 +36,125 @@ const getTeacherScope = (user) => {
 
     }
 
-    return null;
+    if (user.role === 'Admin') {
+
+        return null;
+
+    }
+
+    throw new Error('Unauthorized user role.');
+
+};
+
+
+// ==========================================
+// HELPER: VALIDATE USER ROLE
+// ==========================================
+
+const hasRole = (req, roles) => {
+
+    return req.user && roles.includes(req.user.role);
 
 };
 
 
 // ==========================================
 // 1. GET AVAILABLE SUBJECTS
+// BASED ON LOGGED-IN USER ROLE
 // ==========================================
 
 const getAvailableSubjects = async (req, res) => {
 
     try {
 
-        // Teachers see only assigned subjects.
-        // Admin and Student can see all subjects.
+        if (!req.user) {
 
-        const teacherId = getTeacherScope(req.user);
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required.'
+            });
+
+        }
+
+        let results;
 
 
-        const results =
-            await enrollmentRepository
-                .getAvailableSubjects(teacherId);
+        // ==================================
+        // STUDENT: OWN COURSE AND SEMESTER
+        // ==================================
+
+        if (req.user.role === 'Student') {
+
+            const studentId = req.user.student_id;
+
+            if (!isValidId(studentId)) {
+
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid student ID.'
+                });
+
+            }
+
+            results =
+                await enrollmentRepository.getStudentSubjects(
+                    Number(studentId)
+                );
+
+        }
+
+
+        // ==================================
+        // TEACHER: ASSIGNED SUBJECTS ONLY
+        // ==================================
+
+        else if (req.user.role === 'Teacher') {
+
+            if (!isValidId(req.user.id)) {
+
+                return res.status(403).json({
+                    success: false,
+                    message: 'Invalid teacher identity.'
+                });
+
+            }
+
+            const teacherId = getTeacherScope(req.user);
+
+            results =
+                await enrollmentRepository.getAvailableSubjects(
+                    teacherId
+                );
+
+        }
+
+
+        // ==================================
+        // ADMIN: ALL SUBJECTS
+        // ==================================
+
+        else if (req.user.role === 'Admin') {
+
+            results =
+                await enrollmentRepository.getAvailableSubjects(
+                    null
+                );
+
+        }
+
+
+        // ==================================
+        // INVALID ROLE
+        // ==================================
+
+        else {
+
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied.'
+            });
+
+        }
 
 
         return res.status(200).json({
@@ -71,8 +169,7 @@ const getAvailableSubjects = async (req, res) => {
 
         console.error(
             'Get Available Subjects Error:',
-            error.code,
-            error.message
+            error.code || 'UNKNOWN_ERROR'
         );
 
         return res.status(500).json({
@@ -90,16 +187,30 @@ const getAvailableSubjects = async (req, res) => {
 
 // ==========================================
 // 2. ENROLL STUDENT INTO SUBJECT
+// WITH COURSE AND SEMESTER VALIDATION
 // ==========================================
 
 const enrollStudent = async (req, res) => {
 
-    const { subjectId } = req.body;
+
+    // Validate authenticated user role
+
+    if (!hasRole(req, ['Admin', 'Teacher', 'Student'])) {
+
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied.'
+        });
+
+    }
+
+
+    const { subjectId } = req.body || {};
 
     let studentId;
 
 
-    // Students can enroll only themselves.
+    // Students can enroll only themselves
 
     if (req.user.role === 'Student') {
 
@@ -107,7 +218,7 @@ const enrollStudent = async (req, res) => {
 
     } else {
 
-        studentId = req.body.studentId;
+        studentId = req.body?.studentId;
 
     }
 
@@ -156,6 +267,7 @@ const enrollStudent = async (req, res) => {
 
     }
 
+
     try {
 
         const result =
@@ -170,6 +282,18 @@ const enrollStudent = async (req, res) => {
                 req.user.role
 
             );
+
+
+        // Verify procedure response
+
+        if (!result) {
+
+            return res.status(500).json({
+                success: false,
+                message: 'No enrollment response received.'
+            });
+
+        }
 
 
         // Student does not exist
@@ -202,7 +326,37 @@ const enrollStudent = async (req, res) => {
         }
 
 
-        // Teacher does not have subject permission
+        // Student semester is not assigned
+
+        if (result.outcome === 'semester_not_assigned') {
+
+            return res.status(409).json({
+
+                success: false,
+
+                message: 'Student semester is not assigned. Please contact the administrator.'
+
+            });
+
+        }
+
+
+        // Course or semester does not match
+
+        if (result.outcome === 'academic_mismatch') {
+
+            return res.status(403).json({
+
+                success: false,
+
+                message: 'This subject does not belong to the student’s registered course and semester.'
+
+            });
+
+        }
+
+
+        // Unauthorized enrollment
 
         if (result.outcome === 'forbidden') {
 
@@ -210,14 +364,14 @@ const enrollStudent = async (req, res) => {
 
                 success: false,
 
-                message: 'You can enroll students only in your assigned subjects.'
+                message: 'You are not authorized to create this enrollment.'
 
             });
 
         }
 
 
-        // Verify procedure response
+        // Verify procedure outcome
 
         if (result.outcome !== 'success') {
 
@@ -264,10 +418,31 @@ const enrollStudent = async (req, res) => {
         }
 
 
+        // Missing stored procedure
+
+        if (
+            error.code === 'ER_SP_DOES_NOT_EXIST' ||
+            error.errno === 1305
+        ) {
+
+            console.error(
+                'Enrollment stored procedure missing. Run npm run db:migrate.'
+            );
+
+            return res.status(500).json({
+
+                success: false,
+
+                message: 'Enrollment service is currently unavailable.'
+
+            });
+
+        }
+
+
         console.error(
             'Create Enrollment Error:',
-            error.code,
-            error.message
+            error.code || 'UNKNOWN_ERROR'
         );
 
 
@@ -285,11 +460,24 @@ const enrollStudent = async (req, res) => {
 
 
 // ==========================================
-// 3. GET MY ENROLLMENTS
+// 3. GET MY CURRENT SEMESTER ENROLLMENTS
 // STUDENT ONLY
 // ==========================================
 
 const getMyEnrollments = async (req, res) => {
+
+
+    // Verify student role
+
+    if (!hasRole(req, ['Student'])) {
+
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied.'
+        });
+
+    }
+
 
     const studentId = req.user.student_id;
 
@@ -308,12 +496,50 @@ const getMyEnrollments = async (req, res) => {
 
     }
 
+
     try {
 
-        const results =
-            await enrollmentRepository.getMyEnrollments(
-                Number(studentId)
-            );
+
+        // Retrieve enrollment history and eligible subjects
+
+        const [allEnrollments, eligibleSubjects] =
+            await Promise.all([
+
+                enrollmentRepository.getMyEnrollments(
+                    Number(studentId)
+                ),
+
+                enrollmentRepository.getStudentSubjects(
+                    Number(studentId)
+                )
+
+            ]);
+
+
+        // Get IDs belonging to current course and semester
+
+        const eligibleSubjectIds = new Set(
+
+            eligibleSubjects.map(
+
+                subject => Number(subject.id)
+
+            )
+
+        );
+
+
+        // Filter enrollment records to current semester
+
+        const results = allEnrollments.filter(
+
+            enrollment => eligibleSubjectIds.has(
+
+                Number(enrollment.subject_id)
+
+            )
+
+        );
 
 
         return res.status(200).json({
@@ -328,8 +554,7 @@ const getMyEnrollments = async (req, res) => {
 
         console.error(
             'Get My Enrollments Error:',
-            error.code,
-            error.message
+            error.code || 'UNKNOWN_ERROR'
         );
 
         return res.status(500).json({
@@ -352,6 +577,19 @@ const getMyEnrollments = async (req, res) => {
 
 const getAllEnrollments = async (req, res) => {
 
+
+    // Verify role
+
+    if (!hasRole(req, ['Admin', 'Teacher'])) {
+
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied.'
+        });
+
+    }
+
+
     let status = null;
 
     let subjectId = null;
@@ -364,10 +602,15 @@ const getAllEnrollments = async (req, res) => {
     if (req.query.status) {
 
         const allowedStatuses = [
+
             'Pending',
+
             'Approved',
+
             'Rejected'
+
         ];
+
 
         if (!allowedStatuses.includes(req.query.status)) {
 
@@ -427,10 +670,11 @@ const getAllEnrollments = async (req, res) => {
 
     }
 
+
     try {
 
 
-        // Teacher sees assigned subject enrollments only.
+        // Teachers see assigned subject enrollments only
 
         const teacherId = getTeacherScope(req.user);
 
@@ -461,8 +705,7 @@ const getAllEnrollments = async (req, res) => {
 
         console.error(
             'Get All Enrollments Error:',
-            error.code,
-            error.message
+            error.code || 'UNKNOWN_ERROR'
         );
 
         return res.status(500).json({
@@ -487,6 +730,19 @@ const reviewEnrollment = async (
     res,
     newStatus
 ) => {
+
+
+    // Only Admin and Teacher can review
+
+    if (!hasRole(req, ['Admin', 'Teacher'])) {
+
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied.'
+        });
+
+    }
+
 
     const enrollmentId = req.params.id;
 
@@ -520,6 +776,22 @@ const reviewEnrollment = async (
 
     }
 
+
+    // Validate approval status
+
+    if (!['Approved', 'Rejected'].includes(newStatus)) {
+
+        return res.status(400).json({
+
+            success: false,
+
+            message: 'Invalid enrollment status.'
+
+        });
+
+    }
+
+
     try {
 
         const result =
@@ -534,6 +806,21 @@ const reviewEnrollment = async (
                 newStatus
 
             );
+
+
+        // Verify procedure response
+
+        if (!result) {
+
+            return res.status(500).json({
+
+                success: false,
+
+                message: 'No enrollment review response received.'
+
+            });
+
+        }
 
 
         // Enrollment does not exist
@@ -566,7 +853,7 @@ const reviewEnrollment = async (
         }
 
 
-        // Enrollment is already approved or rejected
+        // Enrollment already approved or rejected
 
         if (result.outcome === 'already_reviewed') {
 
@@ -620,8 +907,7 @@ const reviewEnrollment = async (
 
         console.error(
             'Review Enrollment Error:',
-            error.code,
-            error.message
+            error.code || 'UNKNOWN_ERROR'
         );
 
         return res.status(500).json({
@@ -644,9 +930,13 @@ const reviewEnrollment = async (
 const approveEnrollment = async (req, res) => {
 
     return reviewEnrollment(
+
         req,
+
         res,
+
         'Approved'
+
     );
 
 };
@@ -659,9 +949,13 @@ const approveEnrollment = async (req, res) => {
 const rejectEnrollment = async (req, res) => {
 
     return reviewEnrollment(
+
         req,
+
         res,
+
         'Rejected'
+
     );
 
 };
@@ -673,6 +967,22 @@ const rejectEnrollment = async (req, res) => {
 // ==========================================
 
 const getStudentEnrollments = async (req, res) => {
+
+
+    // Verify role
+
+    if (!hasRole(req, ['Admin', 'Teacher'])) {
+
+        return res.status(403).json({
+
+            success: false,
+
+            message: 'Access denied.'
+
+        });
+
+    }
+
 
     const studentId = req.params.studentId;
 
@@ -691,23 +1001,23 @@ const getStudentEnrollments = async (req, res) => {
 
     }
 
+
     try {
 
 
-        // Restrict teacher access to assigned subjects.
+        // Restrict teacher access to assigned subjects
 
         const teacherId = getTeacherScope(req.user);
 
 
         const results =
-            await enrollmentRepository
-                .getStudentEnrollments(
+            await enrollmentRepository.getStudentEnrollments(
 
-                    Number(studentId),
+                Number(studentId),
 
-                    teacherId
+                teacherId
 
-                );
+            );
 
 
         return res.status(200).json({
@@ -722,8 +1032,7 @@ const getStudentEnrollments = async (req, res) => {
 
         console.error(
             'Get Student Enrollments Error:',
-            error.code,
-            error.message
+            error.code || 'UNKNOWN_ERROR'
         );
 
         return res.status(500).json({

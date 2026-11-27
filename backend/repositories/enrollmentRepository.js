@@ -5,6 +5,7 @@ const pool = db.promise();
 
 // ==========================================
 // 1. GET AVAILABLE SUBJECTS
+// ADMIN AND TEACHER
 // ==========================================
 
 exports.getAvailableSubjects = async (
@@ -22,7 +23,23 @@ exports.getAvailableSubjects = async (
 
 
 // ==========================================
-// 2. CREATE ENROLLMENT REQUEST
+// 2. GET STUDENT SEMESTER SUBJECTS
+// ==========================================
+
+exports.getStudentSubjects = async (studentId) => {
+
+    const [results] = await pool.query(
+        'CALL sp_enrollment_get_student_subjects(?)',
+        [studentId]
+    );
+
+    return results[0];
+
+};
+
+
+// ==========================================
+// 3. CREATE ENROLLMENT REQUEST
 // ==========================================
 
 exports.enrollStudent = async (
@@ -33,7 +50,7 @@ exports.enrollStudent = async (
 ) => {
 
     const [results] = await pool.query(
-        'CALL sp_enrollment_create(?, ?, ?, ?)',
+        'CALL sp_enrollment_create_v2(?, ?, ?, ?)',
         [
             studentId,
             subjectId,
@@ -48,7 +65,7 @@ exports.enrollStudent = async (
 
 
 // ==========================================
-// 3. GET MY ENROLLMENTS
+// 4. GET MY ENROLLMENTS
 // ==========================================
 
 exports.getMyEnrollments = async (studentId) => {
@@ -64,7 +81,7 @@ exports.getMyEnrollments = async (studentId) => {
 
 
 // ==========================================
-// 4. GET ALL ENROLLMENTS
+// 5. GET ALL ENROLLMENTS
 // ==========================================
 
 exports.getAllEnrollments = async (
@@ -90,7 +107,7 @@ exports.getAllEnrollments = async (
 
 
 // ==========================================
-// 5. APPROVE OR REJECT ENROLLMENT
+// 6. APPROVE OR REJECT ENROLLMENT
 // ==========================================
 
 exports.reviewEnrollment = async (
@@ -116,7 +133,7 @@ exports.reviewEnrollment = async (
 
 
 // ==========================================
-// 6. GET ENROLLMENTS FOR ONE STUDENT
+// 7. GET ENROLLMENTS FOR ONE STUDENT
 // ==========================================
 
 exports.getStudentEnrollments = async (

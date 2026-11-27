@@ -2,7 +2,8 @@
 
   <div class="signup-card">
 
-    <!-- Header -->
+    <!-- HEADER -->
+
     <div class="signup-header">
 
       <div class="logo">SMS</div>
@@ -13,10 +14,16 @@
 
     </div>
 
-    <!-- Signup Form -->
-    <form (ngSubmit)="onSignup()" #signupForm="ngForm">
 
-      <!-- Name -->
+    <!-- SIGNUP FORM -->
+
+    <form
+      (ngSubmit)="onSignup()"
+      #signupForm="ngForm">
+
+
+      <!-- FULL NAME -->
+
       <div class="form-group">
 
         <label>Full Name</label>
@@ -26,20 +33,23 @@
           name="name"
           [(ngModel)]="name"
           placeholder="Enter your full name"
+          maxlength="100"
           required
-          #nameField="ngModel"
-        >
+          #nameField="ngModel">
 
         <small
           class="validation-error"
-          *ngIf="nameField.invalid && nameField.touched"
-        >
+          *ngIf="nameField.invalid && nameField.touched">
+
           Name is required.
+
         </small>
 
       </div>
 
-      <!-- Email -->
+
+      <!-- EMAIL ADDRESS -->
+
       <div class="form-group">
 
         <label>Email Address</label>
@@ -50,54 +60,61 @@
           [(ngModel)]="email"
           (ngModelChange)="onEmailChange($event)"
           placeholder="Enter your email"
+          maxlength="150"
           required
           email
-          #emailField="ngModel"
-        >
+          #emailField="ngModel">
 
-        <!-- Email format error -->
+
         <small
           class="validation-error"
-          *ngIf="emailField.invalid && emailField.touched"
-        >
+          *ngIf="emailField.invalid && emailField.touched">
+
           Please enter a valid email address.
+
         </small>
 
-        <!-- Checking -->
+
         <small
           class="email-checking"
-          *ngIf="emailStatus === 'checking' && emailField.valid"
-        >
-          ⏳ Checking email availability...
+          *ngIf="emailStatus === 'checking' && emailField.valid">
+
+          Checking email availability...
+
         </small>
 
-        <!-- Available -->
+
         <small
           class="validation-success"
-          *ngIf="emailStatus === 'available'"
-        >
+          *ngIf="emailStatus === 'available'">
+
           ✓ Email is available.
+
         </small>
 
-        <!-- Already registered -->
+
         <small
           class="validation-error"
-          *ngIf="emailStatus === 'taken'"
-        >
-          ✕ Email already registered. Please use another email.
+          *ngIf="emailStatus === 'taken'">
+
+          Email already registered. Please use another email.
+
         </small>
 
-        <!-- Server error -->
+
         <small
           class="validation-error"
-          *ngIf="emailStatus === 'error'"
-        >
+          *ngIf="emailStatus === 'error'">
+
           {{ emailStatusMessage }}
+
         </small>
 
       </div>
 
-      <!-- Phone -->
+
+      <!-- PHONE NUMBER -->
+
       <div class="form-group">
 
         <label>Phone Number</label>
@@ -113,49 +130,164 @@
           pattern="[0-9]{10}"
           maxlength="10"
           minlength="10"
-          #phoneField="ngModel"
-        >
+          #phoneField="ngModel">
+
 
         <small
           class="validation-error"
-          *ngIf="phoneField.invalid && phoneField.touched"
-        >
+          *ngIf="phoneField.invalid && phoneField.touched">
+
           Please enter exactly 10 digits.
+
         </small>
+
 
         <small
           class="validation-success"
-          *ngIf="phoneField.valid && phoneField.touched"
-        >
+          *ngIf="phoneField.valid && phoneField.touched">
+
           ✓ Valid mobile number.
+
         </small>
 
       </div>
 
-      <!-- Course -->
+
+      <!-- COURSE DROPDOWN -->
+
       <div class="form-group">
 
         <label>Course</label>
 
-        <input
-          type="text"
+        <select
           name="course"
-          [(ngModel)]="course"
-          placeholder="Enter your course (e.g. EEE)"
+          [ngModel]="course"
+          (ngModelChange)="onCourseChange($event)"
+          [disabled]="loadingOptions"
           required
-          #courseField="ngModel"
-        >
+          #courseField="ngModel">
+
+
+          <option value="" disabled>
+
+            {{ loadingOptions
+                ? 'Loading courses...'
+                : 'Select your course' }}
+
+          </option>
+
+
+          <option
+            *ngFor="let item of courses"
+            [value]="item">
+
+            {{ item }}
+
+          </option>
+
+        </select>
+
 
         <small
           class="validation-error"
-          *ngIf="courseField.invalid && courseField.touched"
-        >
-          Course is required.
+          *ngIf="courseField.invalid && courseField.touched">
+
+          Please select your course.
+
+        </small>
+
+
+        <button
+          type="button"
+          class="academic-retry"
+          *ngIf="!loadingOptions && courses.length === 0"
+          (click)="loadAcademicOptions()">
+
+          Reload courses
+
+        </button>
+
+      </div>
+
+
+      <!-- SEMESTER DROPDOWN -->
+
+      <div class="form-group">
+
+        <label>Semester</label>
+
+        <select
+          name="semester"
+          [(ngModel)]="semester"
+          [disabled]="!course || loadingOptions"
+          required
+          #semesterField="ngModel">
+
+
+          <option [ngValue]="null" disabled>
+
+            Select your semester
+
+          </option>
+
+
+          <option
+            *ngFor="let sem of semesters"
+            [ngValue]="sem">
+
+            Semester {{ sem }}
+
+          </option>
+
+        </select>
+
+
+        <small
+          class="academic-hint"
+          *ngIf="!course">
+
+          Please select your course first.
+
+        </small>
+
+
+        <small
+          class="validation-error"
+          *ngIf="semesterField.invalid && semesterField.touched">
+
+          Please select your semester.
+
         </small>
 
       </div>
 
-      <!-- Password -->
+
+      <!-- ACADEMIC SELECTION INFORMATION -->
+
+      <div
+        class="academic-info"
+        *ngIf="course && semester !== null">
+
+        <strong>Selected Academic Details</strong>
+
+        <p>
+
+          {{ course }} — Semester {{ semester }}
+
+        </p>
+
+        <small>
+
+          Your available subjects will be based on
+          your selected course and semester.
+
+        </small>
+
+      </div>
+
+
+      <!-- PASSWORD -->
+
       <div class="form-group">
 
         <label>Password</label>
@@ -168,26 +300,33 @@
           required
           minlength="8"
           pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}"
-          #passwordField="ngModel"
-        >
+          #passwordField="ngModel">
+
 
         <small
           class="validation-error"
-          *ngIf="passwordField.invalid && passwordField.touched"
-        >
-          Password must contain uppercase, lowercase, number, special character and at least 8 characters.
+          *ngIf="passwordField.touched && !isPasswordValid()">
+
+          Password must contain uppercase, lowercase,
+          number, special character and at least 8
+          characters. Maximum 72 bytes.
+
         </small>
+
 
         <small
           class="validation-success"
-          *ngIf="passwordField.valid && passwordField.touched"
-        >
-          ✓ Strong password.
+          *ngIf="passwordField.touched && isPasswordValid()">
+
+          ✓ Valid password.
+
         </small>
 
       </div>
 
-      <!-- Confirm Password -->
+
+      <!-- CONFIRM PASSWORD -->
+
       <div class="form-group">
 
         <label>Confirm Password</label>
@@ -198,72 +337,111 @@
           [(ngModel)]="confirmPassword"
           placeholder="Confirm your password"
           required
-          #confirmPasswordField="ngModel"
-        >
+          #confirmPasswordField="ngModel">
+
 
         <small
           class="validation-error"
-          *ngIf="confirmPasswordField.touched && confirmPassword && !passwordsMatch()"
-        >
+          *ngIf="
+            confirmPasswordField.touched &&
+            confirmPassword &&
+            !passwordsMatch()
+          ">
+
           Passwords do not match.
+
         </small>
+
 
         <small
           class="validation-success"
-          *ngIf="confirmPasswordField.touched && passwordsMatch()"
-        >
+          *ngIf="
+            confirmPasswordField.touched &&
+            passwordsMatch()
+          ">
+
           ✓ Passwords match.
+
         </small>
 
       </div>
 
-      <!-- Show Password -->
+
+      <!-- SHOW PASSWORD -->
+
       <div class="show-password">
 
         <input
           type="checkbox"
           id="showPassword"
-          (change)="togglePassword()"
-        >
+          (change)="togglePassword()">
 
-        <label for="showPassword">Show password</label>
+        <label for="showPassword">
+
+          Show password
+
+        </label>
 
       </div>
 
-      <!-- Error Message -->
-      <div class="error-message" *ngIf="errorMessage">
+
+      <!-- ERROR MESSAGE -->
+
+      <div
+        class="error-message"
+        *ngIf="errorMessage">
+
         {{ errorMessage }}
+
       </div>
 
-      <!-- Success Message -->
-      <div class="success-message" *ngIf="successMessage">
+
+      <!-- SUCCESS MESSAGE -->
+
+      <div
+        class="success-message"
+        *ngIf="successMessage">
+
         {{ successMessage }}
+
       </div>
 
-      <!-- Signup Button -->
+
+      <!-- SIGNUP BUTTON -->
+
       <button
         type="submit"
         class="signup-btn"
         [disabled]="
           signupForm.invalid ||
           isLoading ||
+          loadingOptions ||
+          !course ||
+          semester === null ||
           emailStatus !== 'available' ||
+          !isPasswordValid() ||
           !passwordsMatch()
-        "
-      >
+        ">
 
-        {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+        {{ isLoading
+            ? 'Creating Account...'
+            : 'Create Account' }}
 
       </button>
 
     </form>
 
-    <!-- Footer -->
+
+    <!-- FOOTER -->
+
     <div class="signup-footer">
 
       <p>
+
         Already have an account?
+
         <a routerLink="/login">Login</a>
+
       </p>
 
     </div>

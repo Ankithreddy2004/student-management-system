@@ -1,4 +1,3 @@
-
 USE student_management;
 
 DELIMITER $$
@@ -51,6 +50,18 @@ CREATE PROCEDURE sp_subject_create(
 )
 BEGIN
 
+    -- Validate semester: 1 to 8
+
+    IF p_semester IS NULL
+       OR p_semester NOT BETWEEN 1 AND 8 THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT =
+            'Semester must be between 1 and 8';
+
+    END IF;
+
+
     INSERT INTO subjects (
         subject_name,
         subject_code,
@@ -83,6 +94,19 @@ CREATE PROCEDURE sp_subject_update(
 BEGIN
 
     DECLARE v_affected INT;
+
+
+    -- Validate semester: 1 to 8
+
+    IF p_semester IS NULL
+       OR p_semester NOT BETWEEN 1 AND 8 THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT =
+            'Semester must be between 1 and 8';
+
+    END IF;
+
 
     UPDATE subjects
     SET

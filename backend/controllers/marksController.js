@@ -1,236 +1,353 @@
-const db = require('../config/db');
+const marksRepository =
+    require('../repositories/marksRepository');
+
 
 // ==========================================
-// STUDENT: GET MY MARKS
+// SHARED VALIDATION HELPERS
 // ==========================================
 
-const getMyMarks = (req, res) => {
+const validExamTypes = [
+    'Internal',
+    'Midterm',
+    'Final',
+    'Practical',
+    'Assignment'
+];
+
+
+// Validate positive integer ID
+
+const isValidId = (id) => {
+
+    return (
+        (
+            typeof id === 'number' ||
+            typeof id === 'string'
+        ) &&
+        /^[1-9]\d*$/.test(String(id)) &&
+        Number.isSafeInteger(Number(id)) &&
+        Number(id) <= 2147483647
+    );
+
+};
+
+
+// Validate optional examination date
+
+const isValidDate = (date) => {
+
+    if (
+        date === undefined ||
+        date === null ||
+        date === ''
+    ) {
+        return true;
+    }
+
+    return (
+        typeof date === 'string' &&
+
+        /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+
+        Number.isFinite(
+            Date.parse(`${date}T00:00:00Z`)
+        ) &&
+
+        new Date(`${date}T00:00:00Z`)
+            .toISOString()
+            .slice(0, 10) === date
+    );
+
+};
+
+
+// Validate decimal marks
+
+const isValidMarks = (value) => {
+
+    if (
+        typeof value !== 'number' &&
+        typeof value !== 'string'
+    ) {
+        return false;
+    }
+
+    if (String(value).trim() === '') {
+        return false;
+    }
+
+    const number = Number(value);
+
+    return (
+        Number.isFinite(number) &&
+        number >= 0 &&
+        number <= 9999.99 &&
+        Math.abs(
+            number * 100 -
+            Math.round(number * 100)
+        ) < 0.0000001
+    );
+
+};
+
+
+// Validate optional remarks
+
+const isValidRemarks = (remarks) => {
+
+    return (
+        remarks === undefined ||
+
+        remarks === null ||
+
+        (
+            typeof remarks === 'string' &&
+            remarks.length <= 255
+        )
+    );
+
+};
+
+
+// Validate examination details
+
+const isValidExamDetails = (
+    examName,
+    examType,
+    examDate,
+    maxMarks
+) => {
+
+    return (
+        typeof examName === 'string' &&
+
+        examName.trim().length > 0 &&
+
+        examName.trim().length <= 100 &&
+
+        validExamTypes.includes(examType) &&
+
+        isValidMarks(maxMarks) &&
+
+        Number(maxMarks) > 0 &&
+
+        isValidDate(examDate)
+    );
+
+};
+
+
+// Shared error response
+
+const sendError = (res, error, message) => {
+
+    console.error('Marks Module Error:', {
+        code: error.code,
+        message: error.message
+    });
+
+    return res.status(500).json({
+        success: false,
+        message
+    });
+
+};
+
+
+// ==========================================
+// 1. STUDENT: GET MY MARKS
+// ==========================================
+
+const getMyMarks = async (req, res) => {
 
     const studentId = req.user.student_id;
 
-    if (!studentId) {
+    if (!isValidId(studentId)) {
+
         return res.status(400).json({
             success: false,
             message: 'Student information not found.'
         });
+
     }
 
-    const sql = `
-        SELECT
-            m.id,
-            m.obtained_marks,
-            m.remarks,
-            e.id AS exam_id,
-            e.exam_name,
-            e.exam_type,
-            DATE_FORMAT(e.exam_date, '%Y-%m-%d') AS exam_date,
-            e.max_marks,
-            s.id AS subject_id,
-            s.subject_name,
-            s.subject_code
-        FROM marks m
-        JOIN exams e ON m.exam_id = e.id
-        JOIN subjects s ON e.subject_id = s.id
-        WHERE m.student_id = ?
-        ORDER BY e.exam_date DESC
-    `;
+    try {
 
-    db.query(sql, [studentId], (error, results) => {
-
-        if (error) {
-            console.error(error);
-
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch marks records.'
-            });
-        }
+        const results =
+            await marksRepository.getMyMarks(
+                Number(studentId)
+            );
 
         return res.status(200).json({
+
             success: true,
-            message: 'Marks records fetched successfully.',
+
+            message:
+                'Marks records fetched successfully.',
+
             data: results
+
         });
-    });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to fetch marks records.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: GET ASSIGNED SUBJECTS
+// 2. TEACHER: GET ASSIGNED SUBJECTS
 // ==========================================
 
-const getTeacherSubjects = (req, res) => {
+const getTeacherSubjects = async (req, res) => {
 
     const teacherId = req.user.id;
 
-    const sql = `
-        SELECT
-            s.id,
-            s.subject_name,
-            s.subject_code,
-            s.course,
-            s.semester
-        FROM teacher_subjects ts
-        JOIN subjects s ON ts.subject_id = s.id
-        WHERE ts.teacher_id = ?
-        ORDER BY s.subject_name
-    `;
+    try {
 
-    db.query(sql, [teacherId], (error, results) => {
-
-        if (error) {
-            console.error(error);
-
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch assigned subjects.'
-            });
-        }
+        const results =
+            await marksRepository.getTeacherSubjects(
+                teacherId
+            );
 
         return res.status(200).json({
             success: true,
             data: results
         });
-    });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to fetch assigned subjects.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: GET STUDENTS BY SUBJECT
+// 3. TEACHER: GET STUDENTS FOR MARKS
 // ==========================================
 
-const getStudentsForMarks = (req, res) => {
+const getStudentsForMarks = async (req, res) => {
 
     const teacherId = req.user.id;
-    const subjectId = Number(req.params.subjectId);
+    const subjectId = req.params.subjectId;
 
-    if (!Number.isInteger(subjectId) || subjectId <= 0) {
+    if (!isValidId(subjectId)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid subject ID.'
         });
+
     }
 
-    // Verify that the teacher is assigned to this subject
-    const assignmentSql = `
-        SELECT subject_id
-        FROM teacher_subjects
-        WHERE teacher_id = ?
-        AND subject_id = ?
-    `;
+    try {
 
-    db.query(assignmentSql, [teacherId, subjectId], (assignmentError, assignments) => {
+        const result =
+            await marksRepository.getStudentsForMarks(
+                teacherId,
+                Number(subjectId)
+            );
 
-        if (assignmentError) {
-            console.error('Subject assignment error:', assignmentError);
+        if (result.outcome === 'forbidden') {
 
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to verify subject assignment.'
-            });
-        }
-
-        if (assignments.length === 0) {
             return res.status(403).json({
                 success: false,
-                message: 'You are not assigned to this subject.'
+                message:
+                    'You are not assigned to this subject.'
             });
+
         }
 
-        // Fetch only active students with approved enrollment in this subject
-        const studentsSql = `
-            SELECT
-                st.id,
-                st.name,
-                st.email,
-                st.phone,
-                st.course
-            FROM students st
-            INNER JOIN student_subjects ss
-                ON ss.student_id = st.id
-                AND ss.subject_id = ?
-                AND ss.status = 'Approved'
-            WHERE st.status = 'Active'
-            ORDER BY st.name
-        `;
+        if (result.outcome !== 'success') {
 
-        db.query(studentsSql, [subjectId], (studentError, results) => {
-
-            if (studentError) {
-                console.error('Get Students For Marks Error:', studentError);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to fetch students.'
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                total_students: results.length,
-                data: results
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to fetch students.'
             });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            total_students: result.data.length,
+            data: result.data
         });
-    });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to fetch students.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: GET EXAMS BY SUBJECT
+// 4. TEACHER: GET EXAMINATIONS
 // ==========================================
 
-const getExamsBySubject = (req, res) => {
+const getExamsBySubject = async (req, res) => {
 
     const teacherId = req.user.id;
-    const subjectId = Number(req.params.subjectId);
+    const subjectId = req.params.subjectId;
 
-    if (!Number.isInteger(subjectId) || subjectId <= 0) {
+    if (!isValidId(subjectId)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid subject ID.'
         });
+
     }
 
-    const sql = `
-        SELECT
-            e.id,
-            e.subject_id,
-            e.exam_name,
-            e.exam_type,
-            DATE_FORMAT(e.exam_date, '%Y-%m-%d') AS exam_date,
-            e.max_marks,
-            e.created_at
-        FROM exams e
-        JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
-        WHERE ts.teacher_id = ?
-        AND e.subject_id = ?
-        ORDER BY e.exam_date DESC, e.id DESC
-    `;
+    try {
 
-    db.query(sql, [teacherId, subjectId], (error, results) => {
-
-        if (error) {
-            console.error(error);
-
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch examinations.'
-            });
-        }
+        const results =
+            await marksRepository.getExamsBySubject(
+                teacherId,
+                Number(subjectId)
+            );
 
         return res.status(200).json({
             success: true,
             data: results
         });
-    });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to fetch examinations.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: CREATE EXAM
+// 5. TEACHER: CREATE EXAMINATION
 // ==========================================
 
-const createExam = (req, res) => {
+const createExam = async (req, res) => {
 
     const teacherId = req.user.id;
 
@@ -240,15 +357,10 @@ const createExam = (req, res) => {
         exam_type,
         exam_date,
         max_marks
-    } = req.body;
+    } = req.body || {};
 
-    const validExamTypes = [
-        'Internal',
-        'Midterm',
-        'Final',
-        'Practical',
-        'Assignment'
-    ];
+
+    // Validate required fields
 
     if (
         !subject_id ||
@@ -256,765 +368,794 @@ const createExam = (req, res) => {
         !exam_type ||
         max_marks === undefined
     ) {
+
         return res.status(400).json({
             success: false,
-            message: 'Please provide all required examination details.'
+            message:
+                'Please provide all required examination details.'
         });
+
     }
 
-    if (
-        !Number.isInteger(Number(subject_id)) ||
-        Number(subject_id) <= 0
-    ) {
+
+    // Validate subject ID
+
+    if (!isValidId(subject_id)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid subject ID.'
         });
+
     }
 
-    if (typeof exam_name !== 'string' || !exam_name.trim() || exam_name.trim().length > 100) {
+
+    // Validate examination name
+
+    if (
+        typeof exam_name !== 'string' ||
+        !exam_name.trim() ||
+        exam_name.trim().length > 100
+    ) {
+
         return res.status(400).json({
             success: false,
-            message: 'Exam name must contain 1 to 100 characters.'
+            message:
+                'Exam name must contain 1 to 100 characters.'
         });
+
     }
 
+
+    // Validate examination type
+
     if (!validExamTypes.includes(exam_type)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid examination type.'
         });
+
     }
+
+
+    // Validate maximum marks
 
     if (
-        !Number.isFinite(Number(max_marks)) ||
-        Number(max_marks) <= 0 ||
-        Number(max_marks) > 9999.99
+        !isValidMarks(max_marks) ||
+        Number(max_marks) <= 0
     ) {
+
         return res.status(400).json({
             success: false,
-            message: 'Maximum marks must be greater than zero and at most 9999.99.'
+            message:
+                'Maximum marks must be greater than zero, at most 9999.99, and contain no more than two decimal places.'
         });
+
     }
 
-    if (
-        exam_date &&
-        !/^\d{4}-\d{2}-\d{2}$/.test(exam_date)
-    ) {
+
+    // Validate date
+
+    if (!isValidDate(exam_date)) {
+
         return res.status(400).json({
             success: false,
-            message: 'Exam date must use YYYY-MM-DD format.'
+            message:
+                'Exam date must be a valid date in YYYY-MM-DD format.'
         });
+
     }
 
-    const assignmentSql = `
-        SELECT id
-        FROM teacher_subjects
-        WHERE teacher_id = ?
-        AND subject_id = ?
-    `;
+    try {
 
-    db.query(
-        assignmentSql,
-        [teacherId, subject_id],
-        (error, assignments) => {
-
-            if (error) {
-                console.error(error);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to verify subject assignment.'
-                });
-            }
-
-            if (assignments.length === 0) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'You are not assigned to this subject.'
-                });
-            }
-
-            const insertSql = `
-                INSERT INTO exams
-                (subject_id, exam_name, exam_type, exam_date, max_marks)
-                VALUES (?, ?, ?, ?, ?)
-            `;
-
-            db.query(
-                insertSql,
-                [
-                    subject_id,
-                    exam_name.trim(),
-                    exam_type,
-                    exam_date || null,
-                    max_marks
-                ],
-                (insertError, result) => {
-
-                    if (insertError) {
-                        console.error(insertError);
-
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Unable to create examination.'
-                        });
-                    }
-
-                    return res.status(201).json({
-                        success: true,
-                        message: 'Examination created successfully.',
-                        exam_id: result.insertId
-                    });
-                }
+        const result =
+            await marksRepository.createExam(
+                teacherId,
+                Number(subject_id),
+                exam_name.trim(),
+                exam_type,
+                exam_date || null,
+                Number(max_marks)
             );
+
+
+        // Teacher is not assigned to subject
+
+        if (result.outcome === 'forbidden') {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    'You are not assigned to this subject.'
+            });
+
         }
-    );
+
+        if (result.outcome !== 'success') {
+
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to create examination.'
+            });
+
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: 'Examination created successfully.',
+            exam_id: result.exam_id
+        });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to create examination.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: UPDATE EXAM
+// 6. TEACHER: UPDATE EXAMINATION
 // ==========================================
 
-const updateExam = (req, res) => {
+const updateExam = async (req, res) => {
 
     const teacherId = req.user.id;
-    const examId = Number(req.params.examId);
+    const examId = req.params.examId;
 
     const {
         exam_name,
         exam_type,
         exam_date,
         max_marks
-    } = req.body;
+    } = req.body || {};
 
-    const validExamTypes = [
-        'Internal',
-        'Midterm',
-        'Final',
-        'Practical',
-        'Assignment'
-    ];
 
-    if (!Number.isInteger(examId) || examId <= 0) {
+    // Validate examination ID
+
+    if (!isValidId(examId)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid examination ID.'
         });
+
     }
+
+
+    // Validate examination details
 
     if (
-        typeof exam_name !== 'string' ||
-        !exam_name.trim() ||
-        exam_name.trim().length > 100 ||
-        !validExamTypes.includes(exam_type) ||
-        !Number.isFinite(Number(max_marks)) ||
-        Number(max_marks) <= 0 ||
-        Number(max_marks) > 9999.99 ||
-        (exam_date && !/^\d{4}-\d{2}-\d{2}$/.test(exam_date))
-    ) {
-        return res.status(400).json({
-            success: false,
-            message: 'Please provide valid examination details.'
-        });
-    }
-
-    const sql = `
-        UPDATE exams e
-        JOIN teacher_subjects ts
-            ON ts.subject_id = e.subject_id
-        SET
-            e.exam_name = ?,
-            e.exam_type = ?,
-            e.exam_date = ?,
-            e.max_marks = ?
-        WHERE e.id = ?
-        AND ts.teacher_id = ?
-    `;
-
-    db.query(
-        sql,
-        [
-            exam_name.trim(),
+        !isValidExamDetails(
+            exam_name,
             exam_type,
-            exam_date || null,
-            max_marks,
-            examId,
-            teacherId
-        ],
-        (error, result) => {
+            exam_date,
+            max_marks
+        )
+    ) {
 
-            if (error) {
-                console.error(error);
-
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to update examination.'
-                });
-            }
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Examination not found or not assigned to you.'
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                message: 'Examination updated successfully.'
-            });
-        }
-    );
-};
-
-
-// ==========================================
-// TEACHER: DELETE EXAM
-// ==========================================
-
-const deleteExam = (req, res) => {
-
-    const teacherId = req.user.id;
-    const examId = Number(req.params.examId);
-
-    if (!Number.isInteger(examId) || examId <= 0) {
         return res.status(400).json({
             success: false,
-            message: 'Invalid examination ID.'
+            message:
+                'Please provide valid examination details.'
         });
+
     }
 
-    const sql = `
-        SELECT e.id
-        FROM exams e
-        JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
-        WHERE e.id = ?
-        AND ts.teacher_id = ?
-    `;
+    try {
 
-    db.query(sql, [examId, teacherId], (error, exams) => {
+        const result =
+            await marksRepository.updateExam(
+                teacherId,
+                Number(examId),
+                exam_name.trim(),
+                exam_type,
+                exam_date || null,
+                Number(max_marks)
+            );
 
-        if (error) {
-            console.error(error);
+
+        // Examination missing or unauthorized
+
+        if (result.outcome === 'not_found') {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    'Examination not found or not assigned to you.'
+            });
+
+        }
+
+
+        // New maximum marks are too low
+
+        if (
+            result.outcome === 'invalid_max_marks'
+        ) {
+
+            return res.status(409).json({
+                success: false,
+                message:
+                    `Maximum marks cannot be less than the highest awarded marks (${result.highest_marks}).`
+            });
+
+        }
+
+        if (result.outcome !== 'success') {
 
             return res.status(500).json({
                 success: false,
-                message: 'Unable to verify examination.'
+                message: 'Unable to update examination.'
             });
+
         }
 
-        if (exams.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Examination not found or not assigned to you.'
-            });
-        }
+        return res.status(200).json({
+            success: true,
+            message: 'Examination updated successfully.'
+        });
 
-        db.query(
-            'SELECT COUNT(*) AS total FROM marks WHERE exam_id = ?',
-            [examId],
-            (countError, results) => {
+    } catch (error) {
 
-                if (countError) {
-                    console.error(countError);
-
-                    return res.status(500).json({
-                        success: false,
-                        message: 'Unable to check examination records.'
-                    });
-                }
-
-                if (results[0].total > 0) {
-                    return res.status(409).json({
-                        success: false,
-                        message: 'This examination already has marks records. Delete those records first.'
-                    });
-                }
-
-                db.query(
-                    'DELETE FROM exams WHERE id = ?',
-                    [examId],
-                    (deleteError) => {
-
-                        if (deleteError) {
-                            console.error(deleteError);
-
-                            return res.status(500).json({
-                                success: false,
-                                message: 'Unable to delete examination.'
-                            });
-                        }
-
-                        return res.status(200).json({
-                            success: true,
-                            message: 'Examination deleted successfully.'
-                        });
-                    }
-                );
-            }
+        return sendError(
+            res,
+            error,
+            'Unable to update examination.'
         );
-    });
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: ADD MARKS FOR MULTIPLE STUDENTS
+// 7. TEACHER: DELETE EXAMINATION
 // ==========================================
 
-const addMarks = (req, res) => {
+const deleteExam = async (req, res) => {
+
+    const teacherId = req.user.id;
+    const examId = req.params.examId;
+
+    if (!isValidId(examId)) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid examination ID.'
+        });
+
+    }
+
+    try {
+
+        const result =
+            await marksRepository.deleteExam(
+                teacherId,
+                Number(examId)
+            );
+
+
+        // Examination missing or unauthorized
+
+        if (result.outcome === 'not_found') {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    'Examination not found or not assigned to you.'
+            });
+
+        }
+
+
+        // Existing marks protection
+
+        if (result.outcome === 'has_marks') {
+
+            return res.status(409).json({
+                success: false,
+                message:
+                    'This examination already has marks records. Delete those records first.'
+            });
+
+        }
+
+        if (result.outcome !== 'success') {
+
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to delete examination.'
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Examination deleted successfully.'
+        });
+
+    } catch (error) {
+
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+
+            return res.status(409).json({
+                success: false,
+                message:
+                    'This examination has related records and cannot be deleted.'
+            });
+
+        }
+
+        return sendError(
+            res,
+            error,
+            'Unable to delete examination.'
+        );
+
+    }
+
+};
+
+
+// ==========================================
+// 8. TEACHER: ADD BULK MARKS
+// ==========================================
+
+const addMarks = async (req, res) => {
 
     const teacherId = req.user.id;
 
-    const { exam_id, students } = req.body;
+    const {
+        exam_id,
+        students
+    } = req.body || {};
+
+
+    // Validate exam ID and students array
 
     if (
-        !Number.isInteger(Number(exam_id)) ||
-        Number(exam_id) <= 0 ||
+        !isValidId(exam_id) ||
         !Array.isArray(students) ||
         students.length === 0
     ) {
+
         return res.status(400).json({
             success: false,
-            message: 'Please provide a valid exam ID and students array.'
+            message:
+                'Please provide a valid exam ID and students array.'
         });
+
     }
 
-    const studentIds = students.map(student => Number(student.student_id));
 
-    if (
-        studentIds.some(id => !Number.isInteger(id) || id <= 0) ||
-        new Set(studentIds).size !== studentIds.length
-    ) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid or duplicate student IDs.'
+    const studentIds = new Set();
+
+    const normalizedStudents = [];
+
+
+    // Validate all students before database execution
+
+    for (const student of students) {
+
+        if (
+            !student ||
+            !isValidId(student.student_id)
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    'Invalid or duplicate student IDs.'
+            });
+
+        }
+
+
+        const studentId =
+            Number(student.student_id);
+
+
+        // Prevent duplicate students
+
+        if (studentIds.has(studentId)) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    'Invalid or duplicate student IDs.'
+            });
+
+        }
+
+        studentIds.add(studentId);
+
+
+        // Validate obtained marks
+
+        if (
+            !isValidMarks(
+                student.obtained_marks
+            )
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    `Invalid marks for student ID ${studentId}. Enter non-negative marks with at most two decimal places.`
+            });
+
+        }
+
+
+        // Validate remarks
+
+        if (!isValidRemarks(student.remarks)) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    `Invalid remarks for student ID ${studentId}.`
+            });
+
+        }
+
+
+        // Prepare normalized student data
+
+        normalizedStudents.push({
+
+            student_id: studentId,
+
+            obtained_marks:
+                Number(student.obtained_marks),
+
+            remarks:
+                student.remarks || null
+
         });
+
     }
 
-    const examSql = `
-        SELECT e.id, e.subject_id, e.max_marks
-        FROM exams e
-        JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
-        WHERE e.id = ?
-        AND ts.teacher_id = ?
-    `;
+    try {
 
-    db.query(examSql, [exam_id, teacherId], (error, exams) => {
+        const result =
+            await marksRepository.addMarks(
+                teacherId,
+                Number(exam_id),
+                normalizedStudents
+            );
 
-        if (error) {
-            console.error(error);
+
+        // Teacher not assigned to exam subject
+
+        if (result.outcome === 'forbidden') {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    'Examination not found or not assigned to you.'
+            });
+
+        }
+
+
+        // Ineligible students
+
+        if (result.outcome === 'invalid_students') {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    'One or more students are inactive or do not have approved enrollment in this subject.'
+            });
+
+        }
+
+
+        // Obtained marks exceed maximum marks
+
+        if (result.outcome === 'invalid_marks') {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    `Invalid marks for student ID ${result.student_id}. Maximum marks: ${result.max_marks}.`
+            });
+
+        }
+
+        if (result.outcome !== 'success') {
 
             return res.status(500).json({
                 success: false,
-                message: 'Unable to verify examination.'
+                message: 'Unable to save marks.'
             });
+
         }
 
-        if (exams.length === 0) {
-            return res.status(403).json({
+        return res.status(201).json({
+            success: true,
+            message: 'Marks added successfully.',
+            total_students: result.total_students
+        });
+
+    } catch (error) {
+
+
+        // Duplicate marks
+
+        if (error.code === 'ER_DUP_ENTRY') {
+
+            return res.status(409).json({
                 success: false,
-                message: 'Examination not found or not assigned to you.'
+                message:
+                    'Marks already exist for one or more students in this examination.'
             });
+
         }
 
-        const exam = exams[0];
-
-        for (const student of students) {
-
-            const marks = Number(student.obtained_marks);
-
-            if (
-                student.obtained_marks === undefined ||
-                student.obtained_marks === null ||
-                student.obtained_marks === '' ||
-                !Number.isFinite(marks) ||
-                marks < 0 ||
-                marks > Number(exam.max_marks) ||
-                !Number.isInteger(Math.round(marks * 100))
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Invalid marks for student ID ${student.student_id}. Maximum marks: ${exam.max_marks}.`
-                });
-            }
-
-            if (
-                student.remarks !== undefined &&
-                student.remarks !== null &&
-                (
-                    typeof student.remarks !== 'string' ||
-                    student.remarks.length > 255
-                )
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Invalid remarks for student ID ${student.student_id}.`
-                });
-            }
-        }
-
-        const placeholders = studentIds.map(() => '?').join(',');
-
-        // Verify every student is active and approved for the exam's subject
-        const studentSql = `
-            SELECT st.id
-            FROM students st
-            INNER JOIN student_subjects ss
-                ON ss.student_id = st.id
-                AND ss.subject_id = ?
-                AND ss.status = 'Approved'
-            WHERE st.id IN (${placeholders})
-            AND st.status = 'Active'
-        `;
-
-        db.query(
-            studentSql,
-            [exam.subject_id, ...studentIds],
-            (studentError, validStudents) => {
-
-                if (studentError) {
-                    console.error(studentError);
-
-                    return res.status(500).json({
-                        success: false,
-                        message: 'Unable to verify students.'
-                    });
-                }
-
-                if (validStudents.length !== studentIds.length) {
-                    return res.status(403).json({
-                        success: false,
-                        message: 'One or more students are inactive or do not have approved enrollment in this subject.'
-                    });
-                }
-
-                const connection = db.getConnection;
-
-                db.getConnection((connectionError, conn) => {
-
-                    if (connectionError) {
-                        console.error(connectionError);
-
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Database connection failed.'
-                        });
-                    }
-
-                    conn.beginTransaction(transactionError => {
-
-                        if (transactionError) {
-                            conn.release();
-
-                            return res.status(500).json({
-                                success: false,
-                                message: 'Unable to start transaction.'
-                            });
-                        }
-
-                        const values = students.map(student => [
-                            Number(student.student_id),
-                            Number(exam_id),
-                            teacherId,
-                            Number(student.obtained_marks),
-                            student.remarks || null
-                        ]);
-
-                        const insertSql = `
-                            INSERT INTO marks
-                            (student_id, exam_id, teacher_id, obtained_marks, remarks)
-                            VALUES ?
-                        `;
-
-                        conn.query(insertSql, [values], (insertError, result) => {
-
-                            if (insertError) {
-
-                                return conn.rollback(() => {
-
-                                    conn.release();
-
-                                    if (insertError.code === 'ER_DUP_ENTRY') {
-                                        return res.status(409).json({
-                                            success: false,
-                                            message: 'Marks already exist for one or more students in this examination.'
-                                        });
-                                    }
-
-                                    console.error(insertError);
-
-                                    return res.status(500).json({
-                                        success: false,
-                                        message: 'Unable to save marks.'
-                                    });
-                                });
-                            }
-
-                            conn.commit(commitError => {
-
-                                if (commitError) {
-
-                                    return conn.rollback(() => {
-
-                                        conn.release();
-
-                                        return res.status(500).json({
-                                            success: false,
-                                            message: 'Unable to save marks.'
-                                        });
-                                    });
-                                }
-
-                                conn.release();
-
-                                return res.status(201).json({
-                                    success: true,
-                                    message: 'Marks added successfully.',
-                                    total_students: result.affectedRows
-                                });
-                            });
-                        });
-                    });
-                });
-            }
+        return sendError(
+            res,
+            error,
+            'Unable to save marks.'
         );
-    });
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: VIEW MARKS RECORDS
+// 9. TEACHER: GET MARKS RECORDS
 // ==========================================
 
-const getMarksRecords = (req, res) => {
+const getMarksRecords = async (req, res) => {
 
     const teacherId = req.user.id;
-    const examId = Number(req.params.examId);
+    const examId = req.params.examId;
 
-    if (!Number.isInteger(examId) || examId <= 0) {
+    if (!isValidId(examId)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid examination ID.'
         });
+
     }
 
-    const sql = `
-        SELECT
-            m.id AS mark_id,
-            m.student_id,
-            st.name AS student_name,
-            st.email,
-            e.id AS exam_id,
-            e.exam_name,
-            e.exam_type,
-            DATE_FORMAT(e.exam_date, '%Y-%m-%d') AS exam_date,
-            e.max_marks,
-            m.obtained_marks,
-            m.remarks,
-            s.id AS subject_id,
-            s.subject_name,
-            s.subject_code
-        FROM marks m
-        JOIN students st ON st.id = m.student_id
-        JOIN exams e ON e.id = m.exam_id
-        JOIN subjects s ON s.id = e.subject_id
-        JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
-        WHERE e.id = ?
-        AND ts.teacher_id = ?
-        ORDER BY st.name
-    `;
+    try {
 
-    db.query(sql, [examId, teacherId], (error, results) => {
-
-        if (error) {
-            console.error(error);
-
-            return res.status(500).json({
-                success: false,
-                message: 'Unable to fetch marks records.'
-            });
-        }
+        const results =
+            await marksRepository.getMarksRecords(
+                teacherId,
+                Number(examId)
+            );
 
         return res.status(200).json({
             success: true,
             total_records: results.length,
             data: results
         });
-    });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to fetch marks records.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: EDIT MARKS
+// 10. TEACHER: EDIT INDIVIDUAL MARKS
 // ==========================================
 
-const editMarks = (req, res) => {
+const editMarks = async (req, res) => {
 
     const teacherId = req.user.id;
-    const markId = Number(req.params.markId);
+    const markId = req.params.markId;
 
-    const { obtained_marks, remarks } = req.body;
+    const {
+        obtained_marks,
+        remarks
+    } = req.body || {};
 
-    if (!Number.isInteger(markId) || markId <= 0) {
+
+    // Validate marks record ID
+
+    if (!isValidId(markId)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid marks ID.'
         });
+
     }
 
-    if (
-        obtained_marks === undefined ||
-        obtained_marks === null ||
-        obtained_marks === '' ||
-        !Number.isFinite(Number(obtained_marks)) ||
-        Number(obtained_marks) < 0
-    ) {
+
+    // Validate obtained marks
+
+    if (!isValidMarks(obtained_marks)) {
+
         return res.status(400).json({
             success: false,
-            message: 'Please provide valid obtained marks.'
+            message:
+                'Please provide valid obtained marks.'
         });
+
     }
 
-    if (
-        remarks !== undefined &&
-        remarks !== null &&
-        (
-            typeof remarks !== 'string' ||
-            remarks.length > 255
-        )
-    ) {
+
+    // Validate remarks
+
+    if (!isValidRemarks(remarks)) {
+
         return res.status(400).json({
             success: false,
-            message: 'Remarks must not exceed 255 characters.'
+            message:
+                'Remarks must not exceed 255 characters.'
         });
+
     }
 
-    const sql = `
-        UPDATE marks m
-        JOIN exams e ON e.id = m.exam_id
-        JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
-        JOIN student_subjects ss
-            ON ss.student_id = m.student_id
-            AND ss.subject_id = e.subject_id
-            AND ss.status = 'Approved'
-        SET
-            m.obtained_marks = ?,
-            m.remarks = ?
-        WHERE m.id = ?
-        AND m.teacher_id = ?
-        AND ts.teacher_id = ?
-        AND ? <= e.max_marks
-    `;
+    try {
 
-    db.query(
-        sql,
-        [
-            obtained_marks,
-            remarks === undefined ? null : remarks,
-            markId,
-            teacherId,
-            teacherId,
-            obtained_marks
-        ],
-        (error, result) => {
+        const result =
+            await marksRepository.editMarks(
+                teacherId,
+                Number(markId),
+                Number(obtained_marks),
+                remarks === undefined
+                    ? null
+                    : remarks
+            );
 
-            if (error) {
-                console.error(error);
 
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to update marks.'
-                });
-            }
+        // Invalid record or unauthorized teacher
 
-            if (result.affectedRows === 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Marks record not found, not assigned to you, or marks exceed the maximum.'
-                });
-            }
+        if (
+            result.outcome === 'not_found' ||
+            result.outcome === 'invalid_marks'
+        ) {
 
-            return res.status(200).json({
-                success: true,
-                message: 'Marks updated successfully.'
+            return res.status(400).json({
+                success: false,
+                message:
+                    'Marks record not found, not assigned to you, or marks exceed the maximum.'
             });
+
         }
-    );
+
+        if (result.outcome !== 'success') {
+
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to update marks.'
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Marks updated successfully.'
+        });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to update marks.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// TEACHER: DELETE MARKS
+// 11. TEACHER: DELETE INDIVIDUAL MARKS
 // ==========================================
 
-const deleteMarks = (req, res) => {
+const deleteMarks = async (req, res) => {
 
     const teacherId = req.user.id;
-    const markId = Number(req.params.markId);
+    const markId = req.params.markId;
 
-    if (!Number.isInteger(markId) || markId <= 0) {
+    if (!isValidId(markId)) {
+
         return res.status(400).json({
             success: false,
             message: 'Invalid marks ID.'
         });
+
     }
 
-    const sql = `
-        DELETE m
-        FROM marks m
-        JOIN exams e ON e.id = m.exam_id
-        JOIN teacher_subjects ts ON ts.subject_id = e.subject_id
-        WHERE m.id = ?
-        AND m.teacher_id = ?
-        AND ts.teacher_id = ?
-    `;
+    try {
 
-    db.query(
-        sql,
-        [markId, teacherId, teacherId],
-        (error, result) => {
+        const result =
+            await marksRepository.deleteMarks(
+                teacherId,
+                Number(markId)
+            );
 
-            if (error) {
-                console.error(error);
 
-                return res.status(500).json({
-                    success: false,
-                    message: 'Unable to delete marks.'
-                });
-            }
+        // Record missing or unauthorized teacher
 
-            if (result.affectedRows === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Marks record not found or not assigned to you.'
-                });
-            }
+        if (result.outcome === 'not_found') {
 
-            return res.status(200).json({
-                success: true,
-                message: 'Marks deleted successfully.'
+            return res.status(404).json({
+                success: false,
+                message:
+                    'Marks record not found or not assigned to you.'
             });
+
         }
-    );
+
+        if (result.outcome !== 'success') {
+
+            return res.status(500).json({
+                success: false,
+                message: 'Unable to delete marks.'
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Marks deleted successfully.'
+        });
+
+    } catch (error) {
+
+        return sendError(
+            res,
+            error,
+            'Unable to delete marks.'
+        );
+
+    }
+
 };
 
 
 // ==========================================
-// EXPORT CONTROLLERS
+// EXPORT ALL CONTROLLER FUNCTIONS
 // ==========================================
 
 module.exports = {
+
     getMyMarks,
+
     getTeacherSubjects,
+
     getStudentsForMarks,
+
     getExamsBySubject,
+
     createExam,
+
     updateExam,
+
     deleteExam,
+
     addMarks,
+
     getMarksRecords,
+
     editMarks,
+
     deleteMarks
+
 };

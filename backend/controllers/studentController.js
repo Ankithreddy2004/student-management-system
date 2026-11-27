@@ -3,6 +3,45 @@ const studentRepository =
 
 
 // ==========================================
+// COMMON VALIDATION FUNCTIONS
+// ==========================================
+
+const isValidId = (id) => {
+
+    return (
+        /^[1-9]\d*$/.test(String(id)) &&
+        Number.isSafeInteger(Number(id)) &&
+        Number(id) <= 2147483647
+    );
+
+};
+
+const isValidSemester = (semester) => {
+
+    return (
+        (
+            typeof semester === 'number' ||
+            typeof semester === 'string'
+        ) &&
+        /^[1-8]$/.test(String(semester))
+    );
+
+};
+
+const isValidEmail = (email) => {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+};
+
+const isValidPhone = (phone) => {
+
+    return /^\d{10}$/.test(phone);
+
+};
+
+
+// ==========================================
 // 1. GET ALL STUDENTS
 // ==========================================
 
@@ -71,14 +110,35 @@ const getPendingStudents = async (req, res) => {
 
 
 // ==========================================
-// 3. ADD NEW STUDENT
+// 3. ADD NEW STUDENT WITH SEMESTER
 // ==========================================
 
 const addStudent = async (req, res) => {
 
-    let { name, email, phone, course } = req.body;
+    let {
+        name,
+        email,
+        phone,
+        course,
+        semester
+    } = req.body || {};
 
-    if (!name || !email || !phone || !course) {
+
+    // Validate required fields
+
+    if (
+        typeof name !== 'string' ||
+        typeof email !== 'string' ||
+        typeof phone !== 'string' ||
+        typeof course !== 'string' ||
+        !name.trim() ||
+        !email.trim() ||
+        !phone.trim() ||
+        !course.trim() ||
+        semester === undefined ||
+        semester === null ||
+        semester === ''
+    ) {
 
         return res.status(400).json({
             success: false,
@@ -87,24 +147,37 @@ const addStudent = async (req, res) => {
 
     }
 
-    name = String(name).trim();
-    email = String(email).trim().toLowerCase();
-    phone = String(phone).trim();
-    course = String(course).trim();
 
-    if (!name || !course) {
+    // Clean inputs
+
+    name = name.trim();
+
+    email = email.trim().toLowerCase();
+
+    phone = phone.trim();
+
+    course = course.trim();
+
+
+    // Validate input lengths
+
+    if (
+        name.length > 100 ||
+        email.length > 150 ||
+        course.length > 100
+    ) {
 
         return res.status(400).json({
             success: false,
-            message: 'Name and course cannot be empty.'
+            message: 'Name, email or course exceeds the allowed length.'
         });
 
     }
 
-    const emailRegex =
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
+    // Validate email
+
+    if (!isValidEmail(email)) {
 
         return res.status(400).json({
             success: false,
@@ -113,7 +186,10 @@ const addStudent = async (req, res) => {
 
     }
 
-    if (!/^\d{10}$/.test(phone)) {
+
+    // Validate phone
+
+    if (!isValidPhone(phone)) {
 
         return res.status(400).json({
             success: false,
@@ -122,6 +198,21 @@ const addStudent = async (req, res) => {
 
     }
 
+
+    // Validate semester: 1 to 8 only
+
+    if (!isValidSemester(semester)) {
+
+        return res.status(400).json({
+            success: false,
+            message: 'Semester must be between 1 and 8.'
+        });
+
+    }
+
+    semester = Number(semester);
+
+
     try {
 
         const result =
@@ -129,7 +220,8 @@ const addStudent = async (req, res) => {
                 name,
                 email,
                 phone,
-                course
+                course,
+                semester
             );
 
         return res.status(201).json({
@@ -172,7 +264,7 @@ const getStudentById = async (req, res) => {
 
     const { id } = req.params;
 
-    if (!/^[1-9]\d*$/.test(id)) {
+    if (!isValidId(id)) {
 
         return res.status(400).json({
             success: false,
@@ -184,7 +276,9 @@ const getStudentById = async (req, res) => {
     try {
 
         const results =
-            await studentRepository.getStudentById(id);
+            await studentRepository.getStudentById(
+                Number(id)
+            );
 
         if (results.length === 0) {
 
@@ -220,15 +314,42 @@ const getStudentById = async (req, res) => {
 
 // ==========================================
 // 5. UPDATE STUDENT
+// ONLY ADMIN CAN CHANGE COURSE AND SEMESTER
 // ==========================================
 
 const updateStudent = async (req, res) => {
 
     const { id } = req.params;
 
-    let { name, email, phone, course } = req.body;
+    let {
+        name,
+        email,
+        phone,
+        course,
+        semester
+    } = req.body || {};
 
-    if (!/^[1-9]\d*$/.test(id)) {
+
+    // Validate user role
+
+    if (
+        !req.user ||
+        !['Admin', 'Teacher'].includes(req.user.role)
+    ) {
+
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied.'
+        });
+
+    }
+
+    const isAdmin = req.user.role === 'Admin';
+
+
+    // Validate student ID
+
+    if (!isValidId(id)) {
 
         return res.status(400).json({
             success: false,
@@ -237,33 +358,53 @@ const updateStudent = async (req, res) => {
 
     }
 
-    if (!name || !email || !phone || !course) {
+
+    // Validate personal information
+
+    if (
+        typeof name !== 'string' ||
+        typeof email !== 'string' ||
+        typeof phone !== 'string' ||
+        !name.trim() ||
+        !email.trim() ||
+        !phone.trim()
+    ) {
 
         return res.status(400).json({
             success: false,
-            message: 'All fields are required.'
+            message: 'Name, email and phone are required.'
         });
 
     }
 
-    name = String(name).trim();
-    email = String(email).trim().toLowerCase();
-    phone = String(phone).trim();
-    course = String(course).trim();
 
-    if (!name || !course) {
+    // Clean personal information
+
+    name = name.trim();
+
+    email = email.trim().toLowerCase();
+
+    phone = phone.trim();
+
+
+    // Validate input lengths
+
+    if (
+        name.length > 100 ||
+        email.length > 150
+    ) {
 
         return res.status(400).json({
             success: false,
-            message: 'Name and course cannot be empty.'
+            message: 'Name or email exceeds the allowed length.'
         });
 
     }
 
-    const emailRegex =
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
+    // Validate email
+
+    if (!isValidEmail(email)) {
 
         return res.status(400).json({
             success: false,
@@ -272,25 +413,83 @@ const updateStudent = async (req, res) => {
 
     }
 
-    if (!/^\d{10}$/.test(phone)) {
+
+    // Validate phone
+
+    if (!isValidPhone(phone)) {
 
         return res.status(400).json({
             success: false,
-            message: 'Phone must contain exactly 10 digits.'
+            message: 'Phone number must contain exactly 10 digits.'
         });
 
     }
+
+
+    // Admin can update academic information
+
+    if (isAdmin) {
+
+        if (
+            typeof course !== 'string' ||
+            !course.trim()
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: 'Course is required.'
+            });
+
+        }
+
+        course = course.trim();
+
+        if (course.length > 100) {
+
+            return res.status(400).json({
+                success: false,
+                message: 'Course exceeds the allowed length.'
+            });
+
+        }
+
+        if (!isValidSemester(semester)) {
+
+            return res.status(400).json({
+                success: false,
+                message: 'Semester must be between 1 and 8.'
+            });
+
+        }
+
+        semester = Number(semester);
+
+    } else {
+
+        // Teachers cannot modify academic information
+
+        course = null;
+
+        semester = null;
+
+    }
+
 
     try {
 
         const result =
             await studentRepository.updateStudent(
-                id,
+                Number(id),
                 name,
                 email,
                 phone,
-                course
+                course,
+                semester,
+                isAdmin
             );
+
+
+        // Check whether student exists
 
         if (!Number(result.student_exists)) {
 
@@ -300,6 +499,9 @@ const updateStudent = async (req, res) => {
             });
 
         }
+
+
+        // Check whether information was changed
 
         if (Number(result.affectedRows) === 0) {
 
@@ -350,7 +552,7 @@ const deleteStudent = async (req, res) => {
 
     const { id } = req.params;
 
-    if (!/^[1-9]\d*$/.test(id)) {
+    if (!isValidId(id)) {
 
         return res.status(400).json({
             success: false,
@@ -362,7 +564,9 @@ const deleteStudent = async (req, res) => {
     try {
 
         const result =
-            await studentRepository.deleteStudent(id);
+            await studentRepository.deleteStudent(
+                Number(id)
+            );
 
         if (Number(result.affectedRows) === 0) {
 
@@ -412,9 +616,10 @@ const deleteStudent = async (req, res) => {
 const updateStudentStatus = async (req, res) => {
 
     const { id } = req.params;
-    const { status } = req.body;
 
-    if (!/^[1-9]\d*$/.test(id)) {
+    const { status } = req.body || {};
+
+    if (!isValidId(id)) {
 
         return res.status(400).json({
             success: false,
@@ -436,7 +641,7 @@ const updateStudentStatus = async (req, res) => {
 
         const result =
             await studentRepository.updateStudentStatus(
-                id,
+                Number(id),
                 status
             );
 
@@ -497,7 +702,7 @@ const approveStudent = async (req, res) => {
 
     const { id } = req.params;
 
-    if (!/^[1-9]\d*$/.test(id)) {
+    if (!isValidId(id)) {
 
         return res.status(400).json({
             success: false,
@@ -509,7 +714,9 @@ const approveStudent = async (req, res) => {
     try {
 
         const result =
-            await studentRepository.approveStudent(id);
+            await studentRepository.approveStudent(
+                Number(id)
+            );
 
         if (!Number(result.student_exists)) {
 
@@ -559,15 +766,31 @@ const approveStudent = async (req, res) => {
 // ==========================================
 // 9. UPDATE OWN STUDENT PROFILE
 // ACTIVE STUDENTS ONLY
+// COURSE AND SEMESTER ARE READ-ONLY
 // ==========================================
 
 const updateMyProfile = async (req, res) => {
 
+    if (!req.user || req.user.role !== 'Student') {
+
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied.'
+        });
+
+    }
+
     const studentId = req.user.student_id;
 
-    let { name, phone, course } = req.body;
+    let {
+        name,
+        phone
+    } = req.body || {};
 
-    if (!studentId) {
+
+    // Validate student ID
+
+    if (!isValidId(studentId)) {
 
         return res.status(400).json({
             success: false,
@@ -576,29 +799,46 @@ const updateMyProfile = async (req, res) => {
 
     }
 
-    if (!name || !phone || !course) {
+
+    // Validate required fields
+
+    if (
+        typeof name !== 'string' ||
+        typeof phone !== 'string' ||
+        !name.trim() ||
+        !phone.trim()
+    ) {
 
         return res.status(400).json({
             success: false,
-            message: 'Name, phone and course are required.'
+            message: 'Name and phone are required.'
         });
 
     }
 
-    name = String(name).trim();
-    phone = String(phone).trim();
-    course = String(course).trim();
 
-    if (!name || !course) {
+    // Clean inputs
+
+    name = name.trim();
+
+    phone = phone.trim();
+
+
+    // Validate name length
+
+    if (name.length > 100) {
 
         return res.status(400).json({
             success: false,
-            message: 'Name and course cannot be empty.'
+            message: 'Name must not exceed 100 characters.'
         });
 
     }
 
-    if (!/^\d{10}$/.test(phone)) {
+
+    // Validate phone
+
+    if (!isValidPhone(phone)) {
 
         return res.status(400).json({
             success: false,
@@ -607,15 +847,16 @@ const updateMyProfile = async (req, res) => {
 
     }
 
+
     try {
 
         const result =
             await studentRepository.updateMyProfile(
-                studentId,
+                Number(studentId),
                 name,
-                phone,
-                course
+                phone
             );
+
 
         if (result.outcome === 'not_found') {
 
@@ -626,6 +867,7 @@ const updateMyProfile = async (req, res) => {
 
         }
 
+
         if (result.outcome === 'inactive') {
 
             return res.status(403).json({
@@ -634,6 +876,7 @@ const updateMyProfile = async (req, res) => {
             });
 
         }
+
 
         if (result.outcome !== 'updated') {
 
@@ -644,15 +887,21 @@ const updateMyProfile = async (req, res) => {
 
         }
 
+
         return res.status(200).json({
+
             success: true,
+
             message: 'Profile updated successfully.',
+
             data: {
                 id: Number(studentId),
                 name,
                 phone,
-                course
+                course: result.course,
+                semester: result.semester
             }
+
         });
 
     } catch (error) {
@@ -679,13 +928,21 @@ const updateMyProfile = async (req, res) => {
 module.exports = {
 
     getAllStudents,
+
     getPendingStudents,
+
     addStudent,
+
     getStudentById,
+
     updateStudent,
+
     deleteStudent,
+
     updateStudentStatus,
+
     approveStudent,
+
     updateMyProfile
 
 };
